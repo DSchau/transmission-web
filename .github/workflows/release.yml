@@ -1,0 +1,28 @@
+name: Release
+
+# On a version tag (git tag v1.0.0 && git push origin v1.0.0), build the static site and
+# attach dist.zip to a GitHub Release. The NUC (or anything else) can then grab it from
+# https://github.com/DSchau/transmission-web/releases/latest/download/dist.zip
+# — no Node, Bun, or git needed on the target machine.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - name: Zip dist
+        run: cd dist && zip -r ../dist.zip .
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist.zip
+          generate_release_notes: true
