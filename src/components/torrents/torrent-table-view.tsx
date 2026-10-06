@@ -3,14 +3,14 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { type KeyboardEvent, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
-import { selectedIds, selectionAtom } from '@/lib/ui'
+import { clearSelection, selectedIds, selectionAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ListEmptyState, useShowsEmptyState } from './connection-state'
 import { NUMERIC_COLUMNS, type TorrentRow, toggleRow } from './table-model'
 import { TorrentMenuContent } from './torrent-menu'
 import { useTorrentsView } from './torrents-view'
 
-const ROW_HEIGHT = 48
+const ROW_HEIGHT = 64
 const NAME_MIN_WIDTH = 220
 /** Columns that make way, in this order, when the table is narrower than its columns. */
 const AUTO_HIDE_ORDER = ['queue', 'addedDate', 'ratio', 'eta', 'rateUpload', 'size', 'status', 'progress']
@@ -20,10 +20,13 @@ const AUTO_HIDE_ORDER = ['queue', 'addedDate', 'ratio', 'eta', 'rateUpload', 'si
  * right-click menus, and arrow-key navigation.
  */
 export function TorrentTableView({ className }: { className?: string }) {
-  const { table, openTorrent, openTorrentId } = useTorrentsView()
+  const { table, openTorrent, openTorrentId, closeDetail } = useTorrentsView()
   const selection = useSelector(selectionAtom)
   const showEmpty = useShowsEmptyState()
   const scrollRef = useRef<HTMLDivElement>(null)
+  // Whether the row was the open one when a double-click gesture began (the first click
+  // of the pair navigates to the row, so `openTorrentId` alone can't tell us afterwards).
+  const wasOpen = useRef(false)
 
   const rows = table.getRowModel().rows
   const virtualizer = useVirtualizer({
@@ -158,10 +161,18 @@ export function TorrentTableView({ className }: { className?: string }) {
                       aria-selected={selected}
                       data-state={selected ? 'selected' : undefined}
                       onClick={(event) => {
+                        if (event.detail === 1) wasOpen.current = row.original.id === openTorrentId
                         if (event.metaKey || event.ctrlKey) toggleRow(row)
                         else if (event.shiftKey) toggleRow(row, { range: true })
                         else open(row)
                         scrollRef.current?.focus({ preventScroll: true })
+                      }}
+                      onDoubleClick={() => {
+                        // Double-clicking the open torrent closes its detail view.
+                        if (wasOpen.current) {
+                          clearSelection()
+                          closeDetail()
+                        }
                       }}
                       onContextMenu={() => {
                         // Like Finder: right-clicking outside the selection selects that row.
@@ -169,6 +180,8 @@ export function TorrentTableView({ className }: { className?: string }) {
                       }}
                       className={cn(
                         'absolute inset-x-0 grid cursor-default select-none items-center border-border/50 border-b',
+                        // Subtle zebra striping that reads in both light and dark themes.
+                        item.index % 2 === 1 && 'bg-muted/30',
                         'hover:bg-muted/50 data-[state=selected]:bg-status-downloading/10',
                       )}
                       style={{ gridTemplateColumns, height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}

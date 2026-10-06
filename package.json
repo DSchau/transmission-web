@@ -33,8 +33,6 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "@tailwindcss/vite": "^4.3.3",
-    "@tanstack/react-query-devtools": "^5.104.1",
-    "@tanstack/react-router-devtools": "^1.167.2",
     "@tanstack/router-plugin": "^1.168.42",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",

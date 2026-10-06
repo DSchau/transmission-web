@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { FILTER_INFO } from '@/lib/torrent'
 import { openDialog } from '@/lib/ui'
-import { AltSpeedToggle, AppMenu } from './app-menu'
+import { AltSpeedToggle } from './app-menu'
 import { SearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
 import { ColumnsMenu } from './view-options-menu'
@@ -39,7 +39,6 @@ export function DesktopToolbar() {
       <div className="flex items-center">
         <AltSpeedToggle />
         <ColumnsMenu />
-        <AppMenu showSelect={false} />
       </div>
     </header>
   )

@@ -11,7 +11,14 @@
     <script>
       // Apply the saved theme before first paint (see src/lib/theme.ts).
       try {
-        var theme = (JSON.parse(localStorage.getItem('transmission-web.preferences') || '{}').theme) || 'system'
+        var theme =
+          (
+            JSON.parse(
+              localStorage.getItem('transmission-web.preferences.v2') ||
+                localStorage.getItem('transmission-web.preferences') ||
+                '{}',
+            ).theme
+          ) || 'system'
         if (theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark')
         }

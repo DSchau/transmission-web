@@ -1,4 +1,4 @@
-import { Pause, Play, Trash2, X } from 'lucide-react'
+import { Ellipsis, Pause, Play, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { formatBytes, formatNumber } from '@/lib/format'
@@ -71,7 +71,9 @@ export function SelectionSummary() {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">More</Button>
+            <Button variant="outline" size="icon" aria-label="More">
+              <Ellipsis />
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-60">
             <ActionMenuItems groups={groups.slice(1, -1)} kind="dropdown" />

@@ -14,12 +14,24 @@ export interface Preferences {
 
 export const REFRESH_INTERVALS = [1, 2, 3, 5, 10] as const
 
-export const PREFERENCES_KEY = 'transmission-web.preferences'
+export const PREFERENCES_KEY = 'transmission-web.preferences.v2'
 
 export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
   theme: 'system',
   refreshInterval: 2,
-  columnVisibility: { queue: false, eta: true, ratio: true, addedDate: true },
+  // Like Transmission's own list: the name column carries the status line (including size
+  // and rates), so the table needs nothing else. The rest live in the Columns menu if wanted.
+  columnVisibility: {
+    status: false,
+    progress: false,
+    size: false,
+    rateDownload: false,
+    rateUpload: false,
+    eta: false,
+    ratio: false,
+    addedDate: false,
+    queue: false,
+  },
   sidebarCollapsed: false,
 })
 

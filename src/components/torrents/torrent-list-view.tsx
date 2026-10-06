@@ -1,15 +1,14 @@
 import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Check, Ellipsis, Pause, Play } from 'lucide-react'
+import { Check, Ellipsis } from 'lucide-react'
 import { memo, useCallback, useRef } from 'react'
 import { ProgressBar } from '@/components/progress-bar'
 import { Rate } from '@/components/rate'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { useTorrentActions } from '@/lib/mutations'
 import { type Torrent, TorrentStatus } from '@/lib/rpc/types'
-import { displayProgress, hasError, isPaused, rowDetail, stateLabel, statusTone, toneText } from '@/lib/torrent'
+import { displayProgress, hasError, rowDetail, stateLabel, statusTone, toneText } from '@/lib/torrent'
 import { selectionAtom, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ListEmptyState, useShowsEmptyState } from './connection-state'
@@ -66,6 +65,7 @@ export function TorrentListView({ className }: { className?: string }) {
             >
               <TorrentCard
                 torrent={row.original}
+                index={item.index}
                 selectMode={selectMode}
                 selected={selectMode ? !!selection[row.id] : row.original.id === openTorrentId}
                 onActivate={onActivate}
@@ -80,13 +80,14 @@ export function TorrentListView({ className }: { className?: string }) {
 
 interface CardProps {
   torrent: Torrent
+  index: number
   selectMode: boolean
   selected: boolean
   onActivate: (id: string) => void
 }
 
 /** Memoized on the torrent object: React Query's structural sharing keeps unchanged ones identical. */
-const TorrentCard = memo(function TorrentCard({ torrent: t, selectMode, selected, onActivate }: CardProps) {
+const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, selected, onActivate }: CardProps) {
   const tone = statusTone(t)
   return (
     <ContextMenu>
@@ -94,7 +95,9 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, selectMode, selected
         <div
           className={cn(
             'flex items-stretch gap-3 border-b px-4 py-3 transition-colors',
-            selected ? 'bg-status-downloading/10' : 'active:bg-muted/60',
+            selected
+              ? 'bg-status-downloading/10'
+              : cn('active:bg-muted/60', index % 2 === 1 && 'bg-muted/20'),
           )}
         >
           {selectMode && (
@@ -112,10 +115,16 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, selectMode, selected
             type="button"
             onClick={() => onActivate(String(t.id))}
             aria-pressed={selectMode ? selected : undefined}
-            className="flex min-w-0 flex-1 flex-col gap-1 text-left outline-none"
+            className="flex min-w-0 flex-1 flex-col text-left outline-none"
           >
             <span className="line-clamp-2 font-semibold text-[0.9375rem] leading-snug">{t.name}</span>
-            <span className="flex items-baseline gap-2 text-sm tabular-nums">
+            <ProgressBar
+              progress={displayProgress(t)}
+              tone={tone}
+              active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
+              className="mt-1.5"
+            />
+            <span className="mt-1 flex items-baseline gap-2 text-sm leading-none tabular-nums">
               <span
                 className={cn('min-w-0 flex-1 truncate', hasError(t) ? 'text-status-error' : 'text-muted-foreground')}
               >
@@ -124,12 +133,6 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, selectMode, selected
               {t.rateDownload > 0 && <Rate rate={t.rateDownload} direction="down" />}
               {t.rateUpload > 0 && <Rate rate={t.rateUpload} direction="up" />}
             </span>
-            <ProgressBar
-              progress={displayProgress(t)}
-              tone={tone}
-              active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
-              className="mt-2"
-            />
           </button>
           {!selectMode && <CardActions torrent={t} />}
         </div>
@@ -141,12 +144,10 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, selectMode, selected
   )
 })
 
-/** Quick pause/resume (instead of iOS swipe actions) and the full actions menu. */
+/** The card's actions menu. */
 function CardActions({ torrent }: { torrent: Torrent }) {
-  const { togglePaused } = useTorrentActions()
-  const paused = isPaused(torrent)
   return (
-    <div className="-mr-2 flex shrink-0 flex-col items-center justify-between">
+    <div className="-mr-2 flex shrink-0 items-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${torrent.name}`}>
@@ -157,15 +158,6 @@ function CardActions({ torrent }: { torrent: Torrent }) {
           <TorrentMenuContent torrent={torrent} kind="dropdown" />
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={paused ? 'Resume' : 'Pause'}
-        onClick={() => togglePaused(torrent)}
-        className={paused ? 'text-status-seeding' : 'text-muted-foreground'}
-      >
-        {paused ? <Play className="fill-current" /> : <Pause className="fill-current" />}
-      </Button>
     </div>
   )
 }

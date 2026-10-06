@@ -16,7 +16,7 @@ import {
   useTable,
 } from '@tanstack/react-table'
 import { ProgressBar } from '@/components/progress-bar'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Rate } from '@/components/rate'
 import {
   formatBytes,
   formatDate,
@@ -28,7 +28,16 @@ import {
 } from '@/lib/format'
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { type Torrent, TorrentStatus } from '@/lib/rpc/types'
-import { displayProgress, SORT_INFO, stateLabel, statusTone, type TorrentSort, toneText } from '@/lib/torrent'
+import {
+  displayProgress,
+  hasError,
+  rowDetail,
+  SORT_INFO,
+  stateLabel,
+  statusTone,
+  type TorrentSort,
+  toneText,
+} from '@/lib/torrent'
 import { selectionAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 
@@ -65,36 +74,17 @@ const Numeric = ({ children, muted }: { children: React.ReactNode; muted?: boole
 export const NUMERIC_COLUMNS = new Set(['progress', 'size', 'rateDownload', 'rateUpload', 'eta', 'ratio', 'queue'])
 
 export const columns = helper.columns([
-  helper.display({
-    id: 'select',
-    size: 40,
-    enableHiding: false,
-    header: ({ table }) => (
-      <Checkbox
-        aria-label="Select all"
-        checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
-        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked === true)}
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label={`Select ${row.original.name}`}
-        checked={row.getIsSelected()}
-        onClick={(event) => {
-          event.stopPropagation()
-          toggleRow(row, { range: event.shiftKey })
-        }}
-      />
-    ),
-  }),
+  // Selection is via clicks (⌘/Ctrl-click toggles, Shift-click extends), not checkboxes;
+  // selecting more than one torrent shows the selection pane in the inspector.
   helper.accessor('name', {
     header: 'Name',
     size: 320,
     enableHiding: false,
     ...sortBy('name'),
+    // flex-1 so the cell fills its column — otherwise the bar only spans the name's width.
     cell: ({ row: { original: t } }) => (
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <span className="truncate font-medium" title={t.name}>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="mb-1 truncate font-medium leading-snug" title={t.name}>
           {t.name}
         </span>
         <ProgressBar
@@ -103,6 +93,20 @@ export const columns = helper.columns([
           active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
           className="h-1"
         />
+        {/* Like Transmission's own rows: state word + progress details + live rates under the bar. */}
+        <span
+          className={cn(
+            'mt-0.5 flex items-baseline gap-1.5 text-muted-foreground text-xs leading-none tabular-nums',
+            hasError(t) && 'text-status-error',
+          )}
+          title={t.errorString || undefined}
+        >
+          <span className="min-w-0 flex-1 truncate">
+            <span className={cn('font-medium', toneText[statusTone(t)])}>{stateLabel(t)}</span> · {rowDetail(t)}
+          </span>
+          {t.rateDownload > 0 && <Rate rate={t.rateDownload} direction="down" />}
+          {t.rateUpload > 0 && <Rate rate={t.rateUpload} direction="up" />}
+        </span>
       </div>
     ),
   }),
