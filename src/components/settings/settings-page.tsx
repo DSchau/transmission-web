@@ -63,7 +63,7 @@ function ServerSection() {
 
   return (
     <SettingsSection title="Server">
-      <Link to="/connect" className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50">
+      <Link to="/connect" className="flex items-center gap-3 px-5 py-3 hover:bg-muted/50">
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm">{displayNameFor(config)}</span>
           <span className={cn('truncate text-xs', color)}>{label}</span>
@@ -107,7 +107,7 @@ function SpeedSection({ session }: { session: SessionInfo }) {
         />
       </SettingsRow>
       {session['speed-limit-down-enabled'] && (
-        <SettingsRow label="Download Limit" className="pl-8">
+        <SettingsRow label="Download Limit" className="pl-9">
           <NumberField
             value={session['speed-limit-down']}
             unit="kB/s"
@@ -124,7 +124,7 @@ function SpeedSection({ session }: { session: SessionInfo }) {
         />
       </SettingsRow>
       {session['speed-limit-up-enabled'] && (
-        <SettingsRow label="Upload Limit" className="pl-8">
+        <SettingsRow label="Upload Limit" className="pl-9">
           <NumberField
             value={session['speed-limit-up']}
             unit="kB/s"
@@ -142,7 +142,7 @@ function DownloadsSection({ session }: { session: SessionInfo }) {
   const id = useId()
   return (
     <SettingsSection title="Downloads">
-      <div className="flex flex-col gap-1.5 px-4 py-2.5">
+      <div className="flex flex-col gap-1.5 px-5 py-3">
         <label htmlFor={`${id}-dir`} className="text-sm">
           Download Folder
         </label>
@@ -168,7 +168,7 @@ function DownloadsSection({ session }: { session: SessionInfo }) {
         />
       </SettingsRow>
       {session.seedRatioLimited && (
-        <SettingsRow label="Ratio" className="pl-8">
+        <SettingsRow label="Ratio" className="pl-9">
           <NumberField
             value={session.seedRatioLimit}
             step={0.1}

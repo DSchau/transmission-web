@@ -26,7 +26,7 @@ export function PageShell({ title, children, actions }: { title: string; childre
           <div className="flex justify-end">{actions}</div>
         </div>
       </header>
-      <main className="pb-safe mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">{children}</main>
+      <main className="pb-safe mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6">{children}</main>
     </div>
   )
 }
@@ -42,9 +42,9 @@ export function SettingsSection({
 }) {
   return (
     <section className="flex flex-col gap-1.5">
-      {title && <h2 className="px-4 font-medium text-muted-foreground text-xs uppercase tracking-wide">{title}</h2>}
+      {title && <h2 className="px-5 font-medium text-muted-foreground text-xs uppercase tracking-wide">{title}</h2>}
       <div className="divide-y overflow-hidden rounded-xl border bg-card">{children}</div>
-      {footer && <div className="px-4 text-muted-foreground text-xs">{footer}</div>}
+      {footer && <div className="px-5 text-muted-foreground text-xs">{footer}</div>}
     </section>
   )
 }
@@ -63,7 +63,7 @@ export function SettingsRow({
   className?: string
 }) {
   return (
-    <div className={cn('flex min-h-12 items-center gap-4 px-4 py-2.5', className)}>
+    <div className={cn('flex min-h-13 items-center gap-4 px-5 py-3', className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <label htmlFor={htmlFor} className="text-sm">
           {label}

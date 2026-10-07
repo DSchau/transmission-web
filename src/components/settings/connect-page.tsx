@@ -130,7 +130,7 @@ export function ConnectPage() {
                     const crossOrigin = target && !isSameOrigin(target)
                     const devProxy = target && usesDevProxy(target)
                     return (
-                      <div className="flex flex-col gap-1.5 px-4 py-3">
+                      <div className="flex flex-col gap-1.5 px-5 py-3.5">
                         <label htmlFor={`${id}-url`} className="text-sm">
                           Address
                         </label>
@@ -235,7 +235,7 @@ export function ConnectPage() {
             </Button>
           </SettingsRow>
         </SettingsSection>
-        {test.status === 'failed' && <p className="-mt-4 px-4 text-destructive text-xs">{test.message}</p>}
+        {test.status === 'failed' && <p className="-mt-4 px-5 text-destructive text-xs">{test.message}</p>}
 
         <div className="flex flex-col gap-2 sm:flex-row-reverse">
           <Button type="submit" size="lg">
@@ -274,7 +274,7 @@ function ModeOption({
   description?: string
 }) {
   return (
-    <label className="flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 hover:bg-muted/50 has-[:focus-visible]:bg-muted/50">
+    <label className="flex w-full cursor-pointer items-center gap-3 px-5 py-3 hover:bg-muted/50 has-[:focus-visible]:bg-muted/50">
       <span className="text-muted-foreground">{icon}</span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="text-sm">{title}</span>

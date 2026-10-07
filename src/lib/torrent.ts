@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { formatBytes, formatEta, formatPercent, formatRatio } from './format'
 import { PieceBitfield } from './pieces'
+import { type CompiledQuery, compileQuery, type QueryField } from './query'
 import { type Torrent, TorrentStatus } from './rpc/types'
 
 // MARK: Derived state
@@ -180,11 +181,183 @@ export const FILTER_INFO: Record<TorrentFilter, { title: string; icon: LucideIco
     error: { title: 'Errors', icon: TriangleAlert, matches: hasError },
   }
 
+// MARK: Search queries
+
+/** What plain words search — first among the fields so the cheat sheet leads with it. */
+const NAME_QUERY_FIELD: QueryField<Torrent> = {
+  key: 'name',
+  kind: 'text',
+  describe: 'Torrent name (what plain words search)',
+  example: 'name:"ubuntu 24"',
+  value: (t) => t.name,
+}
+
+/** Every field the search box understands — data, not grammar. Listed for the cheat sheet. */
+export const QUERY_FIELDS: readonly QueryField<Torrent>[] = [
+  NAME_QUERY_FIELD,
+  {
+    key: 'status',
+    kind: 'enum',
+    describe: 'active, downloading, seeding, paused, completed, checking, magnet, error',
+    example: 'status:downloading',
+    value: () => '',
+    options: {
+      active: isActive,
+      downloading: isDownloading,
+      seeding: isSeeding,
+      paused: isPaused,
+      stopped: isPaused,
+      completed: isComplete,
+      complete: isComplete,
+      checking: isChecking,
+      magnet: isMagnetPending,
+      error: hasError,
+    },
+  },
+  {
+    key: 'size',
+    kind: 'number',
+    units: 'bytes',
+    describe: 'Size in bytes (kb, mb, gb, tb suffixes)',
+    example: 'size:>1gb',
+    value: (t) => t.sizeWhenDone,
+  },
+  {
+    key: 'progress',
+    kind: 'number',
+    units: 'percent',
+    aliases: ['percent'],
+    describe: 'Percent done — 0.5 or 50%',
+    example: 'progress:>=50%',
+    value: (t) => t.percentDone,
+  },
+  {
+    key: 'ratio',
+    kind: 'number',
+    describe: 'Share ratio (unseeded torrents excluded)',
+    example: 'ratio:<0.5',
+    value: (t) => (t.uploadRatio < 0 ? Number.NaN : t.uploadRatio),
+  },
+  {
+    key: 'added',
+    kind: 'date',
+    aliases: ['date'],
+    describe: 'Added — 7d, 2w, 1m, 1y ago, or 2024-01-01',
+    example: 'added:7d',
+    value: (t) => t.addedDate,
+  },
+  {
+    key: 'done',
+    kind: 'date',
+    aliases: ['finished'],
+    describe: 'Finished date (same formats as added)',
+    example: 'done:>2024-01-01',
+    value: (t) => (t.doneDate === 0 ? Number.NaN : t.doneDate),
+  },
+  {
+    key: 'down',
+    kind: 'number',
+    units: 'bytes',
+    aliases: ['speed'],
+    describe: 'Download rate (bytes/s)',
+    example: 'down:>500kb',
+    value: (t) => t.rateDownload,
+  },
+  {
+    key: 'up',
+    kind: 'number',
+    units: 'bytes',
+    aliases: ['upload'],
+    describe: 'Upload rate (bytes/s)',
+    example: 'up:>1mb',
+    value: (t) => t.rateUpload,
+  },
+  {
+    key: 'peers',
+    kind: 'number',
+    describe: 'Connected peers',
+    example: 'peers:>0',
+    value: (t) => t.peersConnected,
+  },
+  {
+    key: 'seeders',
+    kind: 'number',
+    describe: 'Peers sending to us',
+    example: 'seeders:>0',
+    value: (t) => t.peersSendingToUs,
+  },
+  {
+    key: 'leechers',
+    kind: 'number',
+    describe: 'Peers getting from us',
+    example: 'leechers:>0',
+    value: (t) => t.peersGettingFromUs,
+  },
+  {
+    key: 'uploaded',
+    kind: 'number',
+    units: 'bytes',
+    describe: 'Bytes uploaded, ever',
+    example: 'uploaded:>10gb',
+    value: (t) => t.uploadedEver,
+  },
+  {
+    key: 'downloaded',
+    kind: 'number',
+    units: 'bytes',
+    describe: 'Bytes downloaded, ever',
+    example: 'downloaded:>10gb',
+    value: (t) => t.downloadedEver,
+  },
+  {
+    key: 'error',
+    kind: 'text',
+    describe: 'The torrent’s error message',
+    example: 'error:tracker',
+    value: (t) => (hasError(t) ? t.errorString : ''),
+  },
+  {
+    key: 'dir',
+    kind: 'text',
+    aliases: ['path', 'folder'],
+    describe: 'Download folder',
+    example: 'dir:movies',
+    value: (t) => t.downloadDir,
+  },
+]
+
+const QUERY_FIELD_MAP: ReadonlyMap<string, QueryField<Torrent>> = (() => {
+  const map = new Map<string, QueryField<Torrent>>()
+  for (const field of QUERY_FIELDS) {
+    map.set(field.key, field)
+    for (const alias of field.aliases ?? []) map.set(alias, field)
+  }
+  return map
+})()
+
+const queryCache = new Map<string, CompiledQuery<Torrent>>()
+
+/** The search box’s compiled query — cached per (minute, string) so polls reuse it and relative
+ * dates ("added:7d") stay fresh. */
+export function compileTorrentQuery(query: string): CompiledQuery<Torrent> {
+  const key = `${Math.floor(Date.now() / 60_000)}\u0000${query}`
+  let compiled = queryCache.get(key)
+  if (!compiled) {
+    if (queryCache.size > 64) queryCache.clear()
+    compiled = compileQuery(query, { fields: QUERY_FIELD_MAP, defaultField: NAME_QUERY_FIELD })
+    queryCache.set(key, compiled)
+  }
+  return compiled
+}
+
 export function filterTorrents(torrents: Torrent[], filter: TorrentFilter, query: string): Torrent[] {
-  const q = query.trim().toLocaleLowerCase()
   const { matches } = FILTER_INFO[filter]
+  const q = query.trim()
   if (filter === 'all' && !q) return torrents
-  return torrents.filter((t) => matches(t) && (!q || t.name.toLocaleLowerCase().includes(q)))
+  // Unknown or half-typed terms are skipped by the compiler, so a bad query degrades to
+  // filtering less instead of matching nothing.
+  const { test, hasTerms } = compileTorrentQuery(q)
+  return torrents.filter((t) => matches(t) && (!hasTerms || test(t)))
 }
 
 export function countByFilter(torrents: Torrent[]): Record<TorrentFilter, number> {

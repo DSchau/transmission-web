@@ -8,6 +8,25 @@ Built with React 19, Vite, TanStack Router (file-based, hash history), Query (po
 updates), Table v9 + Virtual (one headless table rendered as a table or as cards), Form, and Store;
 Tailwind v4 + shadcn/ui (Radix).
 
+## Search queries
+
+Plain words match torrent names; structured terms narrow further. Terms combine (all must match),
+a leading `-` excludes:
+
+```
+ubuntu status:downloading          words + status
+size:>1gb added:30d progress:<50%   comparisons
+ratio:<0.5 -status:seeding           exclusions
+name:"ubuntu 24"                     quoted phrase
+```
+
+Fields: `name` `status` `size` `progress` `ratio` `added` `done` `down` `up` `peers` `seeders`
+`leechers` `uploaded` `downloaded` `error` `dir`. Sizes take `kb/mb/gb/tb` (1024-based),
+dates take `30d`, `2w`, `1m`, `1y` or `2024-01-01`, ops are `: = != < <= > >=`. The `?` button
+in the search field shows the full cheat sheet; malformed terms are skipped (never empty the
+list) with a warning explaining what it didn't understand. Queries live in the URL (`?q=`),
+so they survive reloads and can be shared.
+
 ## Develop
 
 ```sh
