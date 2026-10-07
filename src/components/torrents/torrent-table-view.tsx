@@ -72,6 +72,8 @@ export function TorrentTableView({ className }: { className?: string }) {
     .join(' ')
   const minWidth = columns.reduce((sum, column) => sum + (column.id === 'name' ? NAME_MIN_WIDTH : column.getSize()), 0)
   const noSelection = selectedIds(selection).length === 0
+  // Name alone carries everything, so headers only appear once there are columns to label.
+  const showHeader = columns.length > 1
 
   const open = (row: TorrentRow) => {
     toggleRow(row, { only: true })
@@ -104,8 +106,15 @@ export function TorrentTableView({ className }: { className?: string }) {
       className={cn('relative overflow-auto outline-none', className)}
     >
       {/* Real table elements laid out with CSS grid, so rows can be absolutely positioned (virtualized). */}
-      <table aria-label="Torrents" aria-rowcount={rows.length + 1} className="grid text-sm" style={{ minWidth }}>
-        <thead className="sticky top-0 z-10 grid border-b bg-background/95 backdrop-blur">
+      <table
+        aria-label="Torrents"
+        aria-rowcount={rows.length + (showHeader ? 1 : 0)}
+        className="grid text-sm"
+        style={{ minWidth }}
+      >
+        <thead
+          className={cn('sticky top-0 z-10 grid border-b bg-background/95 backdrop-blur', !showHeader && 'hidden')}
+        >
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id} className="grid h-9 items-center" style={{ gridTemplateColumns }}>
               {group.headers
@@ -157,7 +166,7 @@ export function TorrentTableView({ className }: { className?: string }) {
                 <ContextMenu key={row.id}>
                   <ContextMenuTrigger asChild>
                     <tr
-                      aria-rowindex={item.index + 2}
+                      aria-rowindex={item.index + (showHeader ? 2 : 1)}
                       aria-selected={selected}
                       data-state={selected ? 'selected' : undefined}
                       onClick={(event) => {
@@ -212,7 +221,7 @@ export function TorrentTableView({ className }: { className?: string }) {
         )}
       </table>
       {showEmpty && (
-        <div className="absolute inset-x-0 top-9 bottom-0">
+        <div className={cn('absolute inset-x-0 bottom-0', showHeader ? 'top-9' : 'top-0')}>
           <ListEmptyState />
         </div>
       )}

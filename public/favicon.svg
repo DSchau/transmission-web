@@ -1,6 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <title>Transmission</title>
-  <rect width="64" height="64" rx="14" fill="#2563eb"/>
-  <path d="M32 14v26m0 0-10-10m10 10 10-10" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M18 48h28" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f66151"/>
+      <stop offset="0.5" stop-color="#e01b24"/>
+      <stop offset="1" stop-color="#ac1d2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#red)"/>
+  <path d="M32 12v22m0 0-9-9m9 9 9-9" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 43h26" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <path d="M25 52h14" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
 </svg>

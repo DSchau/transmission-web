@@ -41,6 +41,7 @@ const SESSION_DEFAULTS: SessionInfo = {
   version: 'Unknown',
   'rpc-version': 0,
   'download-dir': '',
+  'download-dir-free-space': 0,
   'start-added-torrents': true,
   'alt-speed-enabled': false,
   'alt-speed-down': 0,

@@ -5,13 +5,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { FILTER_INFO } from '@/lib/torrent'
 import { openDialog } from '@/lib/ui'
-import { AltSpeedToggle } from './app-menu'
-import { SearchField } from './search-field'
+import { ToolbarSearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
-import { ColumnsMenu } from './view-options-menu'
+import { ColumnsMenu, SortMenu } from './view-options-menu'
 
 export function DesktopToolbar() {
-  const { search } = useTorrentsView()
+  const { search, goHome } = useTorrentsView()
   const collapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
 
   return (
@@ -29,15 +28,24 @@ export function DesktopToolbar() {
         </TooltipTrigger>
         <TooltipContent>{collapsed ? 'Show' : 'Hide'} sidebar</TooltipContent>
       </Tooltip>
-      <h1 className="font-semibold">{search.filter === 'all' ? 'All Torrents' : FILTER_INFO[search.filter].title}</h1>
+      <h1 className="min-w-0 truncate font-semibold">
+        <button
+          type="button"
+          onClick={goHome}
+          aria-label="Reset view"
+          className="-mx-1 rounded-md px-2 py-0.5 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {search.filter === 'all' ? 'Torrents' : FILTER_INFO[search.filter].title}
+        </button>
+      </h1>
       <div className="flex-1" />
-      <SearchField className="w-56 xl:w-72" showShortcut />
-      <Button onClick={() => openDialog({ type: 'add' })}>
+      <ToolbarSearchField />
+      <Button className="shrink-0" onClick={() => openDialog({ type: 'add' })}>
         <Plus data-icon="inline-start" />
         Add
       </Button>
-      <div className="flex items-center">
-        <AltSpeedToggle />
+      <div className="flex shrink-0 items-center">
+        <SortMenu />
         <ColumnsMenu />
       </div>
     </header>

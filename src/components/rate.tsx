@@ -8,7 +8,8 @@ export function Rate({ rate, direction, className }: { rate: number; direction: 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-0.5 font-semibold text-xs tabular-nums',
+        // leading-none so a rate appearing doesn't make its line taller and shift the row.
+        'inline-flex items-center gap-0.5 font-semibold text-xs leading-none tabular-nums',
         direction === 'down' ? 'text-status-downloading' : 'text-status-seeding',
         className,
       )}

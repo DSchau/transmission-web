@@ -13,17 +13,17 @@ export function PageShell({ title, children, actions }: { title: string; childre
   return (
     <div className="h-full overflow-y-auto bg-muted/40">
       <header className="pt-safe sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-12 max-w-2xl items-center gap-2 px-2">
+        <div className="grid h-12 grid-cols-[1fr_auto_1fr] items-center gap-2 px-2">
           <Button
             variant="ghost"
             onClick={() => (canGoBack ? router.history.back() : navigate({ to: '/' }))}
-            className="text-base"
+            className="-ml-1 justify-self-start text-base"
           >
             <ChevronLeft data-icon="inline-start" className="size-5" />
             Back
           </Button>
-          <h1 className="flex-1 truncate text-center font-semibold">{title}</h1>
-          <div className="flex w-20 justify-end">{actions}</div>
+          <h1 className="truncate text-center font-semibold">{title}</h1>
+          <div className="flex justify-end">{actions}</div>
         </div>
       </header>
       <main className="pb-safe mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6">{children}</main>

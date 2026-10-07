@@ -146,6 +146,7 @@ export interface SessionInfo {
   version: string
   'rpc-version': number
   'download-dir': string
+  'download-dir-free-space': number
   'start-added-torrents': boolean
   'alt-speed-enabled': boolean
   'alt-speed-down': number

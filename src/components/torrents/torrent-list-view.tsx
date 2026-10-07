@@ -95,9 +95,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
         <div
           className={cn(
             'flex items-stretch gap-3 border-b px-4 py-3 transition-colors',
-            selected
-              ? 'bg-status-downloading/10'
-              : cn('active:bg-muted/60', index % 2 === 1 && 'bg-muted/20'),
+            selected ? 'bg-status-downloading/10' : cn('active:bg-muted/60', index % 2 === 1 && 'bg-muted/20'),
           )}
         >
           {selectMode && (
@@ -124,7 +122,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
               active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
               className="mt-1.5"
             />
-            <span className="mt-1 flex items-baseline gap-2 text-sm leading-none tabular-nums">
+            <span className="mt-1 flex h-5 items-center gap-2 text-sm leading-none tabular-nums">
               <span
                 className={cn('min-w-0 flex-1 truncate', hasError(t) ? 'text-status-error' : 'text-muted-foreground')}
               >

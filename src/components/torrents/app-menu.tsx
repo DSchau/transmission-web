@@ -14,14 +14,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatKBps } from '@/lib/format'
 import { useSessionMutation } from '@/lib/mutations'
 import type { Theme } from '@/lib/preferences'
 import { useSession } from '@/lib/queries'
 import { useTheme } from '@/lib/theme'
 import { clearSelection, selectModeAtom } from '@/lib/ui'
-import { cn } from '@/lib/utils'
 
 /** The list's secondary actions (the iOS app's overflow menu). */
 export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
@@ -96,32 +93,5 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
-
-/** One-tap turtle toggle, with the configured limits in the tooltip. */
-export function AltSpeedToggle() {
-  const { data: session } = useSession()
-  const { mutate: updateSession } = useSessionMutation()
-  if (!session) return null
-  const enabled = session['alt-speed-enabled']
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant={enabled ? 'secondary' : 'ghost'}
-          size="icon"
-          aria-pressed={enabled}
-          aria-label="Alternative speeds"
-          onClick={() => updateSession({ 'alt-speed-enabled': !enabled })}
-        >
-          <Turtle className={cn(enabled && 'text-status-checking')} />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        Alternative speeds {enabled ? 'on' : 'off'} · ↓ {formatKBps(session['alt-speed-down'])} · ↑{' '}
-        {formatKBps(session['alt-speed-up'])}
-      </TooltipContent>
-    </Tooltip>
   )
 }

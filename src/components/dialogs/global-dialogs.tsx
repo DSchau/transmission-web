@@ -7,12 +7,12 @@ import {
   AlertDialog,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -75,10 +75,19 @@ function RemoveDialog({
   const { remove } = useTorrentActions()
   const navigate = useNavigate()
   const { torrentId } = useParams({ strict: false })
+  const checkboxId = useId()
+  const [deleteData, setDeleteData] = useState(false)
   const ids = request?.ids ?? []
   const title = ids.length === 1 ? `Remove “${request?.names[0] ?? ''}”?` : `Remove ${torrentCountLabel(ids.length)}?`
 
-  const confirm = (deleteData: boolean) => {
+  // Always start unchecked so data is never trashed by a leftover choice.
+  const [lastRequest, setLastRequest] = useState(request)
+  if (request !== lastRequest) {
+    setLastRequest(request)
+    setDeleteData(false)
+  }
+
+  const confirm = () => {
     remove(ids, deleteData)
     clearSelection()
     selectModeAtom.set(false)
@@ -88,18 +97,22 @@ function RemoveDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent aria-describedby={undefined}>
         <AlertDialogHeader>
-          <AlertDialogTitle className="break-words">{title}</AlertDialogTitle>
-          <AlertDialogDescription>Removing from the list keeps downloaded files on the server.</AlertDialogDescription>
+          <AlertDialogTitle className="wrap-anywhere">{title}</AlertDialogTitle>
         </AlertDialogHeader>
-        <AlertDialogFooter className="sm:flex-wrap">
+        <label htmlFor={checkboxId} className="flex w-fit cursor-pointer items-center gap-2 text-sm">
+          <Checkbox
+            id={checkboxId}
+            checked={deleteData}
+            onCheckedChange={(checked) => setDeleteData(checked === true)}
+          />
+          Remove data
+        </label>
+        <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button variant="outline" onClick={() => confirm(false)}>
-            Remove From List
-          </Button>
-          <Button variant="destructive" onClick={() => confirm(true)}>
-            Trash Data and Remove
+          <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
+            Remove
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

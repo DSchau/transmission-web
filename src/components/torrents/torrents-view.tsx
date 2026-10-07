@@ -5,8 +5,16 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import { useTorrents } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
 import { filterTorrents, SORT_INFO, type TorrentSort } from '@/lib/torrent'
-import { selectedIds, selectionAtom, selectionOf } from '@/lib/ui'
-import type { TorrentsSearch } from '@/routes/_torrents'
+import {
+  clearSelection,
+  closeDialog,
+  searchOpenAtom,
+  selectedIds,
+  selectionAtom,
+  selectionOf,
+  selectModeAtom,
+} from '@/lib/ui'
+import { HOME_SEARCH, type TorrentsSearch } from '@/routes/_torrents'
 import { type TorrentTable, useTorrentTable } from './table-model'
 
 const routeApi = getRouteApi('/_torrents')
@@ -25,6 +33,9 @@ interface TorrentsView {
   openTorrentId: number | undefined
   openTorrent: (id: number) => void
   closeDetail: () => void
+  /** Resets everything: closes dialogs and the detail view, clears the selection, and returns the
+   * list to its default filter/sort/search. The header wordmark/title acts as the home button. */
+  goHome: () => void
 }
 
 const TorrentsViewContext = createContext<TorrentsView | null>(null)
@@ -94,6 +105,14 @@ export function TorrentsViewProvider({ children }: { children: ReactNode }) {
 
   const closeDetail = useCallback(() => navigate({ to: '/', search: ({ tab: _tab, ...rest }) => rest }), [navigate])
 
+  const goHome = useCallback(() => {
+    closeDialog()
+    clearSelection()
+    selectModeAtom.set(false)
+    searchOpenAtom.set(false)
+    navigate({ to: '/', search: HOME_SEARCH, replace: true })
+  }, [navigate])
+
   const value: TorrentsView = {
     table,
     torrents,
@@ -104,6 +123,7 @@ export function TorrentsViewProvider({ children }: { children: ReactNode }) {
     openTorrentId: openTorrentId as number | undefined,
     openTorrent,
     closeDetail,
+    goHome,
   }
 
   return <TorrentsViewContext.Provider value={value}>{children}</TorrentsViewContext.Provider>

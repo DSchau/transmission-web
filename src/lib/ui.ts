@@ -28,3 +28,7 @@ export const selectModeAtom = createAtom(false)
 
 /** The sign-in dialog opens on 401s; this remembers that the user dismissed it. */
 export const signInDismissedAtom = createAtom(false)
+
+/** Whether the search field is open. The toolbar's field collapses to an icon, the phone/tablet
+ * header reveals its search row, and "/" opens either — all share this one flag. */
+export const searchOpenAtom = createAtom(false)

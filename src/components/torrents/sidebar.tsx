@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { ArrowDownCircle, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useMemo } from 'react'
+import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
 import { formatNumber } from '@/lib/format'
@@ -12,16 +13,23 @@ import { useTorrentsView } from './torrents-view'
 
 /** Desktop filter sidebar (like Mail's mailboxes). */
 export function Sidebar({ className }: { className?: string }) {
-  const { torrents, search, setSearch } = useTorrentsView()
+  const { torrents, search, setSearch, goHome } = useTorrentsView()
   const counts = useMemo(() => countByFilter(torrents), [torrents])
   const config = useSelector(connectionAtom)
   const state = useConnectionState()
 
   return (
     <nav aria-label="Filters" className={cn('flex flex-col bg-sidebar text-sidebar-foreground', className)}>
-      <div className="flex h-12 items-center gap-2 border-b px-4">
-        <ArrowDownCircle className="size-5 text-status-downloading" />
-        <span className="font-semibold">Transmission</span>
+      <div className="flex h-12 items-center border-b px-4">
+        <button
+          type="button"
+          onClick={goHome}
+          aria-label="Home"
+          className="-ml-1 flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors outline-none hover:bg-sidebar-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <TransmissionLogo className="size-6" />
+          <span className="font-semibold">Transmission</span>
+        </button>
       </div>
       <ul className="flex flex-col gap-0.5 p-2">
         {FILTERS.map((filter) => {
@@ -62,7 +70,6 @@ export function Sidebar({ className }: { className?: string }) {
         />
         <Link to="/connect" className="min-w-0 flex-1 truncate text-muted-foreground text-xs hover:text-foreground">
           {displayNameFor(config)}
-          {state.status === 'connected' && ` · ${state.session.version.split(' ')[0]}`}
         </Link>
         <Button variant="ghost" size="icon-sm" asChild aria-label="Settings">
           <Link to="/settings">

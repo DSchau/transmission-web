@@ -5,6 +5,9 @@ import { FILTERS, SORTS } from '@/lib/torrent'
 
 const defaults = { filter: 'all', sort: 'addedDate', q: '' } as const
 
+/** The pristine list state — what the header's "home" resets to. */
+export const HOME_SEARCH = defaults
+
 /** List state lives in the URL, so it survives reloads and can be bookmarked or shared. */
 const searchSchema = z.object({
   filter: z.enum(FILTERS).default(defaults.filter).catch(defaults.filter),

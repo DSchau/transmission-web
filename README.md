@@ -33,6 +33,10 @@ bun run build
 TRANSMISSION_WEB_HOME=/path/to/dist transmission-daemon   # or copy dist/ into the web folder
 ```
 
+For the NUC, `scripts/deploy.sh` builds and ships `dist/` over SSH into `/opt/transmission-web/current`. Updates
+go live without restarting the daemon, and `--rollback` switches back to the previous build. One-time setup is in
+`../htpc/TRANSMISSION-WEB.md`.
+
 Connecting to a daemon on another origin works from **Connection** settings, but that server must
 allow CORS (including exposing `X-Transmission-Session-Id`). A reverse proxy serving both avoids it.
 

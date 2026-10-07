@@ -1,17 +1,19 @@
 import { Outlet } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
+import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
-import { preferencesAtom } from '@/lib/preferences'
+import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { clearSelection, openDialog, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ConnectionBanner } from './connection-state'
 import { DesktopToolbar } from './desktop-toolbar'
 import { ListHeader } from './list-header'
+import { openSearch } from './search-field'
 import { SelectionBar } from './selection-bar'
 import { SelectionSummary } from './selection-summary'
 import { Sidebar } from './sidebar'
-import { StatusBar } from './status-bar'
+import { StatusPanel } from './status-panel'
 import { TorrentListView } from './torrent-list-view'
 import { TorrentTableView } from './torrent-table-view'
 import { TorrentsViewProvider, useTorrentsView } from './torrents-view'
@@ -37,23 +39,47 @@ function Layout() {
   const { selected, openTorrentId } = useTorrentsView()
   const selectMode = useSelector(selectModeAtom)
   const sidebarCollapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
+  const sidebarWidth = useSelector(preferencesAtom, (p) => p.sidebarWidth)
+  const inspectorWidth = useSelector(preferencesAtom, (p) => p.inspectorWidth)
   const multiple = selected.length > 1
 
   if (isDesktop) {
     const inspectorOpen = multiple || openTorrentId != null
     return (
       <div className="flex h-full">
-        {!sidebarCollapsed && <Sidebar className="w-56 shrink-0 border-r xl:w-60" />}
+        {!sidebarCollapsed && (
+          <ResizablePanel
+            edge="right"
+            label="Resize sidebar"
+            width={sidebarWidth}
+            onWidthChange={(width) => updatePreferences({ sidebarWidth: width })}
+            min={180}
+            max={400}
+            maxViewportFraction={0.3}
+            className="w-56 border-r xl:w-60"
+          >
+            <Sidebar className="min-h-0 flex-1" />
+          </ResizablePanel>
+        )}
         <main className="flex min-w-0 flex-1 flex-col">
           <DesktopToolbar />
           <ConnectionBanner />
+          <StatusPanel />
           <TorrentTableView className="min-h-0 flex-1" />
-          <StatusBar />
         </main>
         {inspectorOpen && (
-          <aside className="flex w-[24rem] shrink-0 flex-col border-l xl:w-[28rem] 2xl:w-[32rem]">
-            {multiple ? <SelectionSummary /> : <Outlet />}
-          </aside>
+          <ResizablePanel
+            edge="left"
+            label="Resize inspector"
+            width={inspectorWidth}
+            onWidthChange={(width) => updatePreferences({ inspectorWidth: width })}
+            min={320}
+            max={900}
+            maxViewportFraction={0.5}
+            className="w-[24rem] border-l xl:w-[28rem] 2xl:w-[32rem]"
+          >
+            <aside className="flex min-h-0 flex-1 flex-col">{multiple ? <SelectionSummary /> : <Outlet />}</aside>
+          </ResizablePanel>
         )}
       </div>
     )
@@ -65,6 +91,7 @@ function Layout() {
         <section className="flex w-[22rem] shrink-0 flex-col border-r lg:w-[24rem]">
           <ListHeader />
           <ConnectionBanner />
+          <StatusPanel />
           <TorrentListView className="min-h-0 flex-1" />
           {selectMode && <SelectionBar />}
         </section>
@@ -77,6 +104,7 @@ function Layout() {
     <div className="relative flex h-full flex-col">
       <ListHeader />
       <ConnectionBanner />
+      <StatusPanel />
       <TorrentListView className="min-h-0 flex-1" />
       {selectMode && <SelectionBar />}
       {/* Kept mounted underneath so the list keeps its scroll position. */}
@@ -97,7 +125,7 @@ function Shortcuts() {
   const { selected, openTorrentId, torrents, closeDetail } = useTorrentsView()
 
   useHotkeys({
-    '/': () => document.getElementById('torrent-search')?.focus(),
+    '/': openSearch,
     n: () => openDialog({ type: 'add' }),
     Escape: () => {
       if (selected.length > 1) clearSelection()

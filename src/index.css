@@ -148,6 +148,12 @@
   #root {
     height: 100dvh;
   }
+  /* Tailwind v4's preflight pins buttons to the default arrow cursor; a pointer makes them
+     feel clickable app-wide (native inputs keep their own cursors). */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 /* A soft highlight gliding along active progress bars. */

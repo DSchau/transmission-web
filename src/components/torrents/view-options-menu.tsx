@@ -1,4 +1,4 @@
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Columns3, ListFilter } from 'lucide-react'
+import { ArrowDownWideNarrow, ArrowUpDown, ArrowUpNarrowWide, Columns3, ListFilter } from 'lucide-react'
 import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +21,7 @@ import {
   FILTERS,
   MENU_SORTS,
   SORT_INFO,
+  SORTS,
   type TorrentFilter,
   type TorrentSort,
 } from '@/lib/torrent'
@@ -32,7 +33,6 @@ import { useTorrentsView } from './torrents-view'
 export function ViewOptionsMenu() {
   const { torrents, search, setSearch } = useTorrentsView()
   const counts = useMemo(() => countByFilter(torrents), [torrents])
-  const desc = search.dir ? search.dir === 'desc' : SORT_INFO[search.sort].desc
   const filtered = search.filter !== 'all'
 
   return (
@@ -69,27 +69,60 @@ export function ViewOptionsMenu() {
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Sort By</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={search.sort}
-            onValueChange={(v) => setSearch({ sort: v as TorrentSort, dir: undefined })}
-          >
-            {MENU_SORTS.map((sort) => (
-              <DropdownMenuRadioItem key={sort} value={sort}>
-                {SORT_INFO[sort].title}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem
-          checked={desc !== SORT_INFO[search.sort].desc}
-          onCheckedChange={() => setSearch({ dir: desc ? 'asc' : 'desc' })}
+        <SortMenuItems sorts={MENU_SORTS} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+/** Sort By radio items + Reverse Order, shared by the compact and desktop menus. */
+function SortMenuItems({ sorts }: { sorts: readonly TorrentSort[] }) {
+  const { search, setSearch } = useTorrentsView()
+  const desc = search.dir ? search.dir === 'desc' : SORT_INFO[search.sort].desc
+  return (
+    <>
+      <DropdownMenuGroup>
+        <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={search.sort}
+          onValueChange={(v) => setSearch({ sort: v as TorrentSort, dir: undefined })}
         >
-          {desc ? <ArrowDownWideNarrow /> : <ArrowUpNarrowWide />}
-          Reverse Order
-        </DropdownMenuCheckboxItem>
+          {sorts.map((sort) => (
+            <DropdownMenuRadioItem key={sort} value={sort}>
+              {SORT_INFO[sort].title}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuCheckboxItem
+        checked={desc !== SORT_INFO[search.sort].desc}
+        onCheckedChange={() => setSearch({ dir: desc ? 'asc' : 'desc' })}
+      >
+        {desc ? <ArrowDownWideNarrow /> : <ArrowUpNarrowWide />}
+        Reverse Order
+      </DropdownMenuCheckboxItem>
+    </>
+  )
+}
+
+/** Sort picker for the desktop toolbar; table headers only cover visible columns. */
+export function SortMenu() {
+  const { search } = useTorrentsView()
+  return (
+    <DropdownMenu>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Sort">
+              <ArrowUpDown />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Sort by {SORT_INFO[search.sort].title}</TooltipContent>
+      </Tooltip>
+      <DropdownMenuContent align="end" className="w-52">
+        <SortMenuItems sorts={SORTS} />
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -10,6 +10,9 @@ export interface Preferences {
   refreshInterval: number
   columnVisibility: ColumnVisibilityState
   sidebarCollapsed: boolean
+  /** Desktop panel widths in px; null = the responsive default. */
+  sidebarWidth: number | null
+  inspectorWidth: number | null
 }
 
 export const REFRESH_INTERVALS = [1, 2, 3, 5, 10] as const
@@ -33,6 +36,8 @@ export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
     queue: false,
   },
   sidebarCollapsed: false,
+  sidebarWidth: null,
+  inspectorWidth: null,
 })
 
 export const updatePreferences = (patch: Partial<Preferences>) => preferencesAtom.set((prev) => ({ ...prev, ...patch }))

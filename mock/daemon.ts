@@ -75,6 +75,7 @@ const session: Json = {
   'rpc-version': 17,
   'rpc-version-minimum': 14,
   'download-dir': '/downloads/complete',
+  'download-dir-free-space': Math.round(2.4 * 1024 ** 4),
   'start-added-torrents': true,
   'alt-speed-enabled': false,
   'alt-speed-down': 500,

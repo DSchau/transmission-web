@@ -96,7 +96,7 @@ export const columns = helper.columns([
         {/* Like Transmission's own rows: state word + progress details + live rates under the bar. */}
         <span
           className={cn(
-            'mt-0.5 flex items-baseline gap-1.5 text-muted-foreground text-xs leading-none tabular-nums',
+            'mt-0.5 flex h-4 items-center gap-1.5 text-muted-foreground text-xs leading-none tabular-nums',
             hasError(t) && 'text-status-error',
           )}
           title={t.errorString || undefined}
