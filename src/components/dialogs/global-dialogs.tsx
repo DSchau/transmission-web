@@ -249,7 +249,7 @@ function SetLocationForm({ torrents, onDone }: { torrents: Torrent[]; onDone: ()
           <Input
             id={id}
             autoFocus
-            className="font-mono text-xs"
+            className="font-mono text-base md:text-xs"
             autoCapitalize="off"
             autoCorrect="off"
             spellCheck={false}

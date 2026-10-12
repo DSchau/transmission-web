@@ -51,7 +51,15 @@ export function ResponsiveDialog({ open, onOpenChange, title, description, child
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} repositionInputs={false}>
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      repositionInputs={false}
+      // vaul's default (0.25) dismisses the sheet after dragging just a quarter
+      // of its height — too easy to lose a half-filled form. Require a deliberate
+      // half-sheet drag instead.
+      closeThreshold={0.5}
+    >
       <DrawerContent className={cn('max-h-[92dvh]', className)}>
         <DrawerHeader className="text-left">
           <DrawerTitle>{title}</DrawerTitle>

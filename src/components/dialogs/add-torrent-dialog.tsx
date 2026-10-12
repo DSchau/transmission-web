@@ -14,6 +14,12 @@ import { useSession } from '@/lib/queries'
 import type { AddTorrentArguments } from '@/lib/rpc/types'
 import { fileToBase64, isMagnetOrUrl, isTorrentFile } from '@/lib/utils'
 
+// iOS can't map the accept attribute to .torrent files, so its document picker
+// greys them out and they can't be selected. Leave accept off on iOS entirely
+// and filter the picked files on selection instead — same workaround as
+// upstream transmission-web (transmission/transmission#6320).
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -156,7 +162,7 @@ function AddTorrentForm({
                       autoCapitalize="off"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="resize-none break-all font-mono text-xs"
+                      className="resize-none break-all font-mono text-base md:text-xs"
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={field.handleBlur}
@@ -196,7 +202,7 @@ function AddTorrentForm({
         <input
           ref={fileInput}
           type="file"
-          accept=".torrent,application/x-bittorrent"
+          accept={isIOS ? undefined : '.torrent,application/x-bittorrent'}
           multiple
           hidden
           onChange={(event) => {
@@ -212,7 +218,7 @@ function AddTorrentForm({
               <FieldLabel htmlFor={`${formId}-dir`}>Download To</FieldLabel>
               <Input
                 id={`${formId}-dir`}
-                className="font-mono text-xs"
+                className="font-mono text-base md:text-xs"
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
