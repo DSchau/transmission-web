@@ -57,8 +57,16 @@ export function ResponsiveDialog({ open, onOpenChange, title, description, child
           <DrawerTitle>{title}</DrawerTitle>
           {description && <DrawerDescription>{description}</DrawerDescription>}
         </DrawerHeader>
-        <div className="min-h-0 overflow-y-auto px-4">{children}</div>
-        {footer && <DrawerFooter className="pb-safe flex-col-reverse">{footer}</DrawerFooter>}
+        {/* Swipe down on the handle or title to dismiss. vaul also dismisses on any quick downward
+            flick, which made the sheet vanish while scrolling or tapping fields in the form. */}
+        <div data-vaul-no-drag className="pb-safe min-h-0 overflow-y-auto overscroll-contain px-4">
+          {children}
+        </div>
+        {footer && (
+          <DrawerFooter data-vaul-no-drag className="pb-safe flex-col-reverse">
+            {footer}
+          </DrawerFooter>
+        )}
       </DrawerContent>
     </Drawer>
   )

@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { useHasFinePointer } from '@/hooks/use-media-query'
 import { useAddTorrent } from '@/lib/mutations'
 import { useSession } from '@/lib/queries'
 import type { AddTorrentArguments } from '@/lib/rpc/types'
-import { fileToBase64, isMagnetOrUrl, isTorrentFile } from '@/lib/utils'
+import { fileToBase64, isMagnetOrUrl, isTorrentFile, torrentFileAccept } from '@/lib/utils'
 
 interface Props {
   open: boolean
@@ -31,6 +32,11 @@ export function AddTorrentDialog({ open, onOpenChange, initialLink, initialFiles
       description="Paste a magnet link or URL, or choose .torrent files."
     >
       <AddTorrentForm
+        // Start over when something new is dropped or pasted while the dialog is already open.
+        key={[
+          initialLink,
+          ...(initialFiles ?? []).map((file) => `${file.name}:${file.size}:${file.lastModified}`),
+        ].join('\n')}
         formId={formId}
         initialLink={initialLink}
         initialFiles={initialFiles}
@@ -54,6 +60,8 @@ function AddTorrentForm({
   const { data: session } = useSession()
   const { mutateAsync: add } = useAddTorrent()
   const fileInput = useRef<HTMLInputElement>(null)
+  // On touch screens the keyboard would cover the sheet (and the file button) before you've chosen.
+  const hasFinePointer = useHasFinePointer()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm({
@@ -150,13 +158,13 @@ function AddTorrentForm({
                     </FieldLabel>
                     <Textarea
                       id={`${formId}-link`}
-                      autoFocus
+                      autoFocus={hasFinePointer}
                       rows={3}
                       placeholder="magnet:?xt=… or https://…"
                       autoCapitalize="off"
                       autoCorrect="off"
                       spellCheck={false}
-                      className="resize-none break-all font-mono text-xs"
+                      className="resize-none break-all font-mono text-base md:text-xs"
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={field.handleBlur}
@@ -196,13 +204,23 @@ function AddTorrentForm({
         <input
           ref={fileInput}
           type="file"
-          accept=".torrent,application/x-bittorrent"
+          accept={torrentFileAccept()}
           multiple
           hidden
           onChange={(event) => {
-            const files = Array.from(event.target.files ?? []).filter(isTorrentFile)
-            if (files.length) form.setFieldValue('files', files)
+            const chosen = Array.from(event.target.files ?? [])
             event.target.value = ''
+            const files = chosen.filter(isTorrentFile)
+            // The picker can't always filter (see torrentFileAccept), so say what was left out.
+            const skipped = chosen.filter((file) => !isTorrentFile(file))
+            if (skipped.length > 0) {
+              toast.error(
+                skipped.length === 1
+                  ? `“${skipped[0]?.name}” isn’t a .torrent file.`
+                  : `${skipped.length} of the chosen files aren’t .torrent files.`,
+              )
+            }
+            if (files.length) form.setFieldValue('files', files)
           }}
         />
 
@@ -212,7 +230,7 @@ function AddTorrentForm({
               <FieldLabel htmlFor={`${formId}-dir`}>Download To</FieldLabel>
               <Input
                 id={`${formId}-dir`}
-                className="font-mono text-xs"
+                className="font-mono text-base md:text-xs"
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}

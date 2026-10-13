@@ -13,4 +13,16 @@ export function fileToBase64(file: File): Promise<string> {
 export const isTorrentFile = (file: File) =>
   file.name.toLowerCase().endsWith('.torrent') || file.type === 'application/x-bittorrent'
 
+/** iPhone, iPod, or iPad (which reports itself as a Mac with a touch screen). */
+export const isAppleMobile = () =>
+  /iP(hone|od|ad)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+
+/**
+ * The file input's `accept` for .torrent files. iOS has no type for .torrent, so its picker greys out
+ * every file when `application/x-bittorrent` is listed, and `.torrent` alone adds a pointless
+ * Photo Library / Take Photo menu. A generic binary type goes straight to Files with everything
+ * selectable; `isTorrentFile` filters what comes back.
+ */
+export const torrentFileAccept = () => (isAppleMobile() ? '.torrent,application/octet-stream' : '.torrent')
+
 export const isMagnetOrUrl = (text: string) => /^(magnet:\?|https?:\/\/)/i.test(text.trim())

@@ -26,6 +26,9 @@ export const selectedIds = (selection: RowSelectionState) =>
 /** Select mode on touch layouts (like Mail's Edit). Desktop multi-selects with modifier keys. */
 export const selectModeAtom = createAtom(false)
 
+/** Whether files are being dragged over the window (the torrent list shows a drop target). */
+export const fileDragAtom = createAtom(false)
+
 /** The sign-in dialog opens on 401s; this remembers that the user dismissed it. */
 export const signInDismissedAtom = createAtom(false)
 

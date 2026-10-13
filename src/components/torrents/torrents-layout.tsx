@@ -1,5 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
+import { DropOverlay } from '@/components/drop-zone'
 import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
@@ -65,7 +66,10 @@ function Layout() {
           <DesktopToolbar />
           <ConnectionBanner />
           <StatusPanel />
-          <TorrentTableView className="min-h-0 flex-1" />
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <TorrentTableView className="min-h-0 flex-1" />
+            <DropOverlay />
+          </div>
         </main>
         {inspectorOpen && (
           <ResizablePanel
@@ -92,7 +96,10 @@ function Layout() {
           <ListHeader />
           <ConnectionBanner />
           <StatusPanel />
-          <TorrentListView className="min-h-0 flex-1" />
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <TorrentListView className="min-h-0 flex-1" />
+            <DropOverlay />
+          </div>
           {selectMode && <SelectionBar />}
         </section>
         <main className="flex min-w-0 flex-1 flex-col">{multiple ? <SelectionSummary /> : <Outlet />}</main>
@@ -105,7 +112,10 @@ function Layout() {
       <ListHeader />
       <ConnectionBanner />
       <StatusPanel />
-      <TorrentListView className="min-h-0 flex-1" />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <TorrentListView className="min-h-0 flex-1" />
+        <DropOverlay />
+      </div>
       {selectMode && <SelectionBar />}
       {/* Kept mounted underneath so the list keeps its scroll position. */}
       <div
