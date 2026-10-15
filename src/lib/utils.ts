@@ -18,11 +18,11 @@ export const isAppleMobile = () =>
   /iP(hone|od|ad)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
 
 /**
- * The file input's `accept` for .torrent files. iOS has no type for .torrent, so its picker greys out
- * every file when `application/x-bittorrent` is listed, and `.torrent` alone adds a pointless
- * Photo Library / Take Photo menu. A generic binary type goes straight to Files with everything
+ * The file input's `accept` for .torrent files. iOS has no type for .torrent, and with any `accept`
+ * (`.torrent`, `application/x-bittorrent`, `application/octet-stream`) its picker greys out .torrent
+ * files. Leaving it off there costs an extra Photo Library / Take Photo menu, but every file is
  * selectable; `isTorrentFile` filters what comes back.
  */
-export const torrentFileAccept = () => (isAppleMobile() ? '.torrent,application/octet-stream' : '.torrent')
+export const torrentFileAccept = () => (isAppleMobile() ? undefined : '.torrent')
 
 export const isMagnetOrUrl = (text: string) => /^(magnet:\?|https?:\/\/)/i.test(text.trim())
