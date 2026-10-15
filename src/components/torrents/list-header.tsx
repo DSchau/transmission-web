@@ -12,8 +12,8 @@ import { ViewOptionsMenu } from './view-options-menu'
 
 /**
  * iOS-style large-title header for phone and tablet layouts. Counts and rates live in the
- * StatusPanel right below, not in a subtitle. Searching replaces the title row with the
- * field (the input expands out of the header's search icon, Mail-style).
+ * StatusPanel right below, not in a subtitle. Searching adds a full-width field below the
+ * title row (iOS-style), so the title and buttons never move.
  */
 export function ListHeader() {
   const selectMode = useSelector(selectModeAtom)
@@ -31,40 +31,39 @@ function TitleBar() {
   const title = search.filter === 'all' ? 'Torrents' : FILTER_INFO[search.filter].title
 
   return (
-    <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-      <div className="flex min-w-0 flex-1 items-center gap-2.5">
-        {searching ? (
-          <SearchField className="min-w-0 flex-1 animate-in fade-in slide-in-from-left-2" autoFocus={searchOpen} />
-        ) : (
-          <>
-            <TransmissionLogo className="size-8" />
-            <h1 className="min-w-0 truncate font-bold text-2xl tracking-tight">
-              <button
-                type="button"
-                onClick={goHome}
-                aria-label="Reset view"
-                className="-mx-2 rounded-md px-2 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {title}
-              </button>
-            </h1>
-          </>
-        )}
-      </div>
-      <div className="-mr-2 flex items-center">
-        <Button size="sm" className="mr-1 rounded-full px-3" onClick={() => openDialog({ type: 'add' })}>
-          <Plus data-icon="inline-start" />
-          Add
-        </Button>
-        {!searching && (
+    <>
+      <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <TransmissionLogo className="size-8" />
+          <h1 className="min-w-0 truncate font-bold text-2xl tracking-tight">
+            <button
+              type="button"
+              onClick={goHome}
+              aria-label="Reset view"
+              className="-mx-2 rounded-md px-2 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {title}
+            </button>
+          </h1>
+        </div>
+        <div className="-mr-2 flex items-center">
+          <Button size="sm" className="mr-1 rounded-full px-3" onClick={() => openDialog({ type: 'add' })}>
+            <Plus data-icon="inline-start" />
+            Add
+          </Button>
           <Button variant="ghost" size="icon" aria-label="Search torrents" onClick={openSearch}>
             <Search />
           </Button>
-        )}
-        <ViewOptionsMenu />
-        <AppMenu />
+          <ViewOptionsMenu />
+          <AppMenu />
+        </div>
       </div>
-    </div>
+      {searching && (
+        <div className="px-4 pb-2.5">
+          <SearchField className="h-9 animate-in fade-in slide-in-from-top-1" autoFocus={searchOpen} />
+        </div>
+      )}
+    </>
   )
 }
 
