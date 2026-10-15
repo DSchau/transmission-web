@@ -68,7 +68,10 @@ export function Sidebar({ className }: { className?: string }) {
           )}
           aria-hidden
         />
-        <Link to="/connect" className="min-w-0 flex-1 truncate text-muted-foreground text-xs hover:text-foreground">
+        <Link
+          to="/connect"
+          className="min-w-0 flex-1 truncate font-mono text-muted-foreground text-xs hover:text-foreground"
+        >
           {displayNameFor(config)}
         </Link>
         <Button variant="ghost" size="icon-sm" asChild aria-label="Settings">
