@@ -37,67 +37,68 @@ function render(patch: Partial<Torrent> = {}) {
   return renderToStaticMarkup(<TorrentTransferStatus torrent={{ ...torrent, ...patch }} />)
 }
 
+const RATE = /kB\/s|MB\/s/
+
 describe('mobile torrent transfer status', () => {
-  it('shows progress, size, ETA and both labeled transfer directions independently', () => {
+  it('shows state, percent, ETA and both rates on one line', () => {
     const html = render()
-    for (const text of ['Downloading', '40%', '2 GB of 5 GB', '2m left', 'Download', 'Upload', '8 MB/s', '250 kB/s']) {
-      expect(html).toContain(text)
-    }
+    for (const text of ['Downloading', '40% · 2m', '8 MB/s', '250 kB/s']) expect(html).toContain(text)
     expect(html).toContain('aria-valuenow="40"')
   })
 
-  it('keeps both speed fields visible when an active transfer stalls', () => {
-    const html = render({ rateDownload: 0, rateUpload: 0, eta: -1 })
-    expect(html.match(/0 kB\/s/g)).toHaveLength(2)
-    expect(html).not.toContain('left</span>')
+  it('hides rates entirely when there is no transfer activity', () => {
+    const html = render({ rateDownload: 0, rateUpload: 0 })
+    expect(html).not.toMatch(RATE)
+    expect(html).toContain('40% · 2m')
+  })
+
+  it('shows only the active direction, keeping the idle slot reserved', () => {
+    const html = render({ status: TorrentStatus.Seeding, percentDone: 1, leftUntilDone: 0, rateDownload: 0 })
+    expect(html).toContain('Seeding')
+    expect(html).toContain('Ratio 0.25')
+    expect(html).toContain('250 kB/s')
+    expect(html.match(/[kM]B\/s/g)).toHaveLength(1)
+    expect(html).toContain('aria-hidden="true"')
   })
 
   it.each([-1, -2])('omits an unavailable ETA (%s)', (eta) => {
-    expect(render({ eta })).not.toContain('left</span>')
-  })
-
-  it('shows size and ratio while seeding, without a remaining-time label', () => {
-    const html = render({ status: TorrentStatus.Seeding, percentDone: 1, leftUntilDone: 0, rateDownload: 0 })
-    expect(html).toContain('Seeding')
-    expect(html).toContain('5 GB · Ratio 0.25')
-    expect(html).toContain('100%')
-    expect(html).toContain('250 kB/s')
-    expect(html).not.toContain('left</span>')
+    const html = render({ eta })
+    expect(html).toContain('40%</span>')
+    expect(html).not.toContain('40% ·')
   })
 
   it.each([TorrentStatus.Stopped, TorrentStatus.DownloadWait, TorrentStatus.SeedWait])(
-    'does not clutter inactive rows with zero-speed fields (status %s)',
+    'shows no rates or ETA for inactive rows (status %s)',
     (status) => {
       const html = render({ status, rateDownload: 0, rateUpload: 0 })
-      expect(html).not.toContain('kB/s')
-      expect(html).not.toContain('left</span>')
+      expect(html).not.toMatch(RATE)
+      expect(html).not.toContain('2m')
     },
   )
 
-  it('shows metadata progress instead of byte progress or an unreliable ETA', () => {
-    const html = render({ metadataPercentComplete: 0.25 })
+  it('shows metadata progress without an unreliable ETA', () => {
+    const html = render({ metadataPercentComplete: 0.25, rateDownload: 0, rateUpload: 0 })
     expect(html).toContain('Fetching metadata')
     expect(html).toContain('aria-valuenow="25"')
-    expect(html).toContain('Waiting for torrent information')
-    expect(html).not.toContain('2 GB of 5 GB')
-    expect(html).not.toContain('left</span>')
+    expect(html).toContain('25%')
+    expect(html).not.toContain('2m')
   })
 
   it.each([TorrentStatus.Checking, TorrentStatus.CheckWait])('shows verification progress (status %s)', (status) => {
-    const html = render({ status, recheckProgress: 0.7, rateDownload: 0, rateUpload: 0 })
+    const html = render({ status, percentDone: 1, recheckProgress: 0.7, rateDownload: 0, rateUpload: 0 })
     expect(html).toContain('Verifying')
-    expect(html).toContain('aria-valuenow="70"')
-    expect(html).toContain('Checking local data')
-    expect(html).not.toContain('kB/s')
+    expect(html).toContain('70%')
+    expect(html).not.toContain('Ratio')
+    expect(html).not.toMatch(RATE)
   })
 
-  it('retains the full error separately from transfer details', () => {
-    const errorString = 'Tracker could not be reached at https://tracker.example.org/announce; please try again later.'
+  it('shows the error in place of progress details', () => {
+    const errorString = 'Tracker gave HTTP response code 404 (Not Found)'
     const html = render({ error: 2, errorString })
     expect(html).toContain('Error')
     expect(html).toContain(errorString)
-    expect(html).toContain('2 GB of 5 GB')
-    expect(html).not.toContain('left</span>')
+    expect(html).toContain('text-status-error')
+    expect(html).not.toContain('2m')
   })
 
   it('distinguishes a finished seed from a paused download', () => {
@@ -109,7 +110,7 @@ describe('mobile torrent transfer status', () => {
       rateUpload: 0,
     })
     expect(html).toContain('Seeding complete')
-    expect(html).toContain('5 GB · Ratio 0.25')
-    expect(html).not.toContain('kB/s')
+    expect(html).toContain('Ratio 0.25')
+    expect(html).not.toMatch(RATE)
   })
 })

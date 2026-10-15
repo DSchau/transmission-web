@@ -26,7 +26,7 @@ export function TorrentListView({ className }: { className?: string }) {
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 180,
+    estimateSize: () => 92,
     overscan: 8,
     getItemKey: (index) => rows[index]?.id ?? index,
   })
@@ -130,7 +130,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
 /** The card's actions menu. */
 function CardActions({ torrent }: { torrent: Torrent }) {
   return (
-    <div className="-mr-2 flex shrink-0 items-start">
+    <div className="-mr-2 flex shrink-0 items-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${torrent.name}`}>

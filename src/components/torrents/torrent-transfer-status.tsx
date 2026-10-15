@@ -1,11 +1,10 @@
 import { ProgressBar } from '@/components/progress-bar'
 import { Rate } from '@/components/rate'
-import { formatBytes, formatEta, formatPercent, formatRatio } from '@/lib/format'
+import { formatEta, formatPercent, formatRatio } from '@/lib/format'
 import { type Torrent, TorrentStatus } from '@/lib/rpc/types'
 import {
   displayProgress,
   hasError,
-  haveBytes,
   isChecking,
   isComplete,
   isMagnetPending,
@@ -15,54 +14,44 @@ import {
 } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
 
-/** Mobile rows keep live rates separate so they never crowd out progress or status. */
+/** Fixed-width slot so one direction appearing or dropping to zero never moves the other. */
+function RateSlot({ rate, direction }: { rate: number; direction: 'down' | 'up' }) {
+  if (rate <= 0) return <span aria-hidden className="min-w-[3.75rem]" />
+  return <Rate rate={rate} direction={direction} className="min-w-[3.75rem] justify-end" />
+}
+
+/** Mobile card body: progress bar, then one status line with live rates in fixed slots on the right. */
 export function TorrentTransferStatus({ torrent: t }: { torrent: Torrent }) {
   const tone = statusTone(t)
   const progress = displayProgress(t)
-  const transferring =
-    t.status === TorrentStatus.Downloading ||
-    t.status === TorrentStatus.Seeding ||
-    t.rateDownload > 0 ||
-    t.rateUpload > 0
-  const eta = t.status === TorrentStatus.Downloading && !isMagnetPending(t) && !hasError(t) ? formatEta(t.eta) : null
-  const detail = isMagnetPending(t)
-    ? 'Waiting for torrent information'
-    : isChecking(t)
-      ? 'Checking local data'
-      : isComplete(t)
-        ? `${formatBytes(t.sizeWhenDone)} · Ratio ${formatRatio(t.uploadRatio)}`
-        : `${formatBytes(haveBytes(t))} of ${formatBytes(t.sizeWhenDone)}`
+  const error = hasError(t) && t.errorString
+  const eta = t.status === TorrentStatus.Downloading && !isMagnetPending(t) && !error ? formatEta(t.eta) : null
+  const detail = error
+    ? t.errorString
+    : !isMagnetPending(t) && !isChecking(t) && isComplete(t)
+      ? `Ratio ${formatRatio(t.uploadRatio)}`
+      : [formatPercent(progress), eta].filter(Boolean).join(' · ')
+  const transferring = t.rateDownload > 0 || t.rateUpload > 0
 
   return (
-    <span className="mt-2 flex w-full min-w-0 flex-col gap-2">
-      <span className="flex items-baseline justify-between gap-2 text-xs">
-        <span className={cn('font-semibold', toneText[tone])}>{stateLabel(t)}</span>
-        <span className="shrink-0 font-medium text-muted-foreground tabular-nums">{formatPercent(progress)}</span>
-      </span>
+    <>
       <ProgressBar
         progress={progress}
         tone={tone}
         active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
+        className="mt-1.5"
       />
-      <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-muted-foreground text-xs tabular-nums">
-        <span>{detail}</span>
-        {eta && <span>{eta} left</span>}
-      </span>
-      {hasError(t) && t.errorString && (
-        <span className="text-status-error text-xs [overflow-wrap:anywhere]">{t.errorString}</span>
-      )}
-      {transferring && (
-        <span className="grid grid-cols-2 gap-3 border-t border-border/60 pt-2">
-          <span className="flex min-w-0 flex-col items-start gap-1">
-            <span className="text-muted-foreground text-xs">Download</span>
-            <Rate rate={t.rateDownload} direction="down" className="whitespace-nowrap text-sm" />
-          </span>
-          <span className="flex min-w-0 flex-col items-start gap-1">
-            <span className="text-muted-foreground text-xs">Upload</span>
-            <Rate rate={t.rateUpload} direction="up" className="whitespace-nowrap text-sm" />
-          </span>
+      <span className="mt-1.5 flex h-5 items-center gap-2 text-xs leading-none tabular-nums">
+        <span className={cn('min-w-0 flex-1 truncate', error ? 'text-status-error' : 'text-muted-foreground')}>
+          <span className={cn('font-semibold', toneText[tone])}>{stateLabel(t)}</span> · {detail}
         </span>
-      )}
-    </span>
+        {transferring && (
+          <span className="flex shrink-0 items-center gap-2">
+            <RateSlot rate={t.rateDownload} direction="down" />
+            <RateSlot rate={t.rateUpload} direction="up" />
+          </span>
+        )}
+      </span>
+    </>
   )
 }
