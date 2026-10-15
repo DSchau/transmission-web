@@ -49,6 +49,7 @@ describe('mobile torrent transfer status', () => {
   it('hides rates entirely when there is no transfer activity', () => {
     const html = render({ rateDownload: 0, rateUpload: 0 })
     expect(html).not.toMatch(RATE)
+    expect(html).not.toContain('min-w-[3.75rem]')
     expect(html).toContain('40% · 2m')
   })
 
