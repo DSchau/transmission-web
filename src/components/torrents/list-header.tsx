@@ -52,21 +52,15 @@ function TitleBar() {
         )}
       </div>
       <div className="-mr-2 flex items-center">
-        {/* Stays mounted (just hidden) while searching so the other buttons don't shift. */}
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Search torrents"
-          onClick={openSearch}
-          tabIndex={searching ? -1 : undefined}
-          aria-hidden={searching || undefined}
-          className={searching ? 'invisible' : undefined}
-        >
-          <Search />
+        <Button size="sm" className="mr-1 rounded-full px-3" onClick={() => openDialog({ type: 'add' })}>
+          <Plus data-icon="inline-start" />
+          Add
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Add torrent" onClick={() => openDialog({ type: 'add' })}>
-          <Plus />
-        </Button>
+        {!searching && (
+          <Button variant="ghost" size="icon" aria-label="Search torrents" onClick={openSearch}>
+            <Search />
+          </Button>
+        )}
         <ViewOptionsMenu />
         <AppMenu />
       </div>
