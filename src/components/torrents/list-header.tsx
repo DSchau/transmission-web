@@ -1,19 +1,19 @@
 import { useSelector } from '@tanstack/react-store'
-import { Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { formatBytes } from '@/lib/format'
 import { FILTER_INFO } from '@/lib/torrent'
-import { clearSelection, openDialog, searchOpenAtom, selectionAtom, selectionOf, selectModeAtom } from '@/lib/ui'
+import { clearSelection, openDialog, selectionAtom, selectionOf, selectModeAtom } from '@/lib/ui'
 import { AppMenu } from './app-menu'
-import { openSearch, SearchField } from './search-field'
+import { SearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
 import { ViewOptionsMenu } from './view-options-menu'
 
 /**
  * iOS-style large-title header for phone and tablet layouts. Counts and rates live in the
- * StatusPanel right below, not in a subtitle. Searching adds a full-width field below the
- * title row (iOS-style) and hides the search button.
+ * StatusPanel right below, not in a subtitle. A full-width search field always sits below
+ * the title row.
  */
 export function ListHeader() {
   const selectMode = useSelector(selectModeAtom)
@@ -26,8 +26,6 @@ export function ListHeader() {
 
 function TitleBar() {
   const { search, goHome } = useTorrentsView()
-  const searchOpen = useSelector(searchOpenAtom)
-  const searching = searchOpen || search.q !== ''
   const title = search.filter === 'all' ? 'Torrents' : FILTER_INFO[search.filter].title
 
   return (
@@ -51,20 +49,13 @@ function TitleBar() {
             <Plus data-icon="inline-start" />
             Add
           </Button>
-          {!searching && (
-            <Button variant="ghost" size="icon" aria-label="Search torrents" onClick={openSearch}>
-              <Search />
-            </Button>
-          )}
           <ViewOptionsMenu />
           <AppMenu />
         </div>
       </div>
-      {searching && (
-        <div className="px-4 pb-2.5">
-          <SearchField className="h-9 animate-in fade-in slide-in-from-top-1" autoFocus={searchOpen} />
-        </div>
-      )}
+      <div className="px-4 pb-2.5">
+        <SearchField className="h-9" />
+      </div>
     </>
   )
 }
