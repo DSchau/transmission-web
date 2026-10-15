@@ -13,7 +13,7 @@ import { ViewOptionsMenu } from './view-options-menu'
 /**
  * iOS-style large-title header for phone and tablet layouts. Counts and rates live in the
  * StatusPanel right below, not in a subtitle. Searching adds a full-width field below the
- * title row (iOS-style), so the title and buttons never move.
+ * title row (iOS-style) and hides the search button.
  */
 export function ListHeader() {
   const selectMode = useSelector(selectModeAtom)
@@ -51,9 +51,11 @@ function TitleBar() {
             <Plus data-icon="inline-start" />
             Add
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Search torrents" onClick={openSearch}>
-            <Search />
-          </Button>
+          {!searching && (
+            <Button variant="ghost" size="icon" aria-label="Search torrents" onClick={openSearch}>
+              <Search />
+            </Button>
+          )}
           <ViewOptionsMenu />
           <AppMenu />
         </div>
