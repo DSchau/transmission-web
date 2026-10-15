@@ -27,7 +27,7 @@ export function StatusPanel({ className }: { className?: string }) {
   return (
     <footer
       className={cn(
-        'flex h-8 shrink-0 items-center gap-4 border-b px-4 text-muted-foreground text-xs tabular-nums',
+        'flex min-h-8 shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b px-4 py-1.5 text-muted-foreground text-xs tabular-nums',
         className,
       )}
     >
@@ -36,12 +36,12 @@ export function StatusPanel({ className }: { className?: string }) {
         {selected.length > 1 && ` · ${selected.length} selected (${formatBytes(selectedSize)})`}
       </span>
       <div className="min-w-0 flex-1" />
-      <span className="inline-flex items-center gap-1">
-        <ArrowDown className="size-3 text-status-downloading" />
+      <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+        <ArrowDown className="size-3 text-status-downloading" aria-label="Download" />
         {formatSpeed(summary.exactDown)}
       </span>
-      <span className="inline-flex items-center gap-1">
-        <ArrowUp className="size-3 text-status-seeding" />
+      <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+        <ArrowUp className="size-3 text-status-seeding" aria-label="Upload" />
         {formatSpeed(summary.exactUp)}
       </span>
       {freeSpace > 0 && (

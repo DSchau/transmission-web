@@ -2,18 +2,16 @@ import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Check, Ellipsis } from 'lucide-react'
 import { memo, useCallback, useRef } from 'react'
-import { ProgressBar } from '@/components/progress-bar'
-import { Rate } from '@/components/rate'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { type Torrent, TorrentStatus } from '@/lib/rpc/types'
-import { displayProgress, hasError, rowDetail, stateLabel, statusTone, toneText } from '@/lib/torrent'
+import type { Torrent } from '@/lib/rpc/types'
 import { selectionAtom, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ListEmptyState, useShowsEmptyState } from './connection-state'
 import { toggleRow } from './table-model'
 import { TorrentMenuContent } from './torrent-menu'
+import { TorrentTransferStatus } from './torrent-transfer-status'
 import { useTorrentsView } from './torrents-view'
 
 /** Phone/tablet list: the same table rows, rendered as cards. Virtualized for large libraries. */
@@ -88,7 +86,6 @@ interface CardProps {
 
 /** Memoized on the torrent object: React Query's structural sharing keeps unchanged ones identical. */
 const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, selected, onActivate }: CardProps) {
-  const tone = statusTone(t)
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -113,24 +110,12 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
             type="button"
             onClick={() => onActivate(String(t.id))}
             aria-pressed={selectMode ? selected : undefined}
-            className="flex min-w-0 flex-1 flex-col text-left outline-none"
+            className="flex min-w-0 flex-1 flex-col rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span className="line-clamp-2 font-semibold text-[0.9375rem] leading-snug">{t.name}</span>
-            <ProgressBar
-              progress={displayProgress(t)}
-              tone={tone}
-              active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
-              className="mt-1.5"
-            />
-            <span className="mt-1 flex h-5 items-center gap-2 text-sm leading-none tabular-nums">
-              <span
-                className={cn('min-w-0 flex-1 truncate', hasError(t) ? 'text-status-error' : 'text-muted-foreground')}
-              >
-                <span className={cn('font-semibold', toneText[tone])}>{stateLabel(t)}</span> · {rowDetail(t)}
-              </span>
-              {t.rateDownload > 0 && <Rate rate={t.rateDownload} direction="down" />}
-              {t.rateUpload > 0 && <Rate rate={t.rateUpload} direction="up" />}
+            <span className="line-clamp-2 font-semibold text-[0.9375rem] leading-snug [overflow-wrap:anywhere]">
+              {t.name}
             </span>
+            <TorrentTransferStatus torrent={t} />
           </button>
           {!selectMode && <CardActions torrent={t} />}
         </div>
