@@ -4,8 +4,13 @@ const UNITS = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB']
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 bytes'
   if (bytes < 1000) return `${bytes} bytes`
-  const exponent = Math.min(Math.floor(Math.log10(bytes) / 3), UNITS.length - 1)
-  const value = bytes / 1000 ** exponent
+  let exponent = Math.min(Math.floor(Math.log10(bytes) / 3), UNITS.length - 1)
+  let value = bytes / 1000 ** exponent
+  // 999.5+ would round to "1000 MB"; promote to the next unit instead.
+  if (Math.round(value) >= 1000 && exponent < UNITS.length - 1) {
+    exponent++
+    value /= 1000
+  }
   const digits = value >= 100 || exponent === 1 ? 0 : value >= 10 ? 1 : 2
   return `${trimZeros(value.toFixed(digits))} ${UNITS[exponent]}`
 }
