@@ -2,6 +2,7 @@ import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Check, Ellipsis } from 'lucide-react'
 import { memo, useCallback, useRef } from 'react'
+import { CategoryIcon } from '@/components/category-badge'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -113,6 +114,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
             className="flex min-w-0 flex-1 flex-col rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="line-clamp-2 font-semibold text-[0.9375rem] leading-snug [overflow-wrap:anywhere]">
+              <CategoryIcon torrent={t} className="mr-1.5 inline size-4 align-[-0.1875rem]" />
               {t.name}
             </span>
             <TorrentTransferStatus torrent={t} />

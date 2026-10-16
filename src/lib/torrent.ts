@@ -8,6 +8,7 @@ import {
   TriangleAlert,
   Zap,
 } from 'lucide-react'
+import { CATEGORIES, categoryOf } from './category'
 import { formatBytes, formatEta, formatPercent, formatRatio } from './format'
 import { PieceBitfield } from './pieces'
 import { type CompiledQuery, compileQuery, type QueryField } from './query'
@@ -212,6 +213,21 @@ export const QUERY_FIELDS: readonly QueryField<Torrent>[] = [
       checking: isChecking,
       magnet: isMagnetPending,
       error: hasError,
+    },
+  },
+  {
+    key: 'type',
+    kind: 'enum',
+    aliases: ['category', 'kind'],
+    describe: 'movies, tv, books, music, software, other — inferred from folder and name',
+    example: 'type:movies',
+    value: () => '',
+    options: {
+      ...Object.fromEntries(CATEGORIES.map((c) => [c, (t: Torrent) => categoryOf(t) === c])),
+      movie: (t) => categoryOf(t) === 'movies',
+      series: (t) => categoryOf(t) === 'tv',
+      shows: (t) => categoryOf(t) === 'tv',
+      book: (t) => categoryOf(t) === 'books',
     },
   },
   {

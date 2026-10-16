@@ -104,7 +104,24 @@ const SEED_NAMES = [
   'kali-linux-2024.3-installer-amd64.iso',
   'Project Gutenberg Top 100 (EPUB)',
   'NASA Apollo 11 Mission Audio',
+  'The Expanse S03E07 1080p WEB-DL',
+  'Pride and Prejudice - Jane Austen',
+  'Planet Earth II S01 2160p',
 ]
+
+/** Where a media server would file these, so categories have folders to infer from. */
+const SEED_DIRS: Record<string, string> = {
+  'Big Buck Bunny (2008) 4K': '/media/Movies',
+  'Sintel (2010) 1080p': '/media/Movies',
+  'Tears of Steel (2012) 4K HDR': '/media/Movies',
+  'Elephants Dream (2006) 1080p': '/media/Movies',
+  'Cosmos Laundromat (2015) 2K': '/media/Movies',
+  'Project Gutenberg Top 100 (EPUB)': '/media/Books',
+  'Pride and Prejudice - Jane Austen': '/media/Books',
+  'NASA Apollo 11 Mission Audio': '/media/Music',
+  'The Expanse S03E07 1080p WEB-DL': '/media/Series',
+  'Planet Earth II S01 2160p': '/media/TVShows',
+}
 const EXTRA_WORDS = ['Archive', 'Collection', 'Dataset', 'Remaster', 'Bundle', 'Pack', 'Edition', 'Mirror']
 const CLIENTS = ['qBittorrent 4.6.5', 'Transmission 4.0.6', 'Deluge 2.1.1', 'libtorrent 2.0.10', 'µTorrent 3.6']
 const TRACKERS = ['tracker.example.org:443', 'open.tracker.example:6969', 'announce.example.net:80']
@@ -177,7 +194,7 @@ function makeTorrent(
     peersConnected: status === 4 || status === 6 ? randInt(1, 40) : 0,
     peersSendingToUs: 0,
     peersGettingFromUs: 0,
-    downloadDir: session['download-dir'] as string,
+    downloadDir: SEED_DIRS[name] ?? (session['download-dir'] as string),
     hashString: hash,
     comment: 'Mock torrent for UI development',
     creator: 'mktorrent 1.1',
