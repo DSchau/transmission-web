@@ -15,6 +15,7 @@ import {
   tableFeatures,
   useTable,
 } from '@tanstack/react-table'
+import { CategoryIcon } from '@/components/category-badge'
 import { ProgressBar } from '@/components/progress-bar'
 import { Rate } from '@/components/rate'
 import {
@@ -84,8 +85,11 @@ export const columns = helper.columns([
     // flex-1 so the cell fills its column — otherwise the bar only spans the name's width.
     cell: ({ row: { original: t } }) => (
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="mb-1 truncate font-medium leading-snug" title={t.name}>
-          {t.name}
+        <span className="mb-1 flex min-w-0 items-center gap-1.5 font-medium leading-snug">
+          <CategoryIcon torrent={t} className="size-3.5" />
+          <span className="truncate" title={t.name}>
+            {t.name}
+          </span>
         </span>
         <ProgressBar
           progress={displayProgress(t)}
