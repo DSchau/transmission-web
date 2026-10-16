@@ -1,7 +1,8 @@
+import { useRouter } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Check, Ellipsis } from 'lucide-react'
-import { memo, useCallback, useRef } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
 import { CategoryIcon } from '@/components/category-badge'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
@@ -23,6 +24,13 @@ export function TorrentListView({ className }: { className?: string }) {
   const showEmpty = useShowsEmptyState()
   const scrollRef = useRef<HTMLDivElement>(null)
   const rows = table.getRowModel().rows
+  const router = useRouter()
+
+  // Touch devices never fire the hover that preloads the detail route, so without this the first tap
+  // waits on the detail chunk with no visible response, and people tap again thinking it missed.
+  useEffect(() => {
+    router.loadRouteChunk(router.routesById['/_torrents/torrents/$torrentId'])
+  }, [router])
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -92,7 +100,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'flex items-stretch gap-3 border-b px-4 py-3 transition-colors',
+            'relative flex items-stretch gap-3 border-b px-4 py-3 transition-colors',
             selected ? 'bg-status-downloading/10' : cn('active:bg-muted/60', index % 2 === 1 && 'bg-muted/20'),
           )}
         >
@@ -111,7 +119,8 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
             type="button"
             onClick={() => onActivate(String(t.id))}
             aria-pressed={selectMode ? selected : undefined}
-            className="flex min-w-0 flex-1 flex-col rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            // The ::after stretches the hit area over the whole card, padding included.
+            className="flex min-w-0 flex-1 flex-col text-left outline-none after:absolute after:inset-0 focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
           >
             <span className="line-clamp-2 font-semibold text-[0.9375rem] leading-snug [overflow-wrap:anywhere]">
               <CategoryIcon torrent={t} className="mr-1.5 inline size-4 align-[-0.1875rem]" />
@@ -132,7 +141,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
 /** The card's actions menu. */
 function CardActions({ torrent }: { torrent: Torrent }) {
   return (
-    <div className="-mr-2 flex shrink-0 items-center">
+    <div className="relative z-10 -mr-2 flex shrink-0 items-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${torrent.name}`}>
