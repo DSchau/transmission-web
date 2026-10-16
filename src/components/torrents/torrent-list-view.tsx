@@ -141,10 +141,11 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
 /** The card's actions menu. */
 function CardActions({ torrent }: { torrent: Torrent }) {
   return (
-    <div className="relative z-10 -mr-2 flex shrink-0 items-center">
+    <div className="-mr-2 flex shrink-0 items-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${torrent.name}`}>
+          {/* Only the button sits above the card-wide tap overlay, so the space around it still opens the card. */}
+          <Button variant="ghost" size="icon-sm" className="relative z-10" aria-label={`Actions for ${torrent.name}`}>
             <Ellipsis />
           </Button>
         </DropdownMenuTrigger>
