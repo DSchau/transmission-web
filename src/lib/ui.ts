@@ -8,6 +8,7 @@ export type DialogRequest =
   | { type: 'remove'; ids: number[]; names: string[] }
   | { type: 'rename'; torrent: Torrent }
   | { type: 'location'; torrents: Torrent[] }
+  | { type: 'statistics' }
 
 export const dialogAtom = createAtom<DialogRequest | null>(null)
 export const openDialog = (request: DialogRequest) => dialogAtom.set(request)

@@ -9,6 +9,7 @@ import { formatNumber } from '@/lib/format'
 import { useConnectionState } from '@/lib/queries'
 import { countByFilter, FILTER_INFO, FILTERS } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
+import { SidebarActivity } from './activity'
 import { useTorrentsView } from './torrents-view'
 
 /** Desktop filter sidebar (like Mail's mailboxes). */
@@ -31,6 +32,7 @@ export function Sidebar({ className }: { className?: string }) {
           <span className="font-semibold">Transmission</span>
         </button>
       </div>
+      {(state.status === 'connected' || state.status === 'offline') && <SidebarActivity />}
       <ul className="flex flex-col gap-0.5 p-2">
         {FILTERS.map((filter) => {
           const info = FILTER_INFO[filter]

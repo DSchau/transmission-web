@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { formatBytes, formatSpeed } from './format'
+import { formatBytes, formatRatio, formatSpeed, transferRatio } from './format'
 
 describe('formatBytes', () => {
   test.each([
@@ -28,5 +28,16 @@ describe('formatBytes', () => {
 describe('formatSpeed', () => {
   test('rolls over near unit boundaries', () => {
     expect(formatSpeed(999_600)).toBe('1 MB/s')
+  })
+})
+
+describe('transferRatio', () => {
+  test.each([
+    [5000, 2000, '2.50'],
+    [0, 2000, '0.00'],
+    [100, 0, '∞'],
+    [0, 0, '—'],
+  ])('%p up / %p down → %p', (uploaded, downloaded, expected) => {
+    expect(formatRatio(transferRatio(uploaded, downloaded))).toBe(expected)
   })
 })

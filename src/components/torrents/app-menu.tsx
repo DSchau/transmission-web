@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { CheckSquare, Ellipsis, Moon, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
+import { ChartArea, CheckSquare, Ellipsis, Moon, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,6 +19,7 @@ import type { Theme } from '@/lib/preferences'
 import { useSession } from '@/lib/queries'
 import { useTheme } from '@/lib/theme'
 import { clearSelection, selectModeAtom } from '@/lib/ui'
+import { openStatistics } from './activity'
 
 /** The list's secondary actions (the iOS app's overflow menu). */
 export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
@@ -79,6 +80,10 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+        <DropdownMenuItem onSelect={openStatistics}>
+          <ChartArea />
+          Statistics…
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/connect">
             <Plug />

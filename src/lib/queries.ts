@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { useSelector } from '@tanstack/react-store'
 import { preferencesAtom } from './preferences'
+import { totalRates } from './rate-history'
 import { isUnauthorized } from './rpc/client'
 import { DETAIL_FIELDS, LIST_FIELDS, type SessionInfo, type Torrent } from './rpc/types'
 import { type Transmission, useTransmission } from './transmission'
@@ -15,6 +16,7 @@ export const torrentKeys = {
   session: (t: Transmission) => [...t.key, 'session'] as const,
   list: (t: Transmission) => [...t.key, 'torrents'] as const,
   detail: (t: Transmission, id: number) => [...t.key, 'torrent', id] as const,
+  stats: (t: Transmission) => [...t.key, 'stats'] as const,
 }
 
 export const sessionQuery = (t: Transmission) =>
@@ -30,13 +32,35 @@ export const sessionQuery = (t: Transmission) =>
 export const torrentsQuery = (t: Transmission, intervalSeconds: number) =>
   queryOptions({
     queryKey: torrentKeys.list(t),
-    // Every poll goes through `reconcile`, so unconfirmed optimistic changes aren't undone by stale data.
-    queryFn: async ({ signal }) => t.pending.reconcile(await t.client.torrents(LIST_FIELDS, undefined, signal)),
+    queryFn: async ({ signal }) => {
+      const torrents = await t.client.torrents(LIST_FIELDS, undefined, signal)
+      // The speed charts' history comes from this poll, so they cost no extra RPC calls.
+      const { down, up } = totalRates(torrents)
+      t.history.push(Date.now(), down, up)
+      // Every poll goes through `reconcile`, so unconfirmed optimistic changes aren't undone by stale data.
+      return t.pending.reconcile(torrents)
+    },
     // React Query pauses this while the tab is hidden and refetches on focus — no background polling.
     refetchInterval: intervalSeconds * 1000,
     retry,
     retryDelay: 1000,
   })
+
+/** Transfer totals. Only polled while the Statistics view is open. */
+export const statsQuery = (t: Transmission, intervalSeconds: number) =>
+  queryOptions({
+    queryKey: torrentKeys.stats(t),
+    queryFn: ({ signal }) => t.client.stats(signal),
+    refetchInterval: Math.max(intervalSeconds, 2) * 1000,
+    retry,
+    retryDelay: 1000,
+  })
+
+export function useSessionStats() {
+  const transmission = useTransmission()
+  const interval = useSelector(preferencesAtom, (p) => p.refreshInterval)
+  return useQuery(statsQuery(transmission, interval))
+}
 
 export function useSession() {
   const transmission = useTransmission()

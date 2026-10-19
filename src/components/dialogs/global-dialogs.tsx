@@ -22,6 +22,7 @@ import { useSession, useTorrents } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
 import { clearSelection, closeDialog, type DialogRequest, dialogAtom, selectModeAtom } from '@/lib/ui'
 import { AddTorrentDialog } from './add-torrent-dialog'
+import { StatisticsDialog } from './statistics-dialog'
 
 /** Presents whatever `dialogAtom` asks for. Mounted once, at the root. */
 export function GlobalDialogs() {
@@ -57,6 +58,7 @@ export function GlobalDialogs() {
         onOpenChange={onOpenChange}
         torrents={shown?.type === 'location' ? shown.torrents : []}
       />
+      <StatisticsDialog open={request?.type === 'statistics'} onOpenChange={onOpenChange} />
     </>
   )
 }

@@ -2,11 +2,14 @@ import { useSelector } from '@tanstack/react-store'
 import { createContext, type ReactNode, useContext, useMemo } from 'react'
 import { type ConnectionConfig, connectionAtom, credentialsAtom, rpcUrlFor } from './connection'
 import { PendingChanges } from './pending'
+import { RateHistory } from './rate-history'
 import { TransmissionClient } from './rpc/client'
 
 export interface Transmission {
   client: TransmissionClient
   pending: PendingChanges
+  /** Recent global rates for the speed charts. */
+  history: RateHistory
   config: ConnectionConfig
   /** Query-key prefix. Changes whenever the connection (or credentials) change, so caches never mix. */
   key: readonly ['transmission', number]
@@ -25,6 +28,7 @@ export function TransmissionProvider({ children }: { children: ReactNode }) {
     () => ({
       client: new TransmissionClient(rpcUrlFor(config), credentials),
       pending: new PendingChanges(),
+      history: new RateHistory(),
       config,
       key: ['transmission', ++generation] as const,
     }),

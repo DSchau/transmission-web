@@ -5,6 +5,7 @@ import type {
   FileUpdate,
   QueueDirection,
   SessionInfo,
+  SessionStats,
   SessionUpdate,
   Torrent,
 } from './types'
@@ -229,4 +230,7 @@ export class TransmissionClient {
   }
 
   updateSession = (update: SessionUpdate) => this.call('session-set', update)
+
+  /** Session and lifetime transfer totals (what `transmission-remote -st` prints). */
+  stats = (signal?: AbortSignal) => this.call<SessionStats>('session-stats', {}, { signal })
 }

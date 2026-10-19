@@ -65,7 +65,7 @@ function Layout() {
         <main className="flex min-w-0 flex-1 flex-col">
           <DesktopToolbar />
           <ConnectionBanner />
-          <StatusPanel />
+          <StatusPanel chart={sidebarCollapsed} />
           <div className="relative flex min-h-0 flex-1 flex-col">
             <TorrentTableView className="min-h-0 flex-1" />
             <DropOverlay />
@@ -95,7 +95,7 @@ function Layout() {
         <section className="flex w-[22rem] shrink-0 flex-col border-r lg:w-[24rem]">
           <ListHeader />
           <ConnectionBanner />
-          <StatusPanel />
+          <StatusPanel chart />
           <div className="relative flex min-h-0 flex-1 flex-col">
             <TorrentListView className="min-h-0 flex-1" />
             <DropOverlay />
@@ -111,7 +111,7 @@ function Layout() {
     <div className="relative flex h-full flex-col">
       <ListHeader />
       <ConnectionBanner />
-      <StatusPanel />
+      <StatusPanel chart />
       <div className="relative flex min-h-0 flex-1 flex-col">
         <TorrentListView className="min-h-0 flex-1" />
         <DropOverlay />

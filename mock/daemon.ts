@@ -245,8 +245,20 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
     return torrents.filter((t) => list.includes(t.id) || list.includes(t.hashString))
   }
 
+  // `session-stats` totals. The lifetime numbers start from a plausible long-running daemon.
+  const stats = { downloaded: 0, uploaded: 0, filesAdded: 0 }
+  const LIFETIME = { downloaded: 2_913_448_201_337, uploaded: 4_831_027_559_104, filesAdded: 1_834, sessions: 37 }
+  const LIFETIME_SECONDS = 86400 * 412
+  let lastTick = Date.now()
+
+  /** A random walk, so rates (and the speed charts) drift like a real swarm instead of jumping. */
+  const drift = (rate: number, min: number, max: number) =>
+    rate <= 0 ? randInt(min, max) : Math.round(Math.min(max, Math.max(min, rate * (0.82 + random() * 0.36))))
+
   function tick() {
     const t0 = now()
+    const elapsed = Math.min(10, Math.max(0, (Date.now() - lastTick) / 1000))
+    lastTick = Date.now()
     for (const t of torrents) {
       if (t.status === 2) {
         t.recheckProgress = Math.min(1, t.recheckProgress + 0.2)
@@ -261,8 +273,8 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
           t.metadataPercentComplete = Math.min(1, t.metadataPercentComplete + 0.02)
           continue
         }
-        t.rateDownload = randInt(500_000, 9_000_000)
-        t.rateUpload = randInt(0, 400_000)
+        t.rateDownload = drift(t.rateDownload, 500_000, 9_000_000)
+        t.rateUpload = drift(t.rateUpload, 20_000, 400_000)
         t.peersSendingToUs = randInt(1, Math.max(1, t.peersConnected))
         t.leftUntilDone = Math.max(0, t.leftUntilDone - t.rateDownload * 2)
         t.percentDone = 1 - t.leftUntilDone / t.sizeWhenDone
@@ -284,7 +296,9 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
         }
       } else if (t.status === 6) {
         t.rateDownload = 0
-        t.rateUpload = random() < 0.4 ? randInt(0, 1_500_000) : 0
+        // Peers come and go: each seed keeps uploading (or idling) for a while.
+        const uploading = t.rateUpload > 0 ? random() > 0.04 : random() < 0.03
+        t.rateUpload = uploading ? drift(t.rateUpload, 50_000, 1_500_000) : 0
         t.uploadedEver += t.rateUpload * 2
         t.uploadRatio = Math.round((t.uploadedEver / Math.max(1, t.downloadedEver)) * 100) / 100
         t.peersGettingFromUs = t.rateUpload > 0 ? randInt(1, 5) : 0
@@ -295,6 +309,8 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
         t.peersSendingToUs = 0
         t.peersGettingFromUs = 0
       }
+      stats.downloaded += t.rateDownload * elapsed
+      stats.uploaded += t.rateUpload * elapsed
     }
   }
 
@@ -353,6 +369,31 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
       case 'session-set':
         Object.assign(session, args)
         return {}
+      case 'session-stats': {
+        const active = torrents.filter((t) => t.rateDownload > 0 || t.rateUpload > 0)
+        const secondsActive = now() - START
+        return {
+          activeTorrentCount: active.length,
+          pausedTorrentCount: torrents.filter((t) => t.status === 0).length,
+          torrentCount: torrents.length,
+          downloadSpeed: torrents.reduce((sum, t) => sum + t.rateDownload, 0),
+          uploadSpeed: torrents.reduce((sum, t) => sum + t.rateUpload, 0),
+          'current-stats': {
+            downloadedBytes: Math.round(stats.downloaded),
+            uploadedBytes: Math.round(stats.uploaded),
+            filesAdded: stats.filesAdded,
+            sessionCount: 1,
+            secondsActive,
+          },
+          'cumulative-stats': {
+            downloadedBytes: LIFETIME.downloaded + Math.round(stats.downloaded),
+            uploadedBytes: LIFETIME.uploaded + Math.round(stats.uploaded),
+            filesAdded: LIFETIME.filesAdded + stats.filesAdded,
+            sessionCount: LIFETIME.sessions,
+            secondsActive: LIFETIME_SECONDS + secondsActive,
+          },
+        }
+      }
       case 'torrent-get': {
         tick()
         const fields = (args.fields as string[]) ?? []
@@ -459,6 +500,7 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
         if (typeof args['download-dir'] === 'string') t.downloadDir = args['download-dir']
         t.queuePosition = torrents.length
         torrents.push(t)
+        stats.filesAdded++
         return { 'torrent-added': { id: t.id, name: t.name, hashString: t.hashString } }
       }
       default:
