@@ -1,20 +1,18 @@
-import { useSelector } from '@tanstack/react-store'
 import { memo, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-media-query'
-import { preferencesAtom } from '@/lib/preferences'
 import {
   downsample,
   nearestSample,
   niceCeil,
   type RateSample,
   smoothPath,
-  splitAtGaps,
+  splitRuns,
   visibleSpan,
 } from '@/lib/rate-history'
 import { useTransmission } from '@/lib/transmission'
 import { cn } from '@/lib/utils'
 
-/** Recent global rates for the current connection; re-renders only the components that use it. */
+/** The daemon session's transfer history for the current connection; re-renders only the components that use it. */
 export function useRateHistory(): readonly RateSample[] {
   const { history } = useTransmission()
   return useSyncExternalStore(history.subscribe, history.samples, history.samples)
@@ -24,6 +22,8 @@ export function useRateHistory(): readonly RateSample[] {
 const MIN_SCALE = 100_000
 /** Aim for one point per this many pixels; more is invisible and costs path length. */
 const PX_PER_POINT = 3
+/** New data slides in this quickly, so the line keeps up with the numbers above it. */
+const SLIDE_MS = 250
 
 export interface SpeedLimits {
   down: number
@@ -48,9 +48,10 @@ interface Props {
 
 /**
  * Download and upload rates as two smooth filled areas (hand-rolled SVG, no chart library).
+ * Stretches no tab was polling are drawn flat and faint, at their exact average.
  *
- * Each poll, the chart slides left by exactly the time that passed (and eases between scales),
- * so it scrolls continuously instead of jumping — unless the user prefers reduced motion.
+ * Each poll, the plot slides left by the time that passed, briefly and on the compositor (a
+ * transformed HTML layer, so no SVG repaint per frame) — unless the user prefers reduced motion.
  */
 export const SpeedChart = memo(function SpeedChart({
   samples,
@@ -64,9 +65,8 @@ export const SpeedChart = memo(function SpeedChart({
 }: Props) {
   const id = useId()
   const reducedMotion = usePrefersReducedMotion()
-  const interval = useSelector(preferencesAtom, (p) => p.refreshInterval) * 1000
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const plotRef = useRef<SVGGElement>(null)
+  const plotRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [hoverX, setHoverX] = useState<number | null>(null)
 
@@ -96,7 +96,6 @@ export const SpeedChart = memo(function SpeedChart({
     const visible = samples.slice(Math.max(0, from - 1))
     const bucketMs = (span / width) * PX_PER_POINT
     const points = visible.length > width / PX_PER_POINT ? downsample(visible, bucketMs) : visible
-    const gapMs = Math.max(interval * 3, 10_000, bucketMs * 2.5)
 
     let peak = 0
     for (const s of points) peak = Math.max(peak, s.down, s.up)
@@ -105,36 +104,44 @@ export const SpeedChart = memo(function SpeedChart({
     const x = (time: number) => ((time - start) / span) * width
     const y = (rate: number) => top + (1 - rate / max) * plotHeight
     const base = top + plotHeight
+    const fmt = (v: number) => Math.round(v * 100) / 100
 
-    const runs = splitAtGaps(points, gapMs).map((run) => {
-      const line = (key: 'down' | 'up') => smoothPath(run.map((s) => ({ x: x(s.time), y: y(s[key]) })))
-      const close = `L${x(run[run.length - 1]!.time)},${base}L${x(run[0]!.time)},${base}Z`
+    const runs = splitRuns(points).map((run) => {
+      const first = run[0]!
+      const last = run[run.length - 1]!
+      const x0 = fmt(x(first.from))
+      const x1 = fmt(x(last.time))
+      const close = `L${x1},${fmt(base)}L${x0},${fmt(base)}Z`
+      if (!first.live) {
+        const step = (key: 'down' | 'up') => `M${x0},${fmt(y(first[key]))}H${x1}`
+        const down = step('down')
+        const up = step('up')
+        return { key: first.time, live: false, down, up, downArea: down + close, upArea: up + close }
+      }
+      // Start where the run's first stretch begins, so it meets an unpolled stretch before it.
+      const line = (key: 'down' | 'up') =>
+        smoothPath([{ x: x(first.from), y: y(first[key]) }, ...run.map((s) => ({ x: x(s.time), y: y(s[key]) }))])
       const down = line('down')
       const up = line('up')
-      return { key: run[0]!.time, down, up, downArea: down + close, upArea: up + close }
+      return { key: first.time, live: true, down, up, downArea: down + close, upArea: up + close }
     })
     return { points, runs, max, x, y, base }
-  }, [samples, start, span, width, plotHeight, top, interval, limits])
+  }, [samples, start, span, width, plotHeight, top, limits])
 
-  // Slide by the time that passed since the last render, and ease from the old scale to the new.
-  const previous = useRef<{ end: number; max: number; width: number; span: number } | null>(null)
+  // Slide in by the time that passed since the last render (only while the span is unchanged).
+  const previous = useRef<{ end: number; width: number; span: number } | null>(null)
   useLayoutEffect(() => {
     const plot = plotRef.current
     const last = previous.current
-    previous.current = chart ? { end, max: chart.max, width, span } : null
-    if (!plot || !chart || !last || reducedMotion || last.width !== width) return
-    // While the history is still filling the range, the chart stretches rather than slides.
-    const dx = last.span === span ? ((end - last.end) / span) * width : 0
-    const sy = chart.max / last.max
-    if (dx <= 0 && sy === 1) return
-    if (dx > width) return
-    const baseline = chart.base
-    plot.style.transition = 'none'
-    plot.style.transform = `translate(${dx}px, ${baseline * (1 - sy)}px) scale(1, ${sy})`
-    plot.getBoundingClientRect()
-    plot.style.transition = `transform ${Math.min(end - last.end, interval * 1.5, 3000)}ms linear`
-    plot.style.transform = ''
-  }, [chart, end, span, width, reducedMotion, interval])
+    previous.current = chart ? { end, width, span } : null
+    if (!plot || !chart || !last || reducedMotion || last.width !== width || last.span !== span) return
+    const dx = ((end - last.end) / span) * width
+    if (dx <= 0 || dx > width / 4) return
+    plot.animate([{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }], {
+      duration: SLIDE_MS,
+      easing: 'ease-out',
+    })
+  }, [chart, end, span, width, reducedMotion])
 
   const hovered = useMemo(() => {
     if (hoverX == null || !chart) return null
@@ -189,28 +196,54 @@ export const SpeedChart = memo(function SpeedChart({
   const up = `${id}-up`
   const ticks = axis && chart ? [chart.max / 2, chart.max] : []
 
-  const svg = (
-    <svg width={width} height={height} className="absolute inset-0 overflow-hidden" aria-hidden>
-      <defs>
-        {[
-          [down, 'var(--status-downloading)'],
-          [up, 'var(--status-seeding)'],
-        ].map(([gradient, color]) => (
-          <linearGradient
-            key={gradient}
-            id={gradient}
-            gradientUnits="userSpaceOnUse"
-            x1="0"
-            y1={top}
-            x2="0"
-            y2={height}
-          >
-            <stop offset="0" stopColor={color} stopOpacity={0.42} />
-            <stop offset="0.6" stopColor={color} stopOpacity={0.12} />
-            <stop offset="1" stopColor={color} stopOpacity={0} />
-          </linearGradient>
+  const gradients = (
+    <defs>
+      {[
+        [down, 'var(--status-downloading)'],
+        [up, 'var(--status-seeding)'],
+      ].map(([gradient, color]) => (
+        <linearGradient key={gradient} id={gradient} gradientUnits="userSpaceOnUse" x1="0" y1={top} x2="0" y2={height}>
+          <stop offset="0" stopColor={color} stopOpacity={0.42} />
+          <stop offset="0.6" stopColor={color} stopOpacity={0.12} />
+          <stop offset="1" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      ))}
+    </defs>
+  )
+
+  const plot = (
+    <div ref={plotRef} className="absolute inset-0">
+      <svg width={width} height={height} className="absolute inset-0 overflow-visible" aria-hidden>
+        {gradients}
+        {chart?.runs.map((run) => (
+          <g key={run.key} opacity={run.live ? 1 : 0.55}>
+            <path d={run.downArea} fill={`url(#${down})`} />
+            <path d={run.upArea} fill={`url(#${up})`} />
+            {(
+              [
+                [run.down, 'var(--status-downloading)'],
+                [run.up, 'var(--status-seeding)'],
+              ] as const
+            ).map(([d, color]) => (
+              <path
+                key={color}
+                d={d}
+                fill="none"
+                stroke={color}
+                strokeWidth={run.live ? 1.75 : 1.25}
+                strokeDasharray={run.live ? undefined : '3 3'}
+                strokeLinejoin="round"
+              />
+            ))}
+          </g>
         ))}
-      </defs>
+      </svg>
+    </div>
+  )
+
+  const markerX = hovered && chart ? (hovered.live ? chart.x(hovered.time) : (hoverX ?? 0)) : 0
+  const overlay = (
+    <svg width={width} height={height} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {chart && (
         <>
           {ticks.map((tick) => (
@@ -225,30 +258,6 @@ export const SpeedChart = memo(function SpeedChart({
             />
           ))}
           {axis && <line x1={0} x2={width} y1={chart.base + 0.5} y2={chart.base + 0.5} className="stroke-border" />}
-          <g ref={plotRef} style={{ transformOrigin: '0 0', transformBox: 'view-box', willChange: 'transform' }}>
-            {chart.runs.map((run) => (
-              <g key={run.key}>
-                <path d={run.downArea} fill={`url(#${down})`} />
-                <path d={run.upArea} fill={`url(#${up})`} />
-                <path
-                  d={run.down}
-                  fill="none"
-                  stroke="var(--status-downloading)"
-                  strokeWidth={1.75}
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <path
-                  d={run.up}
-                  fill="none"
-                  stroke="var(--status-seeding)"
-                  strokeWidth={1.75}
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </g>
-            ))}
-          </g>
           {limits &&
             (
               [
@@ -271,13 +280,7 @@ export const SpeedChart = memo(function SpeedChart({
             )}
           {hovered && (
             <g>
-              <line
-                x1={chart.x(hovered.time)}
-                x2={chart.x(hovered.time)}
-                y1={top}
-                y2={chart.base}
-                className="stroke-foreground/25"
-              />
+              <line x1={markerX} x2={markerX} y1={top} y2={chart.base} className="stroke-foreground/25" />
               {(
                 [
                   [hovered.down, 'var(--status-downloading)'],
@@ -286,7 +289,7 @@ export const SpeedChart = memo(function SpeedChart({
               ).map(([rate, color]) => (
                 <circle
                   key={color}
-                  cx={chart.x(hovered.time)}
+                  cx={markerX}
                   cy={chart.y(rate)}
                   r={3.5}
                   fill={color}
@@ -332,12 +335,14 @@ export const SpeedChart = memo(function SpeedChart({
         'cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring',
       )}
     >
-      {svg}
+      {plot}
+      {overlay}
       {labels}
     </button>
   ) : (
     <div {...shared} role="img" aria-label={label}>
-      {svg}
+      {plot}
+      {overlay}
       {labels}
     </div>
   )

@@ -59,6 +59,8 @@ interface MockTorrent {
 
 const now = () => Math.floor(Date.now() / 1000)
 const START = now()
+/** The fake daemon has been running a while, so the speed charts' session history isn't empty. */
+const UPTIME = 2 * 3600 + 37 * 60
 const PIECE_SIZE = 4 << 20
 
 // Small deterministic PRNG so the library looks the same on every restart.
@@ -246,7 +248,7 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
   }
 
   // `session-stats` totals. The lifetime numbers start from a plausible long-running daemon.
-  const stats = { downloaded: 0, uploaded: 0, filesAdded: 0 }
+  const stats = { downloaded: UPTIME * 31_000_000, uploaded: UPTIME * 1_900_000, filesAdded: 3 }
   const LIFETIME = { downloaded: 2_913_448_201_337, uploaded: 4_831_027_559_104, filesAdded: 1_834, sessions: 37 }
   const LIFETIME_SECONDS = 86400 * 412
   let lastTick = Date.now()
@@ -255,10 +257,19 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
   const drift = (rate: number, min: number, max: number) =>
     rate <= 0 ? randInt(min, max) : Math.round(Math.min(max, Math.max(min, rate * (0.82 + random() * 0.36))))
 
+  /** Adds the bytes moved since the last call at the current rates, even while nobody polled. */
+  function accrue() {
+    const elapsed = Math.max(0, (Date.now() - lastTick) / 1000)
+    lastTick = Date.now()
+    for (const t of torrents) {
+      stats.downloaded += t.rateDownload * elapsed
+      stats.uploaded += t.rateUpload * elapsed
+    }
+  }
+
   function tick() {
     const t0 = now()
-    const elapsed = Math.min(10, Math.max(0, (Date.now() - lastTick) / 1000))
-    lastTick = Date.now()
+    accrue()
     for (const t of torrents) {
       if (t.status === 2) {
         t.recheckProgress = Math.min(1, t.recheckProgress + 0.2)
@@ -309,8 +320,6 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
         t.peersSendingToUs = 0
         t.peersGettingFromUs = 0
       }
-      stats.downloaded += t.rateDownload * elapsed
-      stats.uploaded += t.rateUpload * elapsed
     }
   }
 
@@ -371,7 +380,8 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
         return {}
       case 'session-stats': {
         const active = torrents.filter((t) => t.rateDownload > 0 || t.rateUpload > 0)
-        const secondsActive = now() - START
+        accrue()
+        const secondsActive = now() - START + UPTIME
         return {
           activeTorrentCount: active.length,
           pausedTorrentCount: torrents.filter((t) => t.status === 0).length,

@@ -32,7 +32,7 @@ export function Sidebar({ className }: { className?: string }) {
           <span className="font-semibold">Transmission</span>
         </button>
       </div>
-      {(state.status === 'connected' || state.status === 'offline') && <SidebarActivity />}
+      <SidebarActivity />
       <ul className="flex flex-col gap-0.5 p-2">
         {FILTERS.map((filter) => {
           const info = FILTER_INFO[filter]

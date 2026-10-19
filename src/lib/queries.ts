@@ -1,7 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { useSelector } from '@tanstack/react-store'
 import { preferencesAtom } from './preferences'
-import { totalRates } from './rate-history'
 import { isUnauthorized } from './rpc/client'
 import { DETAIL_FIELDS, LIST_FIELDS, type SessionInfo, type Torrent } from './rpc/types'
 import { type Transmission, useTransmission } from './transmission'
@@ -32,26 +31,36 @@ export const sessionQuery = (t: Transmission) =>
 export const torrentsQuery = (t: Transmission, intervalSeconds: number) =>
   queryOptions({
     queryKey: torrentKeys.list(t),
-    queryFn: async ({ signal }) => {
-      const torrents = await t.client.torrents(LIST_FIELDS, undefined, signal)
-      // The speed charts' history comes from this poll, so they cost no extra RPC calls.
-      const { down, up } = totalRates(torrents)
-      t.history.push(Date.now(), down, up)
-      // Every poll goes through `reconcile`, so unconfirmed optimistic changes aren't undone by stale data.
-      return t.pending.reconcile(torrents)
-    },
+    // Every poll goes through `reconcile`, so unconfirmed optimistic changes aren't undone by stale data.
+    queryFn: async ({ signal }) => t.pending.reconcile(await t.client.torrents(LIST_FIELDS, undefined, signal)),
     // React Query pauses this while the tab is hidden and refetches on focus — no background polling.
     refetchInterval: intervalSeconds * 1000,
     retry,
     retryDelay: 1000,
   })
 
-/** Transfer totals. Only polled while the Statistics view is open. */
+/**
+ * Transfer totals and live global rates. Polled alongside the list while the app is open: its
+ * session byte counters are what the speed charts' history is built from.
+ */
 export const statsQuery = (t: Transmission, intervalSeconds: number) =>
   queryOptions({
     queryKey: torrentKeys.stats(t),
-    queryFn: ({ signal }) => t.client.stats(signal),
-    refetchInterval: Math.max(intervalSeconds, 2) * 1000,
+    queryFn: async ({ signal }) => {
+      const sent = Date.now()
+      const stats = await t.client.stats(signal)
+      const current = stats['current-stats']
+      t.history.record({
+        // Midway through the round trip is the best guess at when the daemon read its counters.
+        time: (sent + Date.now()) / 2,
+        secondsActive: current.secondsActive,
+        downloadedBytes: current.downloadedBytes,
+        uploadedBytes: current.uploadedBytes,
+        maxGap: Math.max(10_000, intervalSeconds * 3000),
+      })
+      return stats
+    },
+    refetchInterval: intervalSeconds * 1000,
     retry,
     retryDelay: 1000,
   })

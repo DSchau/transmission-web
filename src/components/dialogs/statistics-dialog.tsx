@@ -2,20 +2,22 @@ import { useSelector } from '@tanstack/react-store'
 import { useState } from 'react'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import { SpeedChart, useRateHistory } from '@/components/speed-chart'
-import { RateFigure, useAltSpeedLimits } from '@/components/torrents/activity'
+import { formatSampleTime, RateFigure, useAltSpeedLimits, useLiveRates } from '@/components/torrents/activity'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
-import { formatBytes, formatClockTime, formatDuration, formatNumber, formatRatio, transferRatio } from '@/lib/format'
+import { formatBytes, formatDuration, formatNumber, formatRatio, formatShortTime, transferRatio } from '@/lib/format'
 import { useSessionStats } from '@/lib/queries'
 import { formatSpanAgo, type RateSample, visibleSpan } from '@/lib/rate-history'
 import type { TransferStats } from '@/lib/rpc/types'
 
 const RANGES = [
-  { label: '5m', ms: 5 * 60_000, name: '5 minutes' },
-  { label: '15m', ms: 15 * 60_000, name: '15 minutes' },
-  { label: '30m', ms: 30 * 60_000, name: '30 minutes' },
+  { label: '5m', ms: 5 * 60_000, name: 'last 5 minutes' },
+  { label: '1h', ms: 60 * 60_000, name: 'last hour' },
+  { label: '24h', ms: 24 * 60 * 60_000, name: 'last 24 hours' },
+  { label: 'Session', ms: Number.POSITIVE_INFINITY, name: 'daemon session' },
 ] as const
+const SESSION = RANGES[RANGES.length - 1]!
 
 /**
  * Like the native clients' Statistics window: session and lifetime totals (`session-stats`, the
@@ -40,17 +42,21 @@ export function StatisticsDialog({ open, onOpenChange }: { open: boolean; onOpen
 function StatisticsContent() {
   const samples = useRateHistory()
   const limits = useAltSpeedLimits()
-  const [range, setRange] = useState<(typeof RANGES)[number]>(RANGES[0])
+  const [range, setRange] = useState<(typeof RANGES)[number]>(SESSION)
   const [scrub, setScrub] = useState<RateSample | null>(null)
   const { data: stats } = useSessionStats()
-  const shown = scrub ?? samples[samples.length - 1]
+  const live = useLiveRates()
+  const shown = scrub ?? live
+  const span = visibleSpan(samples, range.ms)
+  const end = samples[samples.length - 1]?.time ?? 0
+  const averaged = samples.some((s) => !s.live && s.time > end - span)
 
   return (
     <div className="flex min-w-0 flex-col gap-6 pb-4 sm:pb-0">
       <section aria-label="Speed history" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-          <RateFigure direction="down" rate={shown?.down ?? 0} size="lg" />
-          <RateFigure direction="up" rate={shown?.up ?? 0} size="lg" />
+          <RateFigure direction="down" rate={shown?.down} size="lg" />
+          <RateFigure direction="up" rate={shown?.up} size="lg" />
           <ToggleGroup
             type="single"
             variant="outline"
@@ -78,16 +84,20 @@ function StatisticsContent() {
             limits={limits}
             axis
             onScrub={setScrub}
-            label={`Transfer speeds over the last ${range.name}`}
+            label={`Transfer speeds over the ${range.name}`}
             className="h-44 sm:h-56"
           />
           <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground tabular-nums">
-            <span className="shrink-0">{formatSpanAgo(visibleSpan(samples, range.ms))}</span>
+            <span className="shrink-0">
+              {range === SESSION && samples[0] ? `Started ${formatShortTime(samples[0].from)}` : formatSpanAgo(span)}
+            </span>
             <span className="truncate text-center">
               {scrub ? (
-                <span className="text-foreground">{formatClockTime(scrub.time)}</span>
+                <span className="text-foreground">{formatSampleTime(scrub)}</span>
               ) : limits ? (
                 'Dashed lines: alternative speed limits'
+              ) : averaged ? (
+                'Faint: averages from while no tab was open'
               ) : null}
             </span>
             <span className="shrink-0">Now</span>
