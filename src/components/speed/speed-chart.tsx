@@ -3,11 +3,13 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from 'react'
+import { usePrefersReducedMotion } from '@/hooks/use-media-query'
 import { formatSpeed } from '@/lib/format'
 import { useSession } from '@/lib/queries'
 import { downsample, monotonePath, nearestSample, niceMax, type SpeedSample, segments } from '@/lib/speed-history'
@@ -46,6 +48,33 @@ export function splitSpeed(bytesPerSecond: number): [string, string] {
   return [text.slice(0, space), text.slice(space + 1)]
 }
 
+/** Upper bound on the slide and rescale animations, so a slow poll still settles quickly. */
+const SLIDE_MS = 1000
+const RESCALE_MS = 400
+
+/** Eases towards `target` whenever it changes; jumps straight there when motion is reduced. */
+function useEasedNumber(target: number, reducedMotion: boolean) {
+  const [value, setValue] = useState(target)
+  const current = useRef(target)
+  useEffect(() => {
+    const from = current.current
+    if (reducedMotion || from === target) {
+      current.current = target
+      setValue(target)
+      return
+    }
+    const begin = performance.now()
+    let frame = requestAnimationFrame(function step(now) {
+      const t = Math.min(1, (now - begin) / RESCALE_MS)
+      current.current = from + (target - from) * (1 - (1 - t) ** 3)
+      setValue(current.current)
+      if (t < 1) frame = requestAnimationFrame(step)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [target, reducedMotion])
+  return value
+}
+
 const SERIES = [
   { key: 'down', className: 'text-status-downloading' },
   { key: 'up', className: 'text-status-seeding' },
@@ -79,13 +108,24 @@ export function SpeedChart({ windowMs, height, interactive, grid, onHover, class
   // A run breaks where samples are further apart than a few polls (tab hidden, interval changed).
   const maxSpacing = 15_000
 
-  const chart = useMemo(() => {
+  const reducedMotion = usePrefersReducedMotion()
+
+  const scale = useMemo(() => {
     const visible = samples.filter((s) => !Number.isNaN(s.down))
     const peak = visible.reduce((max, s) => Math.max(max, s.down, s.up), 0)
     // Alt-speed limits are KB/s on the wire. Only drawn when on, and only stretch the scale a little.
     const limits =
-      session?.['alt-speed-enabled'] === true ? [session['alt-speed-down'] * 1000, session['alt-speed-up'] * 1000] : []
-    const max = niceMax(Math.max(peak, ...limits.filter((l) => l <= peak * 1.5)))
+      session?.['alt-speed-enabled'] === true
+        ? SERIES.map((series) => ({ ...series, value: session[`alt-speed-${series.key}`] * 1000 }))
+        : []
+    const max = niceMax(Math.max(peak, ...limits.map((l) => l.value).filter((v) => v <= peak * 1.5)))
+    return { visible, limits, max }
+  }, [samples, session])
+  // The y-axis eases to a new scale instead of jumping; labels show the target scale.
+  const max = useEasedNumber(scale.max, reducedMotion)
+
+  const chart = useMemo(() => {
+    const { visible, limits } = scale
     const plotTop = grid ? 6 : 2
     const x = (time: number) => ((time - start) / windowMs) * width
     const y = (rate: number) => height - (Math.min(rate, max) / max) * (height - plotTop)
@@ -101,8 +141,22 @@ export function SpeedChart({ windowMs, height, interactive, grid, onHover, class
         return { line, area }
       }),
     )
-    return { visible, max, x, y, paths, limits: limits.filter((l) => l <= max) }
-  }, [samples, session, grid, start, end, windowMs, width, height])
+    return { visible, x, y, paths, limits: limits.filter((l) => l.value <= scale.max) }
+  }, [scale, samples, max, grid, start, end, windowMs, width, height])
+
+  // Each new sample slides the plot left by the time it covers, rather than redrawing in place.
+  const slideRef = useRef<SVGGElement>(null)
+  const previousEnd = useRef(end)
+  useLayoutEffect(() => {
+    const elapsed = end - previousEnd.current
+    previousEnd.current = end
+    const element = slideRef.current
+    if (!element || reducedMotion || width === 0 || elapsed <= 0 || elapsed > maxSpacing) return
+    element.animate([{ transform: `translateX(${(elapsed / windowMs) * width}px)` }, { transform: 'none' }], {
+      duration: Math.min(elapsed, SLIDE_MS),
+      easing: 'ease-out',
+    })
+  }, [end, reducedMotion, width, windowMs])
 
   const handlePointer = useCallback(
     (event: PointerEvent<SVGSVGElement>) => {
@@ -143,6 +197,10 @@ export function SpeedChart({ windowMs, height, interactive, grid, onHover, class
                 <stop offset="100%" stopColor="currentColor" stopOpacity={0.02} />
               </linearGradient>
             ))}
+            {/* Room for the marker dots at the edges; content sliding in from the right stays hidden. */}
+            <clipPath id={`${id}-plot`}>
+              <rect x={-3} y={-3} width={width + 6} height={height + 6} />
+            </clipPath>
           </defs>
 
           {grid &&
@@ -151,77 +209,81 @@ export function SpeedChart({ windowMs, height, interactive, grid, onHover, class
                 <line
                   x1={0}
                   x2={width}
-                  y1={chart.y(chart.max * f)}
-                  y2={chart.y(chart.max * f)}
+                  y1={chart.y(max * f)}
+                  y2={chart.y(max * f)}
                   stroke="currentColor"
                   strokeOpacity={0.15}
                   strokeDasharray="2 4"
                 />
                 <text
                   x={width - 4}
-                  y={chart.y(chart.max * f) + 12}
+                  y={chart.y(max * f) + 12}
                   textAnchor="end"
                   fill="currentColor"
                   className="text-[10px] tabular-nums"
                 >
-                  {formatSpeed(chart.max * f)}
+                  {formatSpeed(scale.max * f)}
                 </text>
               </g>
             ))}
           <line x1={0} x2={width} y1={height - 0.5} y2={height - 0.5} className="stroke-border" />
 
-          {SERIES.map(({ key, className: color }, i) => (
-            <g key={key} className={color}>
-              {chart.paths[i]!.map(({ area, line }) => (
-                <g key={line}>
-                  <path d={area} fill={`url(#${id}-${key})`} />
-                  <path
-                    d={line}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                </g>
-              ))}
-            </g>
-          ))}
-
-          {chart.limits.map((limit, i) => (
-            <line
-              key={SERIES[i]!.key}
-              x1={0}
-              x2={width}
-              y1={chart.y(limit)}
-              y2={chart.y(limit)}
-              stroke="currentColor"
-              strokeOpacity={0.45}
-              strokeDasharray="4 3"
-              className={SERIES[i]!.className}
-            >
-              <title>Alternative speed limit</title>
-            </line>
-          ))}
-
-          {marker && (
-            <g>
-              {hovered && (
-                <line
-                  x1={chart.x(marker.time)}
-                  x2={chart.x(marker.time)}
-                  y1={0}
-                  y2={height}
-                  className="stroke-foreground/30"
-                />
-              )}
-              {SERIES.map(({ key, className: color }) => (
+          <g clipPath={`url(#${id}-plot)`}>
+            <g ref={slideRef}>
+              {SERIES.map(({ key, className: color }, i) => (
                 <g key={key} className={color}>
-                  <circle cx={chart.x(marker.time)} cy={chart.y(marker[key])} r={2.5} fill="currentColor" />
+                  {chart.paths[i]!.map(({ area, line }) => (
+                    <g key={line}>
+                      <path d={area} fill={`url(#${id}-${key})`} />
+                      <path
+                        d={line}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+                    </g>
+                  ))}
                 </g>
               ))}
+
+              {marker && (
+                <g>
+                  {hovered && (
+                    <line
+                      x1={chart.x(marker.time)}
+                      x2={chart.x(marker.time)}
+                      y1={0}
+                      y2={height}
+                      className="stroke-foreground/30"
+                    />
+                  )}
+                  {SERIES.map(({ key, className: color }) => (
+                    <g key={key} className={color}>
+                      <circle cx={chart.x(marker.time)} cy={chart.y(marker[key])} r={2.5} fill="currentColor" />
+                    </g>
+                  ))}
+                </g>
+              )}
             </g>
-          )}
+
+            {chart.limits.map((limit) => (
+              <line
+                key={limit.key}
+                x1={0}
+                x2={width}
+                y1={chart.y(limit.value)}
+                y2={chart.y(limit.value)}
+                stroke="currentColor"
+                strokeOpacity={0.45}
+                strokeDasharray="4 3"
+                className={limit.className}
+              >
+                <title>Alternative speed limit</title>
+              </line>
+            ))}
+          </g>
         </svg>
       )}
     </div>
