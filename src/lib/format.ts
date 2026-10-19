@@ -29,6 +29,12 @@ function trimZeros(text: string): string {
   return text.includes('.') ? text.replace(/\.?0+$/, '') : text
 }
 
+/** Transmission's ratio of two byte counts: -1 ("—") when nothing moved, -2 ("∞") when only uploads did. */
+export function transferRatio(uploaded: number, downloaded: number): number {
+  if (downloaded > 0) return uploaded / downloaded
+  return uploaded > 0 ? -2 : -1
+}
+
 /** Transmission uses -1 for "not available" and -2 for "infinite". */
 export function formatRatio(ratio: number): string {
   if (ratio === -1) return '—'
@@ -72,6 +78,11 @@ export const formatEta = (eta: number): string | null => (eta >= 0 ? formatDurat
 const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 const dateOnly = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' })
 const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
+
+const clockTime = new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' })
+
+/** "2:41:07 PM" — for points on the speed charts. */
+export const formatClockTime = (ms: number) => clockTime.format(ms)
 
 export const formatDateTime = (unixSeconds: number) => dateTime.format(unixSeconds * 1000)
 export const formatDate = (unixSeconds: number) => dateOnly.format(unixSeconds * 1000)
