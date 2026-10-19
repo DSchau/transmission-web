@@ -18,10 +18,10 @@ export function formatSampleTime(sample: RateSample): string {
   return `${formatShortTime(sample.from)} – ${formatShortTime(sample.time)} avg`
 }
 
-/** The daemon's current global rates (from the same `session-stats` poll as the charts). */
-export function useLiveRates(): { down: number; up: number } {
+/** The daemon's current global rates (from the same `session-stats` poll as the charts); null until the first poll. */
+export function useLiveRates(): { down: number; up: number } | null {
   const { data } = useSessionStats()
-  return { down: data?.downloadSpeed ?? 0, up: data?.uploadSpeed ?? 0 }
+  return data ? { down: data.downloadSpeed, up: data.uploadSpeed } : null
 }
 
 /** The alternative ("turtle") speed limits in bytes/s while they're on, for the charts' reference lines. */
@@ -34,7 +34,8 @@ export function useAltSpeedLimits(): SpeedLimits | null {
 }
 
 /** "4.2 MB/s" → ["4.2", "MB/s"], so the number can be set large and the unit small. */
-function splitSpeed(rate: number): [string, string] {
+function splitSpeed(rate: number | undefined): [string, string] {
+  if (rate == null) return ['–', '']
   const text = formatSpeed(rate)
   const space = text.lastIndexOf(' ')
   return [text.slice(0, space), text.slice(space + 1)]
@@ -47,7 +48,8 @@ export function RateFigure({
   className,
 }: {
   direction: 'down' | 'up'
-  rate: number
+  /** Undefined until known: shows a placeholder at the same size. */
+  rate: number | undefined
   size?: 'md' | 'lg'
   className?: string
 }) {
@@ -85,8 +87,8 @@ export function SidebarActivity() {
   return (
     <section aria-label="Transfer activity" className="border-b">
       <div className="flex gap-3 px-4 pt-3">
-        <RateFigure direction="down" rate={shown.down} className="flex-1" />
-        <RateFigure direction="up" rate={shown.up} className="flex-1" />
+        <RateFigure direction="down" rate={shown?.down} className="flex-1" />
+        <RateFigure direction="up" rate={shown?.up} className="flex-1" />
       </div>
       <SpeedChart
         samples={samples}

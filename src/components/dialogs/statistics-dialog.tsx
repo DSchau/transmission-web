@@ -55,8 +55,8 @@ function StatisticsContent() {
     <div className="flex min-w-0 flex-col gap-6 pb-4 sm:pb-0">
       <section aria-label="Speed history" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-          <RateFigure direction="down" rate={shown.down} size="lg" />
-          <RateFigure direction="up" rate={shown.up} size="lg" />
+          <RateFigure direction="down" rate={shown?.down} size="lg" />
+          <RateFigure direction="up" rate={shown?.up} size="lg" />
           <ToggleGroup
             type="single"
             variant="outline"

@@ -26,10 +26,11 @@ export function StatusPanel({ className, chart = false }: { className?: string; 
   const limits = useAltSpeedLimits()
   const [scrub, setScrub] = useState<RateSample | null>(null)
 
-  // While connecting (or when sign-in / a first connection is needed) the list's empty states
-  // carry the message instead.
-  if (state.status !== 'connected' && state.status !== 'offline') return null
+  // When sign-in or a first connection is needed, the list's empty states carry the message
+  // instead. While connecting, the strip keeps its place so the page doesn't shift once it loads.
+  if (state.status === 'unauthorized' || state.status === 'failed') return null
 
+  const connecting = state.status === 'connecting'
   const offline = state.status === 'offline'
   const freeSpace = session?.['download-dir-free-space'] ?? 0
   const selectedSize = selected.reduce((sum, t) => sum + t.sizeWhenDone, 0)
@@ -38,17 +39,17 @@ export function StatusPanel({ className, chart = false }: { className?: string; 
     <footer className={cn('shrink-0 border-b text-muted-foreground text-xs tabular-nums', className)}>
       <div className="flex min-h-8 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
         <span className={cn('min-w-0 truncate', scrub && 'text-foreground')}>
-          {scrub ? formatSampleTime(scrub) : offline ? 'Offline' : summary.countText}
+          {scrub ? formatSampleTime(scrub) : offline ? 'Offline' : connecting ? 'Connecting…' : summary.countText}
           {!scrub && selected.length > 1 && ` · ${selected.length} selected (${formatBytes(selectedSize)})`}
         </span>
         <div className="min-w-0 flex-1" />
         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
           <ArrowDown className="size-3 text-status-downloading" aria-label="Download" />
-          {formatSpeed(scrub ? scrub.down : summary.exactDown)}
+          {connecting ? '–' : formatSpeed(scrub ? scrub.down : summary.exactDown)}
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
           <ArrowUp className="size-3 text-status-seeding" aria-label="Upload" />
-          {formatSpeed(scrub ? scrub.up : summary.exactUp)}
+          {connecting ? '–' : formatSpeed(scrub ? scrub.up : summary.exactUp)}
         </span>
         {freeSpace > 0 && (
           <span className="hidden md:inline" title="Free space in the download directory">
