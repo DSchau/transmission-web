@@ -84,6 +84,14 @@ const clockTime = new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' })
 /** "2:41:07 PM" — for points on the speed charts. */
 export const formatClockTime = (ms: number) => clockTime.format(ms)
 
+const shortTime = new Intl.DateTimeFormat(undefined, { timeStyle: 'short' })
+const shortDateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' })
+
+/** "2:41 PM", or with the date when it isn't today. */
+export function formatShortTime(ms: number, now = Date.now()): string {
+  return new Date(ms).toDateString() === new Date(now).toDateString() ? shortTime.format(ms) : shortDateTime.format(ms)
+}
+
 export const formatDateTime = (unixSeconds: number) => dateTime.format(unixSeconds * 1000)
 export const formatDate = (unixSeconds: number) => dateOnly.format(unixSeconds * 1000)
 

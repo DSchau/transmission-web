@@ -5,6 +5,7 @@ import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
+import { useSessionStats } from '@/lib/queries'
 import { clearSelection, openDialog, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ConnectionBanner } from './connection-state'
@@ -43,6 +44,8 @@ function Layout() {
   const sidebarWidth = useSelector(preferencesAtom, (p) => p.sidebarWidth)
   const inspectorWidth = useSelector(preferencesAtom, (p) => p.inspectorWidth)
   const multiple = selected.length > 1
+  // Keeps the session's transfer history (the speed charts) up to date.
+  useSessionStats()
 
   if (isDesktop) {
     const inspectorOpen = multiple || openTorrentId != null

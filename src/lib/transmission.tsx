@@ -1,15 +1,15 @@
 import { useSelector } from '@tanstack/react-store'
-import { createContext, type ReactNode, useContext, useMemo } from 'react'
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react'
 import { type ConnectionConfig, connectionAtom, credentialsAtom, rpcUrlFor } from './connection'
 import { PendingChanges } from './pending'
-import { RateHistory } from './rate-history'
+import { SessionHistory } from './rate-history'
 import { TransmissionClient } from './rpc/client'
 
 export interface Transmission {
   client: TransmissionClient
   pending: PendingChanges
-  /** Recent global rates for the speed charts. */
-  history: RateHistory
+  /** The daemon session's transfer history, for the speed charts. */
+  history: SessionHistory
   config: ConnectionConfig
   /** Query-key prefix. Changes whenever the connection (or credentials) change, so caches never mix. */
   key: readonly ['transmission', number]
@@ -28,12 +28,13 @@ export function TransmissionProvider({ children }: { children: ReactNode }) {
     () => ({
       client: new TransmissionClient(rpcUrlFor(config), credentials),
       pending: new PendingChanges(),
-      history: new RateHistory(),
+      history: new SessionHistory({ storageKey: `transmission-web:session-history:${rpcUrlFor(config)}` }),
       config,
       key: ['transmission', ++generation] as const,
     }),
     [config.url, credentials],
   )
+  useEffect(() => value.history.attach(), [value])
 
   return <TransmissionContext.Provider value={value}>{children}</TransmissionContext.Provider>
 }

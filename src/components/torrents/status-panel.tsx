@@ -1,11 +1,11 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import { SpeedChart, useRateHistory } from '@/components/speed-chart'
-import { formatBytes, formatClockTime, formatSpeed } from '@/lib/format'
+import { formatBytes, formatSpeed } from '@/lib/format'
 import { useConnectionState, useSession } from '@/lib/queries'
 import type { RateSample } from '@/lib/rate-history'
 import { cn } from '@/lib/utils'
-import { INLINE_RANGE, openStatistics, useAltSpeedLimits } from './activity'
+import { formatSampleTime, INLINE_RANGE, openStatistics, useAltSpeedLimits } from './activity'
 import { useTorrentsView } from './torrents-view'
 import { useTransferSummary } from './use-summary'
 
@@ -38,7 +38,7 @@ export function StatusPanel({ className, chart = false }: { className?: string; 
     <footer className={cn('shrink-0 border-b text-muted-foreground text-xs tabular-nums', className)}>
       <div className="flex min-h-8 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
         <span className={cn('min-w-0 truncate', scrub && 'text-foreground')}>
-          {scrub ? formatClockTime(scrub.time) : offline ? 'Offline' : summary.countText}
+          {scrub ? formatSampleTime(scrub) : offline ? 'Offline' : summary.countText}
           {!scrub && selected.length > 1 && ` · ${selected.length} selected (${formatBytes(selectedSize)})`}
         </span>
         <div className="min-w-0 flex-1" />
