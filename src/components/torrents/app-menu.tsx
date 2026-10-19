@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { CheckSquare, Ellipsis, Moon, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
+import { ChartArea, CheckSquare, Ellipsis, Moon, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -79,6 +79,12 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+        <DropdownMenuItem asChild>
+          <Link to="/statistics">
+            <ChartArea />
+            Statistics
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/connect">
             <Plug />

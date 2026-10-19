@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
+import { SpeedSparkline } from '@/components/speed/speed-widget'
 import { formatBytes, formatSpeed } from '@/lib/format'
 import { useConnectionState, useSession } from '@/lib/queries'
 import { cn } from '@/lib/utils'
@@ -7,10 +8,11 @@ import { useTransferSummary } from './use-summary'
 
 /**
  * Slim status strip below the header (all layouts), like the status bar in the native clients:
- * counts, total transfer rates and free space. (Alternative speed limits toggle stays in the
- * overflow menu — Settings > Alternative Speeds.)
+ * counts, total transfer rates and free space. `sparkline` adds a mini speed chart where the sidebar
+ * chart isn't shown. (Alternative speed limits toggle stays in the overflow menu — Settings >
+ * Alternative Speeds.)
  */
-export function StatusPanel({ className }: { className?: string }) {
+export function StatusPanel({ sparkline, className }: { sparkline?: boolean; className?: string }) {
   const summary = useTransferSummary()
   const { selected } = useTorrentsView()
   const state = useConnectionState()
@@ -36,6 +38,7 @@ export function StatusPanel({ className }: { className?: string }) {
         {selected.length > 1 && ` · ${selected.length} selected (${formatBytes(selectedSize)})`}
       </span>
       <div className="min-w-0 flex-1" />
+      {sparkline && <SpeedSparkline />}
       <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
         <ArrowDown className="size-3 text-status-downloading" aria-label="Download" />
         {formatSpeed(summary.exactDown)}

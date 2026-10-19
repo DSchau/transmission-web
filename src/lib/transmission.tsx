@@ -3,10 +3,13 @@ import { createContext, type ReactNode, useContext, useMemo } from 'react'
 import { type ConnectionConfig, connectionAtom, credentialsAtom, rpcUrlFor } from './connection'
 import { PendingChanges } from './pending'
 import { TransmissionClient } from './rpc/client'
+import { SpeedHistory } from './speed-history'
 
 export interface Transmission {
   client: TransmissionClient
   pending: PendingChanges
+  /** Rolling global rate history, fed by the torrent list poll. Starts empty for each connection. */
+  history: SpeedHistory
   config: ConnectionConfig
   /** Query-key prefix. Changes whenever the connection (or credentials) change, so caches never mix. */
   key: readonly ['transmission', number]
@@ -25,6 +28,7 @@ export function TransmissionProvider({ children }: { children: ReactNode }) {
     () => ({
       client: new TransmissionClient(rpcUrlFor(config), credentials),
       pending: new PendingChanges(),
+      history: new SpeedHistory(),
       config,
       key: ['transmission', ++generation] as const,
     }),

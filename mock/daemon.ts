@@ -245,6 +245,41 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
     return torrents.filter((t) => list.includes(t.id) || list.includes(t.hashString))
   }
 
+  // Running totals for `session-stats`, as if this daemon started at START with a long history behind it.
+  const stats = { downloaded: 0, uploaded: 0 }
+  const cumulative = {
+    uploadedBytes: 9_412_000_000_000,
+    downloadedBytes: 6_871_000_000_000,
+    filesAdded: 2_384,
+    sessionCount: 57,
+    secondsActive: 31_536_000,
+  }
+
+  function sessionStats(): Json {
+    const current = {
+      uploadedBytes: stats.uploaded,
+      downloadedBytes: stats.downloaded,
+      filesAdded: torrents.length,
+      sessionCount: 1,
+      secondsActive: now() - START,
+    }
+    return {
+      activeTorrentCount: torrents.filter((t) => t.rateDownload > 0 || t.rateUpload > 0).length,
+      pausedTorrentCount: torrents.filter((t) => t.status === 0).length,
+      torrentCount: torrents.length,
+      downloadSpeed: torrents.reduce((sum, t) => sum + t.rateDownload, 0),
+      uploadSpeed: torrents.reduce((sum, t) => sum + t.rateUpload, 0),
+      'current-stats': current,
+      'cumulative-stats': {
+        uploadedBytes: cumulative.uploadedBytes + current.uploadedBytes,
+        downloadedBytes: cumulative.downloadedBytes + current.downloadedBytes,
+        filesAdded: cumulative.filesAdded + current.filesAdded,
+        sessionCount: cumulative.sessionCount + 1,
+        secondsActive: cumulative.secondsActive + current.secondsActive,
+      },
+    }
+  }
+
   function tick() {
     const t0 = now()
     for (const t of torrents) {
@@ -295,6 +330,8 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
         t.peersSendingToUs = 0
         t.peersGettingFromUs = 0
       }
+      stats.downloaded += t.rateDownload * 2
+      stats.uploaded += t.rateUpload * 2
     }
   }
 
@@ -350,6 +387,8 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
     switch (method) {
       case 'session-get':
         return session
+      case 'session-stats':
+        return sessionStats()
       case 'session-set':
         Object.assign(session, args)
         return {}

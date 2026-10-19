@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { Settings } from 'lucide-react'
 import { useMemo } from 'react'
+import { SpeedWidget } from '@/components/speed/speed-widget'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
@@ -31,6 +32,7 @@ export function Sidebar({ className }: { className?: string }) {
           <span className="font-semibold">Transmission</span>
         </button>
       </div>
+      {(state.status === 'connected' || state.status === 'offline') && <SpeedWidget />}
       <ul className="flex flex-col gap-0.5 p-2">
         {FILTERS.map((filter) => {
           const info = FILTER_INFO[filter]

@@ -159,6 +159,26 @@ export interface SessionInfo {
   seedRatioLimit: number
 }
 
+/** Transfer totals in `session-stats`, for the running session or across all sessions. */
+export interface TransferStats {
+  uploadedBytes: number
+  downloadedBytes: number
+  filesAdded: number
+  sessionCount: number
+  secondsActive: number
+}
+
+/** `session-stats`: live totals and speeds (bytes/s). */
+export interface SessionStats {
+  activeTorrentCount: number
+  pausedTorrentCount: number
+  torrentCount: number
+  downloadSpeed: number
+  uploadSpeed: number
+  'current-stats': TransferStats
+  'cumulative-stats': TransferStats
+}
+
 /** Arguments for `session-set`. Only provided keys are sent. */
 export type SessionUpdate = Partial<Omit<SessionInfo, 'version' | 'rpc-version'>>
 

@@ -14,6 +14,7 @@ const retry = (failureCount: number, error: Error) => !isUnauthorized(error) && 
 export const torrentKeys = {
   session: (t: Transmission) => [...t.key, 'session'] as const,
   list: (t: Transmission) => [...t.key, 'torrents'] as const,
+  stats: (t: Transmission) => [...t.key, 'stats'] as const,
   detail: (t: Transmission, id: number) => [...t.key, 'torrent', id] as const,
 }
 
@@ -31,12 +32,46 @@ export const torrentsQuery = (t: Transmission, intervalSeconds: number) =>
   queryOptions({
     queryKey: torrentKeys.list(t),
     // Every poll goes through `reconcile`, so unconfirmed optimistic changes aren't undone by stale data.
-    queryFn: async ({ signal }) => t.pending.reconcile(await t.client.torrents(LIST_FIELDS, undefined, signal)),
+    queryFn: async ({ signal }) => {
+      let torrents: Torrent[]
+      try {
+        torrents = t.pending.reconcile(await t.client.torrents(LIST_FIELDS, undefined, signal))
+      } catch (error) {
+        if (!signal.aborted) t.history.addGap(Date.now())
+        throw error
+      }
+      // The speed charts sample the poll that already happens, rather than making their own requests.
+      let down = 0
+      let up = 0
+      for (const torrent of torrents) {
+        down += torrent.rateDownload
+        up += torrent.rateUpload
+      }
+      t.history.add({ time: Date.now(), down, up })
+      return torrents
+    },
     // React Query pauses this while the tab is hidden and refetches on focus — no background polling.
     refetchInterval: intervalSeconds * 1000,
     retry,
     retryDelay: 1000,
   })
+
+/** Totals for the Statistics view. Only polled while that view is open. */
+export const sessionStatsQuery = (t: Transmission, intervalSeconds: number) =>
+  queryOptions({
+    queryKey: torrentKeys.stats(t),
+    queryFn: ({ signal }) => t.client.sessionStats(signal),
+    refetchInterval: Math.max(intervalSeconds, 2) * 1000,
+    retry,
+    retryDelay: 1000,
+  })
+
+export function useSessionStats() {
+  const transmission = useTransmission()
+  const interval = useSelector(preferencesAtom, (p) => p.refreshInterval)
+  const session = useSession()
+  return useQuery({ ...sessionStatsQuery(transmission, interval), enabled: session.data != null })
+}
 
 export function useSession() {
   const transmission = useTransmission()
