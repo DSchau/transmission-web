@@ -4,6 +4,7 @@
 #
 #   scripts/deploy.sh              build, upload, switch `current` to the new build
 #   scripts/deploy.sh --rollback   switch `current` back to the previous build
+#   scripts/deploy.sh --allow-dirty   deploy even with uncommitted changes
 #   HTPC_HOST=dschau@ssh.dschau.dev scripts/deploy.sh   # when away from home
 #
 # Switching is an atomic symlink swap, so the daemon never needs a restart.
@@ -29,7 +30,14 @@ EOF
 fi
 
 sha=$(git rev-parse --short HEAD)
-[[ -z "$(git status --porcelain)" ]] || sha="$sha-dirty"
+if [[ -n "$(git status --porcelain)" ]]; then
+  if [[ "${1:-}" != "--allow-dirty" ]]; then
+    git status --short >&2
+    echo "Uncommitted changes would ship in this build. Commit or stash them, or pass --allow-dirty." >&2
+    exit 1
+  fi
+  sha="$sha-dirty"
+fi
 release="$(date +%Y%m%d-%H%M%S)-$sha"
 
 bun install --frozen-lockfile
