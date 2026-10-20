@@ -90,6 +90,10 @@ export function TorrentTableView({ className }: { className?: string }) {
       if (event.shiftKey) toggleRow(row, { range: true })
       else open(row)
       virtualizer.scrollToIndex(next)
+    } else if (event.key === 'Enter' && openTorrentId === undefined && rows[0]) {
+      event.preventDefault()
+      open(rows[0])
+      virtualizer.scrollToIndex(0)
     } else if ((event.metaKey || event.ctrlKey) && event.key === 'a') {
       event.preventDefault()
       table.toggleAllRowsSelected(true)
@@ -101,9 +105,10 @@ export function TorrentTableView({ className }: { className?: string }) {
     // biome-ignore lint/a11y/noStaticElementInteractions: arrow keys move between rows
     <div
       ref={scrollRef}
-      tabIndex={-1}
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: the table is reached by Tab, then driven with arrow keys
+      tabIndex={0}
       onKeyDown={onKeyDown}
-      className={cn('relative overflow-auto outline-none', className)}
+      className={cn('group/table relative overflow-auto outline-none', className)}
     >
       {/* Real table elements laid out with CSS grid, so rows can be absolutely positioned (virtualized). */}
       <table
@@ -169,6 +174,10 @@ export function TorrentTableView({ className }: { className?: string }) {
                       aria-rowindex={item.index + (showHeader ? 2 : 1)}
                       aria-selected={selected}
                       data-state={selected ? 'selected' : undefined}
+                      data-cursor={
+                        (openTorrentId === undefined ? item.index === 0 : row.original.id === openTorrentId) ||
+                        undefined
+                      }
                       onClick={(event) => {
                         if (event.detail === 1) wasOpen.current = row.original.id === openTorrentId
                         if (event.metaKey || event.ctrlKey) toggleRow(row)
@@ -192,6 +201,8 @@ export function TorrentTableView({ className }: { className?: string }) {
                         // Subtle zebra striping that reads in both light and dark themes.
                         item.index % 2 === 1 && 'bg-muted/30',
                         'hover:bg-muted/50 data-[state=selected]:bg-status-downloading/10',
+                        // Keyboard focus lives on the scroll container; show it on the row the arrows move.
+                        'group-focus-visible/table:data-cursor:outline-2 group-focus-visible/table:data-cursor:outline-ring group-focus-visible/table:data-cursor:-outline-offset-2',
                       )}
                       style={{ gridTemplateColumns, height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}
                     >
