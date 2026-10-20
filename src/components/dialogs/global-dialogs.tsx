@@ -20,7 +20,7 @@ import { torrentCountLabel } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
 import { useSession, useTorrents } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
-import { clearSelection, closeDialog, type DialogRequest, dialogAtom, selectModeAtom } from '@/lib/ui'
+import { closeDialog, type DialogRequest, dialogAtom, exitSelectMode } from '@/lib/ui'
 import { AddTorrentDialog } from './add-torrent-dialog'
 import { StatisticsDialog } from './statistics-dialog'
 
@@ -31,34 +31,23 @@ export function GlobalDialogs() {
   const [last, setLast] = useState<DialogRequest | null>(request)
   if (request && request !== last) setLast(request)
   const shown = request ?? last
-  const onOpenChange = (open: boolean) => {
-    if (!open) closeDialog()
-  }
+  /** The request a dialog presents (the last one, while it closes), if it's of that type. */
+  const shownAs = <T extends DialogRequest['type']>(type: T) =>
+    shown?.type === type ? (shown as Extract<DialogRequest, { type: T }>) : null
+  const props = (type: DialogRequest['type']) => ({
+    open: request?.type === type,
+    onOpenChange: (open: boolean) => {
+      if (!open) closeDialog()
+    },
+  })
 
   return (
     <>
-      <AddTorrentDialog
-        open={request?.type === 'add'}
-        onOpenChange={onOpenChange}
-        initialLink={shown?.type === 'add' ? shown.link : undefined}
-        initialFiles={shown?.type === 'add' ? shown.files : undefined}
-      />
-      <RemoveDialog
-        open={request?.type === 'remove'}
-        onOpenChange={onOpenChange}
-        request={shown?.type === 'remove' ? shown : null}
-      />
-      <RenameDialog
-        open={request?.type === 'rename'}
-        onOpenChange={onOpenChange}
-        torrent={shown?.type === 'rename' ? shown.torrent : null}
-      />
-      <SetLocationDialog
-        open={request?.type === 'location'}
-        onOpenChange={onOpenChange}
-        torrents={shown?.type === 'location' ? shown.torrents : []}
-      />
-      <StatisticsDialog open={request?.type === 'statistics'} onOpenChange={onOpenChange} />
+      <AddTorrentDialog {...props('add')} initialLink={shownAs('add')?.link} initialFiles={shownAs('add')?.files} />
+      <RemoveDialog {...props('remove')} request={shownAs('remove')} />
+      <RenameDialog {...props('rename')} torrent={shownAs('rename')?.torrent ?? null} />
+      <SetLocationDialog {...props('location')} torrents={shownAs('location')?.torrents ?? []} />
+      <StatisticsDialog {...props('statistics')} />
     </>
   )
 }
@@ -91,8 +80,7 @@ function RemoveDialog({
 
   const confirm = () => {
     remove(ids, deleteData)
-    clearSelection()
-    selectModeAtom.set(false)
+    exitSelectMode()
     if (torrentId != null && ids.includes(Number(torrentId))) navigate({ to: '/' })
     onOpenChange(false)
   }

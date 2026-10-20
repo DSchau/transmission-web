@@ -1,13 +1,14 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import { SpeedChart, useRateHistory } from '@/components/speed-chart'
-import { formatBytes, formatSpeed } from '@/lib/format'
+import { formatBytes, formatNumber, formatSpeed } from '@/lib/format'
 import { useConnectionState, useSession } from '@/lib/queries'
 import type { RateSample } from '@/lib/rate-history'
+import type { Torrent } from '@/lib/rpc/types'
+import { totalSize } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
 import { formatSampleTime, INLINE_RANGE, openStatistics, useAltSpeedLimits } from './activity'
 import { useTorrentsView } from './torrents-view'
-import { useTransferSummary } from './use-summary'
 
 /**
  * Slim status strip below the header (all layouts), like the status bar in the native clients:
@@ -27,8 +28,7 @@ export function StatusPanel({
   chart?: boolean
   chartCollapsed?: boolean
 }) {
-  const summary = useTransferSummary()
-  const { selected } = useTorrentsView()
+  const { torrents, visible, selected } = useTorrentsView()
   const state = useConnectionState()
   const { data: session } = useSession()
   const samples = useRateHistory()
@@ -42,23 +42,29 @@ export function StatusPanel({
   const connecting = state.status === 'connecting'
   const offline = state.status === 'offline'
   const freeSpace = session?.['download-dir-free-space'] ?? 0
-  const selectedSize = selected.reduce((sum, t) => sum + t.sizeWhenDone, 0)
+  const rates = totalRates(torrents)
 
   return (
     <footer className={cn('shrink-0 border-b text-muted-foreground text-xs tabular-nums', className)}>
       <div className="flex min-h-8 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
         <span className={cn('min-w-0 truncate', scrub && 'text-foreground')}>
-          {scrub ? formatSampleTime(scrub) : offline ? 'Offline' : connecting ? 'Connecting…' : summary.countText}
-          {!scrub && selected.length > 1 && ` · ${selected.length} selected (${formatBytes(selectedSize)})`}
+          {scrub
+            ? formatSampleTime(scrub)
+            : offline
+              ? 'Offline'
+              : connecting
+                ? 'Connecting…'
+                : countText(visible.length, torrents.length)}
+          {!scrub && selected.length > 1 && ` · ${selected.length} selected (${formatBytes(totalSize(selected))})`}
         </span>
         <div className="min-w-0 flex-1" />
         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
           <ArrowDown className="size-3 text-status-downloading" aria-label="Download" />
-          {connecting ? '–' : formatSpeed(scrub ? scrub.down : summary.exactDown)}
+          {connecting ? '–' : formatSpeed(scrub ? scrub.down : rates.down)}
         </span>
         <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
           <ArrowUp className="size-3 text-status-seeding" aria-label="Upload" />
-          {connecting ? '–' : formatSpeed(scrub ? scrub.up : summary.exactUp)}
+          {connecting ? '–' : formatSpeed(scrub ? scrub.up : rates.up)}
         </span>
         {freeSpace > 0 && (
           <span className="hidden md:inline" title="Free space in the download directory">
@@ -90,4 +96,20 @@ export function StatusPanel({
       )}
     </footer>
   )
+}
+
+/** "92 of 1,633 torrents", or "1,633 torrents" when nothing is filtered out. */
+function countText(shown: number, total: number) {
+  const noun = shown === 1 ? 'torrent' : 'torrents'
+  return shown === total ? `${formatNumber(total)} ${noun}` : `${formatNumber(shown)} of ${formatNumber(total)} ${noun}`
+}
+
+function totalRates(torrents: Torrent[]) {
+  let down = 0
+  let up = 0
+  for (const t of torrents) {
+    down += t.rateDownload
+    up += t.rateUpload
+  }
+  return { down, up }
 }

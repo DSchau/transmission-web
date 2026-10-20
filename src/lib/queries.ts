@@ -1,6 +1,5 @@
-import { queryOptions, useQuery } from '@tanstack/react-query'
-import { useSelector } from '@tanstack/react-store'
-import { preferencesAtom } from './preferences'
+import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRefreshInterval } from './preferences'
 import { isUnauthorized } from './rpc/client'
 import { DETAIL_FIELDS, LIST_FIELDS, type SessionInfo, type Torrent } from './rpc/types'
 import { type Transmission, useTransmission } from './transmission'
@@ -9,7 +8,10 @@ import { type Transmission, useTransmission } from './transmission'
  * Failures tolerated before showing an error: daemons can briefly refuse connections, so don't
  * flash an error for that. Auth errors won't fix themselves, so surface those immediately.
  */
-const retry = (failureCount: number, error: Error) => !isUnauthorized(error) && failureCount < 2
+const retryPolicy = {
+  retry: (failureCount: number, error: Error) => !isUnauthorized(error) && failureCount < 2,
+  retryDelay: 1000,
+}
 
 export const torrentKeys = {
   session: (t: Transmission) => [...t.key, 'session'] as const,
@@ -24,8 +26,7 @@ export const sessionQuery = (t: Transmission) =>
     queryFn: ({ signal }) => t.client.session(signal),
     // Session settings change rarely.
     refetchInterval: 20_000,
-    retry,
-    retryDelay: 1000,
+    ...retryPolicy,
   })
 
 export const torrentsQuery = (t: Transmission, intervalSeconds: number) =>
@@ -35,8 +36,7 @@ export const torrentsQuery = (t: Transmission, intervalSeconds: number) =>
     queryFn: async ({ signal }) => t.pending.reconcile(await t.client.torrents(LIST_FIELDS, undefined, signal)),
     // React Query pauses this while the tab is hidden and refetches on focus — no background polling.
     refetchInterval: intervalSeconds * 1000,
-    retry,
-    retryDelay: 1000,
+    ...retryPolicy,
   })
 
 /**
@@ -61,13 +61,12 @@ export const statsQuery = (t: Transmission, intervalSeconds: number) =>
       return stats
     },
     refetchInterval: intervalSeconds * 1000,
-    retry,
-    retryDelay: 1000,
+    ...retryPolicy,
   })
 
 export function useSessionStats() {
   const transmission = useTransmission()
-  const interval = useSelector(preferencesAtom, (p) => p.refreshInterval)
+  const interval = useRefreshInterval()
   return useQuery(statsQuery(transmission, interval))
 }
 
@@ -82,7 +81,7 @@ export function useSession() {
  */
 export function useTorrents<TData = Torrent[]>(select?: (torrents: Torrent[]) => TData) {
   const transmission = useTransmission()
-  const interval = useSelector(preferencesAtom, (p) => p.refreshInterval)
+  const interval = useRefreshInterval()
   const session = useSession()
   return useQuery({ ...torrentsQuery(transmission, interval), select, enabled: session.data != null })
 }
@@ -90,7 +89,7 @@ export function useTorrents<TData = Torrent[]>(select?: (torrents: Torrent[]) =>
 /** Files, peers, trackers and pieces for one torrent, merged with the live list entry. */
 export function useTorrentDetail(id: number) {
   const transmission = useTransmission()
-  const interval = useSelector(preferencesAtom, (p) => p.refreshInterval)
+  const interval = useRefreshInterval()
   const live = useTorrents((torrents) => torrents.find((t) => t.id === id))
   const session = useSession()
   const detail = useQuery({
@@ -99,7 +98,7 @@ export function useTorrentDetail(id: number) {
     queryFn: async ({ signal }) => (await transmission.client.torrents(DETAIL_FIELDS, [id], signal))[0] ?? null,
     // Detail data changes slower; poll a bit less aggressively.
     refetchInterval: Math.max(interval, 2) * 1000,
-    retry,
+    ...retryPolicy,
   })
 
   // Prefer the freshest data: the detail fetch has files/peers, the list poll has live rates
@@ -137,4 +136,11 @@ export function useConnectionState(): ConnectionState {
   }
   if (error) return { status: 'offline', session: session.data, message: error.message }
   return { status: 'connected', session: session.data }
+}
+
+/** Refetches everything for the current connection right away. */
+export function useRetryConnection() {
+  const queryClient = useQueryClient()
+  const { key } = useTransmission()
+  return () => queryClient.refetchQueries({ queryKey: key })
 }

@@ -145,21 +145,20 @@ function optimisticUpdate(
 
 /** Convenience wrappers so call sites read like the iOS store's API. */
 export function useTorrentActions() {
-  const { mutate } = useTorrentMutation()
+  const { mutate: run } = useTorrentMutation()
+  // An empty selection is a no-op, never a request.
+  const mutate = (action: TorrentAction) => {
+    if (idsOf(action).length > 0) run(action)
+  }
   return {
-    resume: (ids: number[]) => {
-      if (ids.length) mutate({ type: 'start', ids })
-    },
+    resume: (ids: number[]) => mutate({ type: 'start', ids }),
     /** Starts immediately, bypassing the download queue. */
-    resumeNow: (ids: number[]) => {
-      if (ids.length) mutate({ type: 'start', ids, now: true })
-    },
-    pause: (ids: number[]) => {
-      if (ids.length) mutate({ type: 'stop', ids })
-    },
-    togglePaused: (t: Torrent) => mutate(isPaused(t) ? { type: 'start', ids: [t.id] } : { type: 'stop', ids: [t.id] }),
+    resumeNow: (ids: number[]) => mutate({ type: 'start', ids, now: true }),
+    pause: (ids: number[]) => mutate({ type: 'stop', ids }),
+    togglePaused: (t: Torrent) => mutate({ type: isPaused(t) ? 'start' : 'stop', ids: [t.id] }),
     verify: (ids: number[]) => mutate({ type: 'verify', ids }),
     reannounce: (ids: number[]) => {
+      if (ids.length === 0) return
       mutate({ type: 'reannounce', ids })
       toast.success(ids.length === 1 ? 'Asked tracker for more peers' : 'Asked trackers for more peers')
     },

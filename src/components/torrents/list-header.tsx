@@ -3,8 +3,8 @@ import { Plus } from 'lucide-react'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { formatBytes } from '@/lib/format'
-import { FILTER_INFO } from '@/lib/torrent'
-import { clearSelection, openDialog, selectionAtom, selectionOf, selectModeAtom } from '@/lib/ui'
+import { filterTitle, totalSize } from '@/lib/torrent'
+import { exitSelectMode, openDialog, selectionAtom, selectionOf, selectModeAtom } from '@/lib/ui'
 import { AppMenu } from './app-menu'
 import { SearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
@@ -26,7 +26,6 @@ export function ListHeader() {
 
 function TitleBar() {
   const { search, goHome } = useTorrentsView()
-  const title = search.filter === 'all' ? 'Torrents' : FILTER_INFO[search.filter].title
 
   return (
     <>
@@ -40,7 +39,7 @@ function TitleBar() {
               aria-label="Reset view"
               className="-mx-2 rounded-md px-2 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {title}
+              {filterTitle(search.filter)}
             </button>
           </h1>
         </div>
@@ -65,12 +64,6 @@ function SelectModeBar() {
   const selection = useSelector(selectionAtom)
   const rows = table.getRowModel().rows
   const allSelected = rows.length > 0 && rows.every((row) => selection[row.id])
-  const size = selected.reduce((sum, t) => sum + t.sizeWhenDone, 0)
-
-  const done = () => {
-    selectModeAtom.set(false)
-    clearSelection()
-  }
 
   return (
     <div className="flex items-center gap-2 px-2 pt-3 pb-2">
@@ -87,10 +80,10 @@ function SelectModeBar() {
           {selected.length === 0 ? 'Select Torrents' : `${selected.length} Selected`}
         </h1>
         <p className="truncate text-muted-foreground text-xs tabular-nums">
-          {selected.length === 0 ? 'Tap torrents to select them' : formatBytes(size)}
+          {selected.length === 0 ? 'Tap torrents to select them' : formatBytes(totalSize(selected))}
         </p>
       </div>
-      <Button size="sm" className="w-24" onClick={done}>
+      <Button size="sm" className="w-24" onClick={exitSelectMode}>
         Done
       </Button>
     </div>

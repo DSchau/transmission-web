@@ -18,6 +18,7 @@ import {
   countByFilter,
   FILTER_INFO,
   FILTERS,
+  isSortDesc,
   MENU_SORTS,
   SORT_INFO,
   SORTS,
@@ -83,7 +84,7 @@ export function ViewOptionsMenu() {
 /** Sort By radio items + Reverse Order, shared by the compact and desktop menus. */
 function SortMenuItems({ sorts }: { sorts: readonly TorrentSort[] }) {
   const { search, setSearch } = useTorrentsView()
-  const desc = search.dir ? search.dir === 'desc' : SORT_INFO[search.sort].desc
+  const desc = isSortDesc(search.sort, search.dir)
   return (
     <>
       <DropdownMenuGroup>

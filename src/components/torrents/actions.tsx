@@ -37,9 +37,9 @@ import { copyText } from '@/lib/clipboard'
 import { torrentCountLabel } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
 import type { Torrent } from '@/lib/rpc/types'
-import { isPaused } from '@/lib/torrent'
+import { idsByPausedState, isPaused } from '@/lib/torrent'
 import { useTransmission } from '@/lib/transmission'
-import { openDialog } from '@/lib/ui'
+import { confirmRemove, openDialog } from '@/lib/ui'
 
 export interface ActionItem {
   id: string
@@ -119,7 +119,7 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
         icon: Trash2,
         destructive: true,
         shortcut: '⌫',
-        onSelect: () => openDialog({ type: 'remove', ids, names: [torrent.name] }),
+        onSelect: () => confirmRemove([torrent]),
       },
     ],
   ].filter((group) => group.length > 0)
@@ -129,8 +129,7 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
 export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
   const actions = useTorrentActions()
   const ids = torrents.map((t) => t.id)
-  const paused = torrents.filter(isPaused).map((t) => t.id)
-  const running = torrents.filter((t) => !isPaused(t)).map((t) => t.id)
+  const { paused, running } = idsByPausedState(torrents)
 
   return [
     [
@@ -180,7 +179,7 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
         icon: Trash2,
         destructive: true,
         shortcut: '⌫',
-        onSelect: () => openDialog({ type: 'remove', ids, names: torrents.map((t) => t.name) }),
+        onSelect: () => confirmRemove(torrents),
       },
     ],
   ]

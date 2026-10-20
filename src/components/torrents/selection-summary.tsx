@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { formatBytes, formatNumber } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
-import { haveBytes, isPaused, statusTone, toneBg } from '@/lib/torrent'
-import { clearSelection, openDialog } from '@/lib/ui'
+import { haveBytes, idsByPausedState, statusTone, toneBg, totalSize } from '@/lib/torrent'
+import { clearSelection, confirmRemove } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ActionMenuItems, useBulkActionGroups } from './actions'
 import { useTorrentsView } from './torrents-view'
@@ -14,10 +14,9 @@ export function SelectionSummary() {
   const { selected } = useTorrentsView()
   const actions = useTorrentActions()
   const groups = useBulkActionGroups(selected)
-  const size = selected.reduce((sum, t) => sum + t.sizeWhenDone, 0)
+  const size = totalSize(selected)
   const have = selected.reduce((sum, t) => sum + haveBytes(t), 0)
-  const paused = selected.filter(isPaused).map((t) => t.id)
-  const running = selected.filter((t) => !isPaused(t)).map((t) => t.id)
+  const { paused, running } = idsByPausedState(selected)
   // One card per selected torrent (max three), colored by state — reads as "a stack".
   const cards = selected.slice(0, 3).reverse()
 
@@ -61,12 +60,7 @@ export function SelectionSummary() {
             <Pause data-icon="inline-start" /> Pause
           </Button>
         )}
-        <Button
-          variant="destructive"
-          onClick={() =>
-            openDialog({ type: 'remove', ids: selected.map((t) => t.id), names: selected.map((t) => t.name) })
-          }
-        >
+        <Button variant="destructive" onClick={() => confirmRemove(selected)}>
           <Trash2 data-icon="inline-start" /> Remove
         </Button>
         <DropdownMenu>

@@ -7,7 +7,7 @@ import { useHotkeys } from '@/hooks/use-hotkeys'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { useSessionStats } from '@/lib/queries'
-import { clearSelection, openDialog, selectModeAtom } from '@/lib/ui'
+import { clearSelection, confirmRemove, openDialog, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ConnectionBanner } from './connection-state'
 import { DesktopToolbar } from './desktop-toolbar'
@@ -152,9 +152,7 @@ function Shortcuts() {
     },
     'Delete|Backspace': () => {
       const targets = selected.length > 0 ? selected : torrents.filter((t) => t.id === openTorrentId)
-      if (targets.length > 0) {
-        openDialog({ type: 'remove', ids: targets.map((t) => t.id), names: targets.map((t) => t.name) })
-      }
+      if (targets.length > 0) confirmRemove(targets)
     },
   })
   return null
