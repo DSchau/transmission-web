@@ -165,12 +165,12 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
   )
 }
 
-/** Bumps when the theme class on <html> changes, so canvas colors can follow. */
+/** Bumps when the theme on <html> changes, so canvas colors can follow. */
 function useThemeVersion() {
   const [version, setVersion] = useState(0)
   useEffect(() => {
     const observer = new MutationObserver(() => setVersion((v) => v + 1))
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] })
     return () => observer.disconnect()
   }, [])
   return version

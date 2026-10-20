@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { ChevronRight, Turtle } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
+import { ThemeSwatch } from '@/components/theme-swatch'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -9,10 +10,10 @@ import { Switch } from '@/components/ui/switch'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
 import { formatKBps } from '@/lib/format'
 import { useSessionMutation } from '@/lib/mutations'
-import { preferencesAtom, REFRESH_INTERVALS, type Theme, updatePreferences } from '@/lib/preferences'
+import { type ColorTheme, preferencesAtom, REFRESH_INTERVALS, type Theme, updatePreferences } from '@/lib/preferences'
 import { useConnectionState, useSession } from '@/lib/queries'
 import type { SessionInfo, SessionUpdate } from '@/lib/rpc/types'
-import { useTheme } from '@/lib/theme'
+import { COLOR_THEMES, useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { PageShell, SettingsRow, SettingsSection } from './page-shell'
 
@@ -183,7 +184,7 @@ function DownloadsSection({ session }: { session: SessionInfo }) {
 
 function AppSection() {
   const refreshInterval = useSelector(preferencesAtom, (p) => p.refreshInterval)
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme, colorTheme, setColorTheme } = useTheme()
   return (
     <SettingsSection title="App" footer="These preferences are stored in this browser.">
       <SettingsRow label="Refresh Every">
@@ -212,6 +213,21 @@ function AppSection() {
             <SelectItem value="system">System</SelectItem>
             <SelectItem value="light">Light</SelectItem>
             <SelectItem value="dark">Dark</SelectItem>
+          </SelectContent>
+        </Select>
+      </SettingsRow>
+      <SettingsRow label="Theme">
+        <Select value={colorTheme} onValueChange={(value) => setColorTheme(value as ColorTheme)}>
+          <SelectTrigger className="w-56" aria-label="Theme">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {COLOR_THEMES.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                <ThemeSwatch theme={t.id} mode={resolvedTheme} />
+                {t.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </SettingsRow>

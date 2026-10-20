@@ -1,0 +1,298 @@
+/*
+ * Color themes. Each one defines a small palette (--t-*) for light and dark; index.css maps it
+ * onto the app's design tokens for any element with a data-theme attribute. The root gets the
+ * user's choice, and theme previews get their own, so a swatch can render any theme in place.
+ * Without data-theme, the default (neutral) tokens in index.css apply.
+ */
+
+/* GitHub (Primer) */
+[data-theme="github"] {
+  --t-bg: #ffffff;
+  --t-fg: #1f2328;
+  --t-card: #ffffff;
+  --t-sidebar: #f6f8fa;
+  --t-muted: #eff2f5;
+  --t-muted-fg: #59636e;
+  --t-border: #d1d9e0;
+  --t-primary: #0969da;
+  --t-primary-fg: #ffffff;
+  --t-red: #d1242f;
+  --t-green: #1a7f37;
+  --t-blue: #0969da;
+  --t-orange: #bc4c00;
+}
+[data-theme="github"].dark {
+  --t-bg: #0d1117;
+  --t-fg: #f0f6fc;
+  --t-card: #151b23;
+  --t-sidebar: #010409;
+  --t-muted: #212830;
+  --t-muted-fg: #9198a1;
+  --t-border: #3d444d;
+  --t-primary: #4493f8;
+  --t-primary-fg: #0d1117;
+  --t-red: #f85149;
+  --t-green: #3fb950;
+  --t-blue: #4493f8;
+  --t-orange: #d29922;
+}
+
+/* One Dark Pro / One Light (Atom) */
+[data-theme="one"] {
+  --t-bg: #fafafa;
+  --t-fg: #383a42;
+  --t-card: #ffffff;
+  --t-sidebar: #f0f0f1;
+  --t-muted: #e5e5e6;
+  --t-muted-fg: #696c77;
+  --t-border: #dbdbdc;
+  --t-primary: #3a6fdf;
+  --t-primary-fg: #ffffff;
+  --t-red: #e45649;
+  --t-green: #50a14f;
+  --t-blue: #4078f2;
+  --t-orange: #c18401;
+}
+[data-theme="one"].dark {
+  --t-bg: #282c34;
+  --t-fg: #abb2bf;
+  --t-card: #21252b;
+  --t-sidebar: #21252b;
+  --t-muted: #2c313a;
+  --t-muted-fg: #969ca8;
+  --t-border: #3e4452;
+  --t-primary: #61afef;
+  --t-primary-fg: #282c34;
+  --t-red: #e06c75;
+  --t-green: #98c379;
+  --t-blue: #61afef;
+  --t-orange: #d19a66;
+}
+
+/* Dracula / Alucard */
+[data-theme="dracula"] {
+  --t-bg: #fffbeb;
+  --t-fg: #1f1f1f;
+  --t-card: #fffdf5;
+  --t-sidebar: #f5f0dc;
+  --t-muted: #efe9d0;
+  --t-muted-fg: #635e45;
+  --t-border: #e2dbbf;
+  --t-primary: #644ac9;
+  --t-primary-fg: #ffffff;
+  --t-red: #cb3a2a;
+  --t-green: #14710a;
+  --t-blue: #036a96;
+  --t-orange: #a34d14;
+}
+[data-theme="dracula"].dark {
+  --t-bg: #282a36;
+  --t-fg: #f8f8f2;
+  --t-card: #343746;
+  --t-sidebar: #21222c;
+  --t-muted: #44475a;
+  --t-muted-fg: #9ea8cf;
+  --t-border: #44475a;
+  --t-primary: #bd93f9;
+  --t-primary-fg: #282a36;
+  --t-red: #ff5555;
+  --t-green: #50fa7b;
+  --t-blue: #8be9fd;
+  --t-orange: #ffb86c;
+}
+
+/* Catppuccin Latte / Mocha */
+[data-theme="catppuccin"] {
+  --t-bg: #eff1f5;
+  --t-fg: #4c4f69;
+  --t-card: #eff1f5;
+  --t-sidebar: #e6e9ef;
+  --t-muted: #dce0e8;
+  --t-muted-fg: #5c5f77;
+  --t-border: #ccd0da;
+  --t-primary: #8839ef;
+  --t-primary-fg: #eff1f5;
+  --t-red: #d20f39;
+  --t-green: #388c26;
+  --t-blue: #1e66f5;
+  --t-orange: #c94c08;
+}
+[data-theme="catppuccin"].dark {
+  --t-bg: #1e1e2e;
+  --t-fg: #cdd6f4;
+  --t-card: #181825;
+  --t-sidebar: #181825;
+  --t-muted: #313244;
+  --t-muted-fg: #a6adc8;
+  --t-border: #313244;
+  --t-primary: #cba6f7;
+  --t-primary-fg: #1e1e2e;
+  --t-red: #f38ba8;
+  --t-green: #a6e3a1;
+  --t-blue: #89b4fa;
+  --t-orange: #fab387;
+}
+
+/* Tokyo Night Day / Night */
+[data-theme="tokyo-night"] {
+  --t-bg: #e1e2e7;
+  --t-fg: #2b56ae;
+  --t-card: #e9e9ed;
+  --t-sidebar: #d8dbe5;
+  --t-muted: #d0d4e2;
+  --t-muted-fg: #4c5a8f;
+  --t-border: #c4c8da;
+  --t-primary: #2a6ccf;
+  --t-primary-fg: #ffffff;
+  --t-red: #f52a65;
+  --t-green: #587539;
+  --t-blue: #2e7de9;
+  --t-orange: #b15c00;
+}
+[data-theme="tokyo-night"].dark {
+  --t-bg: #1a1b26;
+  --t-fg: #c0caf5;
+  --t-card: #16161e;
+  --t-sidebar: #16161e;
+  --t-muted: #292e42;
+  --t-muted-fg: #8a90b3;
+  --t-border: #292e42;
+  --t-primary: #7aa2f7;
+  --t-primary-fg: #1a1b26;
+  --t-red: #f7768e;
+  --t-green: #9ece6a;
+  --t-blue: #7aa2f7;
+  --t-orange: #ff9e64;
+}
+
+/* Solarized */
+[data-theme="solarized"] {
+  --t-bg: #fdf6e3;
+  --t-fg: #073642;
+  --t-card: #fdf6e3;
+  --t-sidebar: #eee8d5;
+  --t-muted: #eee8d5;
+  --t-muted-fg: #4f6369;
+  --t-border: #e0d9c3;
+  --t-primary: #1f75b3;
+  --t-primary-fg: #ffffff;
+  --t-red: #dc322f;
+  --t-green: #738a05;
+  --t-blue: #268bd2;
+  --t-orange: #cb4b16;
+}
+[data-theme="solarized"].dark {
+  --t-bg: #002b36;
+  --t-fg: #eee8d5;
+  --t-card: #073642;
+  --t-sidebar: #00212b;
+  --t-muted: #073642;
+  --t-muted-fg: #93a1a1;
+  --t-border: #0d4452;
+  --t-primary: #3a9ae0;
+  --t-primary-fg: #002b36;
+  --t-red: #dc322f;
+  --t-green: #859900;
+  --t-blue: #268bd2;
+  --t-orange: #b58900;
+}
+
+/* Gruvbox */
+[data-theme="gruvbox"] {
+  --t-bg: #fbf1c7;
+  --t-fg: #3c3836;
+  --t-card: #f9f5d7;
+  --t-sidebar: #f2e5bc;
+  --t-muted: #ebdbb2;
+  --t-muted-fg: #665c54;
+  --t-border: #d5c4a1;
+  --t-primary: #af3a03;
+  --t-primary-fg: #fbf1c7;
+  --t-red: #9d0006;
+  --t-green: #79740e;
+  --t-blue: #076678;
+  --t-orange: #b57614;
+}
+[data-theme="gruvbox"].dark {
+  --t-bg: #282828;
+  --t-fg: #ebdbb2;
+  --t-card: #32302f;
+  --t-sidebar: #1d2021;
+  --t-muted: #3c3836;
+  --t-muted-fg: #a89984;
+  --t-border: #3c3836;
+  --t-primary: #fe8019;
+  --t-primary-fg: #282828;
+  --t-red: #fb4934;
+  --t-green: #b8bb26;
+  --t-blue: #83a598;
+  --t-orange: #fabd2f;
+}
+
+/* Nord (Snow Storm / Polar Night) */
+[data-theme="nord"] {
+  --t-bg: #eceff4;
+  --t-fg: #2e3440;
+  --t-card: #f8f9fb;
+  --t-sidebar: #e5e9f0;
+  --t-muted: #d8dee9;
+  --t-muted-fg: #4c566a;
+  --t-border: #d8dee9;
+  --t-primary: #4c6d96;
+  --t-primary-fg: #eceff4;
+  --t-red: #bf616a;
+  --t-green: #5e7d46;
+  --t-blue: #5e81ac;
+  --t-orange: #b2652f;
+}
+[data-theme="nord"].dark {
+  --t-bg: #2e3440;
+  --t-fg: #eceff4;
+  --t-card: #3b4252;
+  --t-sidebar: #292e39;
+  --t-muted: #3b4252;
+  --t-muted-fg: #abb4c4;
+  --t-border: #434c5e;
+  --t-primary: #88c0d0;
+  --t-primary-fg: #2e3440;
+  --t-red: #bf616a;
+  --t-green: #a3be8c;
+  --t-blue: #81a1c1;
+  --t-orange: #ebcb8b;
+}
+
+/*
+ * Dracula PRO, with Alucard as its light theme. Surfaces follow the palette's HSL scheme
+ * (hue, 15% saturation, varying lightness). Muted text is lifted from the 55%-lightness
+ * "Comment" color to keep small UI text legible.
+ */
+[data-theme="dracula-pro"] {
+  --t-bg: #f5f5f5;
+  --t-fg: #1f1f1f;
+  --t-card: #ffffff;
+  --t-sidebar: #edeff4;
+  --t-muted: #e6e4f0;
+  --t-muted-fg: #57518a;
+  --t-border: #dcd9ea;
+  --t-primary: #644ac9;
+  --t-primary-fg: #ffffff;
+  --t-red: #cb3a2a;
+  --t-green: #14710a;
+  --t-blue: #036a96;
+  --t-orange: #a34d14;
+}
+[data-theme="dracula-pro"].dark {
+  --t-bg: #22212c;
+  --t-fg: #f8f8f2;
+  --t-card: #292735;
+  --t-sidebar: #1b1a23;
+  --t-muted: #353243;
+  --t-muted-fg: #9d95c6;
+  --t-border: #353243;
+  --t-primary: #9580ff;
+  --t-primary-fg: #22212c;
+  --t-red: #ff9580;
+  --t-green: #8aff80;
+  --t-blue: #9580ff;
+  --t-orange: #ffca80;
+}

@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "./themes.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -53,7 +54,9 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+/* The default (neutral) theme. */
+:root,
+[data-theme="default"] {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -94,7 +97,8 @@
   --status-error: oklch(0.6 0.22 25);
 }
 
-.dark {
+.dark,
+[data-theme="default"].dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -131,6 +135,46 @@
   --status-checking: oklch(0.78 0.15 65);
   --status-idle: oklch(0.6 0.01 260);
   --status-error: oklch(0.68 0.2 25);
+}
+
+/* Every other theme (see themes.css) maps its palette onto the tokens. */
+[data-theme]:not([data-theme="default"]) {
+  --background: var(--t-bg);
+  --foreground: var(--t-fg);
+  --card: var(--t-card);
+  --card-foreground: var(--t-fg);
+  --popover: var(--t-card);
+  --popover-foreground: var(--t-fg);
+  --primary: var(--t-primary);
+  --primary-foreground: var(--t-primary-fg);
+  --secondary: var(--t-muted);
+  --secondary-foreground: var(--t-fg);
+  --muted: var(--t-muted);
+  --muted-foreground: var(--t-muted-fg);
+  --accent: var(--t-muted);
+  --accent-foreground: var(--t-fg);
+  --destructive: var(--t-red);
+  --border: var(--t-border);
+  --input: var(--t-border);
+  --ring: var(--t-primary);
+  --chart-1: var(--t-primary);
+  --chart-2: var(--t-blue);
+  --chart-3: var(--t-green);
+  --chart-4: var(--t-orange);
+  --chart-5: var(--t-red);
+  --sidebar: var(--t-sidebar);
+  --sidebar-foreground: var(--t-fg);
+  --sidebar-primary: var(--t-primary);
+  --sidebar-primary-foreground: var(--t-primary-fg);
+  --sidebar-accent: var(--t-muted);
+  --sidebar-accent-foreground: var(--t-fg);
+  --sidebar-border: var(--t-border);
+  --sidebar-ring: var(--t-primary);
+  --status-downloading: var(--t-blue);
+  --status-seeding: var(--t-green);
+  --status-checking: var(--t-orange);
+  --status-idle: var(--t-muted-fg);
+  --status-error: var(--t-red);
 }
 
 @layer base {

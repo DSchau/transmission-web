@@ -4,8 +4,22 @@ import { persistedAtom } from './persisted'
 /** App-local preferences (not daemon settings — those live in the session). */
 export type Theme = 'system' | 'light' | 'dark'
 
+/** Color palettes, each with a light and dark variant (see src/themes.css). */
+export type ColorTheme =
+  | 'default'
+  | 'github'
+  | 'one'
+  | 'dracula'
+  | 'catppuccin'
+  | 'tokyo-night'
+  | 'solarized'
+  | 'gruvbox'
+  | 'nord'
+  | 'dracula-pro'
+
 export interface Preferences {
   theme: Theme
+  colorTheme: ColorTheme
   /** Seconds between polls. */
   refreshInterval: number
   columnVisibility: ColumnVisibilityState
@@ -21,6 +35,7 @@ export const PREFERENCES_KEY = 'transmission-web.preferences.v2'
 
 export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
   theme: 'system',
+  colorTheme: 'default',
   refreshInterval: 2,
   // Like Transmission's own list: the name column carries the status line (including size
   // and rates), so the table needs nothing else. The rest live in the Columns menu if wanted.

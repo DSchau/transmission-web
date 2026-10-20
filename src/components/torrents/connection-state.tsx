@@ -66,7 +66,7 @@ export function ListEmptyState() {
           <EmptyDescription>{displayNameFor(config)} needs a username and password.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button onClick={() => signInDismissedAtom.set(false)}>Sign In…</Button>
+          <Button onClick={() => signInDismissedAtom.set(false)}>Sign In</Button>
         </EmptyContent>
       </Empty>
     )

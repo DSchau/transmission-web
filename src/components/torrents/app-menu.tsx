@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { ChartArea, CheckSquare, Ellipsis, Moon, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
+import { ChartArea, CheckSquare, Ellipsis, Moon, Palette, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
+import { ThemeSwatch } from '@/components/theme-swatch'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,9 +16,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useSessionMutation } from '@/lib/mutations'
-import type { Theme } from '@/lib/preferences'
+import type { ColorTheme, Theme } from '@/lib/preferences'
 import { useSession } from '@/lib/queries'
-import { useTheme } from '@/lib/theme'
+import { COLOR_THEMES, useTheme } from '@/lib/theme'
 import { clearSelection, selectModeAtom } from '@/lib/ui'
 import { openStatistics } from './activity'
 
@@ -25,7 +26,7 @@ import { openStatistics } from './activity'
 export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
   const { data: session } = useSession()
   const { mutate: updateSession } = useSessionMutation()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme, colorTheme, setColorTheme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -77,6 +78,22 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
               <DropdownMenuRadioItem value="dark">
                 <Moon /> Dark
               </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Palette />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="max-h-(--radix-dropdown-menu-content-available-height) max-w-(--radix-dropdown-menu-content-available-width) overflow-y-auto">
+            <DropdownMenuRadioGroup value={colorTheme} onValueChange={(value) => setColorTheme(value as ColorTheme)}>
+              {COLOR_THEMES.map((t) => (
+                <DropdownMenuRadioItem key={t.id} value={t.id}>
+                  <ThemeSwatch theme={t.id} mode={resolvedTheme} />
+                  <span className="truncate">{t.name}</span>
+                </DropdownMenuRadioItem>
+              ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>

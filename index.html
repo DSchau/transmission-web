@@ -10,19 +10,19 @@
     <title>Transmission</title>
     <script>
       // Apply the saved theme before first paint (see src/lib/theme.ts).
+      var prefs = {}
       var theme = 'system'
       try {
-        theme =
-          (
-            JSON.parse(
-              localStorage.getItem('transmission-web.preferences.v2') ||
-                localStorage.getItem('transmission-web.preferences') ||
-                '{}',
-            ).theme
-          ) || 'system'
+        prefs = JSON.parse(
+          localStorage.getItem('transmission-web.preferences.v2') ||
+            localStorage.getItem('transmission-web.preferences') ||
+            '{}',
+        )
+        theme = prefs.theme || 'system'
         if (theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark')
         }
+        if (typeof prefs.colorTheme === 'string') document.documentElement.dataset.theme = prefs.colorTheme
       } catch (_e) {}
     </script>
   </head>
