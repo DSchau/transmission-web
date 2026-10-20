@@ -18,6 +18,10 @@ export function Sidebar({ className }: { className?: string }) {
   const counts = useMemo(() => countByFilter(torrents), [torrents])
   const config = useSelector(connectionAtom)
   const state = useConnectionState()
+  const host = displayNameFor(config)
+  // IPs/localhost don't split meaningfully; names like `transmission.example.com` do.
+  const dot = /^[\d[]/.test(host) ? -1 : host.indexOf('.')
+  const [hostHead, hostTail] = dot > 0 ? [host.slice(0, dot), host.slice(dot)] : [host, '']
 
   return (
     <nav aria-label="Filters" className={cn('flex flex-col bg-sidebar text-sidebar-foreground', className)}>
@@ -72,9 +76,12 @@ export function Sidebar({ className }: { className?: string }) {
         />
         <Link
           to="/connect"
-          className="min-w-0 flex-1 truncate font-mono text-muted-foreground text-xs hover:text-foreground"
+          title={host}
+          className="flex min-w-0 flex-1 font-mono text-[11px] text-muted-foreground hover:text-foreground"
         >
-          {displayNameFor(config)}
+          {/* Truncate the leading label so the identifying domain stays visible. */}
+          <span className="truncate">{hostHead}</span>
+          <span className="shrink-0">{hostTail}</span>
         </Link>
         <Button variant="ghost" size="icon-sm" asChild aria-label="Settings">
           <Link to="/settings">
