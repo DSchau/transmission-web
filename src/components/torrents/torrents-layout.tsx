@@ -1,5 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
+import { useState } from 'react'
 import { DropOverlay } from '@/components/drop-zone'
 import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
@@ -44,6 +45,7 @@ function Layout() {
   const sidebarWidth = useSelector(preferencesAtom, (p) => p.sidebarWidth)
   const inspectorWidth = useSelector(preferencesAtom, (p) => p.inspectorWidth)
   const multiple = selected.length > 1
+  const [listScrolled, setListScrolled] = useState(false)
   // Keeps the session's transfer history (the speed charts) up to date.
   useSessionStats()
 
@@ -114,9 +116,10 @@ function Layout() {
     <div className="relative flex h-full flex-col">
       <ListHeader />
       <ConnectionBanner />
+      {/* Once the list scrolls, the strip folds down to its one-line summary to give the cards room. */}
+      <StatusPanel chart chartCollapsed={listScrolled} />
       <div className="relative flex min-h-0 flex-1 flex-col">
-        {/* Scrolls away with the list so the cards get the whole screen; only the header stays put. */}
-        <TorrentListView className="min-h-0 flex-1" header={<StatusPanel chart />} />
+        <TorrentListView className="min-h-0 flex-1" onScrolledChange={setListScrolled} />
         <DropOverlay />
       </div>
       {selectMode && <SelectionBar />}

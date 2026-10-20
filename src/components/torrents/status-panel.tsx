@@ -16,8 +16,17 @@ import { useTransferSummary } from './use-summary'
  *
  * With `chart` (phone, tablet, and desktop with the sidebar hidden), a slim sparkline of the last
  * few minutes runs underneath: drag along it to read past rates, tap it to open Statistics.
+ * `chartCollapsed` folds the sparkline away (the phone list does this while scrolled).
  */
-export function StatusPanel({ className, chart = false }: { className?: string; chart?: boolean }) {
+export function StatusPanel({
+  className,
+  chart = false,
+  chartCollapsed = false,
+}: {
+  className?: string
+  chart?: boolean
+  chartCollapsed?: boolean
+}) {
   const summary = useTransferSummary()
   const { selected } = useTorrentsView()
   const state = useConnectionState()
@@ -58,15 +67,26 @@ export function StatusPanel({ className, chart = false }: { className?: string; 
         )}
       </div>
       {chart && (
-        <SpeedChart
-          samples={samples}
-          range={INLINE_RANGE}
-          limits={limits}
-          onScrub={setScrub}
-          onActivate={openStatistics}
-          label="Transfer speeds over the last 5 minutes. Open Statistics."
-          className="h-8"
-        />
+        // Animating grid rows 1fr → 0fr folds the chart away without measuring its height.
+        <div
+          inert={chartCollapsed}
+          className={cn(
+            'grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
+            chartCollapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
+          )}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <SpeedChart
+              samples={samples}
+              range={INLINE_RANGE}
+              limits={limits}
+              onScrub={setScrub}
+              onActivate={openStatistics}
+              label="Transfer speeds over the last 5 minutes. Open Statistics."
+              className="h-8"
+            />
+          </div>
+        </div>
       )}
     </footer>
   )
