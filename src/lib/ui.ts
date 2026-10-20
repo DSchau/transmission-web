@@ -13,6 +13,9 @@ export type DialogRequest =
 export const dialogAtom = createAtom<DialogRequest | null>(null)
 export const openDialog = (request: DialogRequest) => dialogAtom.set(request)
 export const closeDialog = () => dialogAtom.set(null)
+/** Asks to confirm removing `torrents` (and, optionally, their data). */
+export const confirmRemove = (torrents: Pick<Torrent, 'id' | 'name'>[]) =>
+  openDialog({ type: 'remove', ids: torrents.map((t) => t.id), names: torrents.map((t) => t.name) })
 
 /** Multi-selection, keyed by torrent id (as strings, the way TanStack Table keys rows). */
 export const selectionAtom = createAtom<RowSelectionState>({})
@@ -26,6 +29,10 @@ export const selectedIds = (selection: RowSelectionState) =>
 
 /** Select mode on touch layouts (like Mail's Edit). Desktop multi-selects with modifier keys. */
 export const selectModeAtom = createAtom(false)
+export const exitSelectMode = () => {
+  selectModeAtom.set(false)
+  clearSelection()
+}
 
 /** Whether files are being dragged over the window (the torrent list shows a drop target). */
 export const fileDragAtom = createAtom(false)

@@ -2,8 +2,8 @@ import { Ellipsis, Pause, Play, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useTorrentActions } from '@/lib/mutations'
-import { isPaused } from '@/lib/torrent'
-import { openDialog } from '@/lib/ui'
+import { idsByPausedState } from '@/lib/torrent'
+import { confirmRemove } from '@/lib/ui'
 import { ActionMenuItems, useBulkActionGroups } from './actions'
 import { useTorrentsView } from './torrents-view'
 
@@ -12,8 +12,7 @@ export function SelectionBar() {
   const { selected } = useTorrentsView()
   const actions = useTorrentActions()
   const groups = useBulkActionGroups(selected)
-  const paused = selected.filter(isPaused).map((t) => t.id)
-  const running = selected.filter((t) => !isPaused(t)).map((t) => t.id)
+  const { paused, running } = idsByPausedState(selected)
   const none = selected.length === 0
 
   return (
@@ -27,14 +26,7 @@ export function SelectionBar() {
           <Pause data-icon="inline-start" />
           Pause
         </Button>
-        <Button
-          variant="ghost"
-          className="text-destructive"
-          disabled={none}
-          onClick={() =>
-            openDialog({ type: 'remove', ids: selected.map((t) => t.id), names: selected.map((t) => t.name) })
-          }
-        >
+        <Button variant="ghost" className="text-destructive" disabled={none} onClick={() => confirmRemove(selected)}>
           <Trash2 data-icon="inline-start" />
           Remove
         </Button>

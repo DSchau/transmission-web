@@ -4,16 +4,8 @@ import { functionalUpdate, type OnChangeFn, type SortingState } from '@tanstack/
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
 import { useTorrents } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
-import { filterTorrents, SORT_INFO, type TorrentSort } from '@/lib/torrent'
-import {
-  clearSelection,
-  closeDialog,
-  searchOpenAtom,
-  selectedIds,
-  selectionAtom,
-  selectionOf,
-  selectModeAtom,
-} from '@/lib/ui'
+import { filterTorrents, isSortDesc, SORT_INFO, type TorrentSort } from '@/lib/torrent'
+import { closeDialog, exitSelectMode, searchOpenAtom, selectedIds, selectionAtom, selectionOf } from '@/lib/ui'
 import { HOME_SEARCH, type TorrentsSearch } from '@/routes/_torrents'
 import { type TorrentTable, useTorrentTable } from './table-model'
 
@@ -56,7 +48,7 @@ export function TorrentsViewProvider({ children }: { children: ReactNode }) {
   const visible = useMemo(() => filterTorrents(torrents, search.filter, search.q), [torrents, search.filter, search.q])
 
   const sorting = useMemo<SortingState>(
-    () => [{ id: search.sort, desc: search.dir ? search.dir === 'desc' : SORT_INFO[search.sort].desc }],
+    () => [{ id: search.sort, desc: isSortDesc(search.sort, search.dir) }],
     [search.sort, search.dir],
   )
 
@@ -107,8 +99,7 @@ export function TorrentsViewProvider({ children }: { children: ReactNode }) {
 
   const goHome = useCallback(() => {
     closeDialog()
-    clearSelection()
-    selectModeAtom.set(false)
+    exitSelectMode()
     searchOpenAtom.set(false)
     navigate({ to: '/', search: HOME_SEARCH, replace: true })
   }, [navigate])

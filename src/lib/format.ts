@@ -108,13 +108,3 @@ export function formatRelative(unixSeconds: number, now = Date.now()): string {
 }
 
 export const torrentCountLabel = (count: number) => (count === 1 ? '1 torrent' : `${formatNumber(count)} torrents`)
-
-/**
- * Round to 1 significant figure so poll-to-poll jitter maps to the same string
- * (e.g. 4.15–4.49 MB/s → 4 MB/s). Used for summary text that shouldn't flicker.
- */
-export function quantizeRate(rate: number): number {
-  if (rate <= 0) return 0
-  const magnitude = 10 ** Math.floor(Math.log10(rate))
-  return Math.round(rate / magnitude) * magnitude
-}

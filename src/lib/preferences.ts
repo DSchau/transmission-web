@@ -1,3 +1,4 @@
+import { useSelector } from '@tanstack/react-store'
 import type { ColumnVisibilityState } from '@tanstack/react-table'
 import { persistedAtom } from './persisted'
 
@@ -56,3 +57,6 @@ export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
 })
 
 export const updatePreferences = (patch: Partial<Preferences>) => preferencesAtom.set((prev) => ({ ...prev, ...patch }))
+
+/** Seconds between polls. */
+export const useRefreshInterval = () => useSelector(preferencesAtom, (p) => p.refreshInterval)

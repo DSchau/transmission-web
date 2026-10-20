@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
-import { useConnectionState } from '@/lib/queries'
+import { useConnectionState, useRetryConnection } from '@/lib/queries'
 import { FILTER_INFO } from '@/lib/torrent'
 import { openDialog, signInDismissedAtom } from '@/lib/ui'
 import { useTorrentsView } from './torrents-view'
-import { useRetryConnection } from './use-summary'
 
 /** Slim warning shown above the list when polls start failing after we had data. */
 export function ConnectionBanner() {

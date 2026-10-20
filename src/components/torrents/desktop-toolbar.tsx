@@ -3,7 +3,7 @@ import { PanelLeft, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
-import { FILTER_INFO } from '@/lib/torrent'
+import { filterTitle } from '@/lib/torrent'
 import { openDialog } from '@/lib/ui'
 import { ToolbarSearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
@@ -35,7 +35,7 @@ export function DesktopToolbar() {
           aria-label="Reset view"
           className="-mx-1 rounded-md px-2 py-0.5 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {search.filter === 'all' ? 'Torrents' : FILTER_INFO[search.filter].title}
+          {filterTitle(search.filter)}
         </button>
       </h1>
       <div className="flex-1" />

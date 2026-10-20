@@ -26,6 +26,15 @@ export const hasError = (t: Torrent) => t.error !== 0
 export const isMagnetPending = (t: Torrent) => t.metadataPercentComplete < 1
 export const isComplete = (t: Torrent) => t.percentDone >= 1
 export const haveBytes = (t: Torrent) => t.sizeWhenDone - t.leftUntilDone
+export const totalSize = (torrents: Torrent[]) => torrents.reduce((sum, t) => sum + t.sizeWhenDone, 0)
+
+/** Ids of the torrents Resume would start (`paused`) and Pause would stop (`running`). */
+export function idsByPausedState(torrents: Torrent[]): { paused: number[]; running: number[] } {
+  const paused: number[] = []
+  const running: number[] = []
+  for (const t of torrents) (isPaused(t) ? paused : running).push(t.id)
+  return { paused, running }
+}
 
 /** The progress value that best represents what the torrent is doing right now. */
 export function displayProgress(t: Torrent): number {
@@ -181,6 +190,9 @@ export const FILTER_INFO: Record<TorrentFilter, { title: string; icon: LucideIco
     completed: { title: 'Completed', icon: CheckCircle2, matches: isComplete },
     error: { title: 'Errors', icon: TriangleAlert, matches: hasError },
   }
+
+/** The list's title for a filter: "Torrents" for all, else the filter's name. */
+export const filterTitle = (filter: TorrentFilter) => (filter === 'all' ? 'Torrents' : FILTER_INFO[filter].title)
 
 // MARK: Search queries
 
@@ -430,11 +442,8 @@ export const MENU_SORTS: TorrentSort[] = [
   'queue',
 ]
 
-export function sortTorrents(torrents: Torrent[], sort: TorrentSort, desc: boolean): Torrent[] {
-  const { compare } = SORT_INFO[sort]
-  // Tie-break on id so equal keys (e.g. 0 kB/s) don't shuffle between polls.
-  return [...torrents].sort((a, b) => (desc ? -1 : 1) * (compare(a, b) || a.id - b.id))
-}
+/** Whether the list sorts descending: an explicit `dir`, else the sort's natural direction. */
+export const isSortDesc = (sort: TorrentSort, dir?: 'asc' | 'desc') => (dir ? dir === 'desc' : SORT_INFO[sort].desc)
 
 // MARK: Detail
 

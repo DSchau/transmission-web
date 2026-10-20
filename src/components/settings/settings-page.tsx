@@ -10,9 +10,15 @@ import { Switch } from '@/components/ui/switch'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
 import { formatKBps } from '@/lib/format'
 import { useSessionMutation } from '@/lib/mutations'
-import { type ColorTheme, preferencesAtom, REFRESH_INTERVALS, type Theme, updatePreferences } from '@/lib/preferences'
+import {
+  type ColorTheme,
+  REFRESH_INTERVALS,
+  type Theme,
+  updatePreferences,
+  useRefreshInterval,
+} from '@/lib/preferences'
 import { useConnectionState, useSession } from '@/lib/queries'
-import type { SessionInfo, SessionUpdate } from '@/lib/rpc/types'
+import type { SessionInfo } from '@/lib/rpc/types'
 import { COLOR_THEMES, useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { PageShell, SettingsRow, SettingsSection } from './page-shell'
@@ -75,13 +81,8 @@ function ServerSection() {
   )
 }
 
-function useSessionSetting() {
-  const { mutate } = useSessionMutation()
-  return (update: SessionUpdate) => mutate(update)
-}
-
 function SpeedSection({ session }: { session: SessionInfo }) {
-  const update = useSessionSetting()
+  const { mutate: update } = useSessionMutation()
   const id = useId()
   return (
     <SettingsSection title="Speed">
@@ -139,7 +140,7 @@ function SpeedSection({ session }: { session: SessionInfo }) {
 }
 
 function DownloadsSection({ session }: { session: SessionInfo }) {
-  const update = useSessionSetting()
+  const { mutate: update } = useSessionMutation()
   const id = useId()
   return (
     <SettingsSection title="Downloads">
@@ -183,7 +184,7 @@ function DownloadsSection({ session }: { session: SessionInfo }) {
 }
 
 function AppSection() {
-  const refreshInterval = useSelector(preferencesAtom, (p) => p.refreshInterval)
+  const refreshInterval = useRefreshInterval()
   const { theme, setTheme, resolvedTheme, colorTheme, setColorTheme } = useTheme()
   return (
     <SettingsSection title="App" footer="These preferences are stored in this browser.">
