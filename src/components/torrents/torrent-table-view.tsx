@@ -94,6 +94,9 @@ export function TorrentTableView({ className }: { className?: string }) {
       event.preventDefault()
       open(rows[0])
       virtualizer.scrollToIndex(0)
+    } else if (event.key === 'Escape') {
+      // Not prevented, so the global Escape shortcut still clears the selection / closes the detail view.
+      scrollRef.current?.blur()
     } else if ((event.metaKey || event.ctrlKey) && event.key === 'a') {
       event.preventDefault()
       table.toggleAllRowsSelected(true)
