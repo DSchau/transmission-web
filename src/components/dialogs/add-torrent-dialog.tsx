@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-store'
 import { ClipboardPaste, FileUp, Link2, X } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -10,10 +11,23 @@ import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useHasFinePointer } from '@/hooks/use-media-query'
+import { connectionAtom, rpcUrlFor } from '@/lib/connection'
 import { useAddTorrent } from '@/lib/mutations'
+import { persistedAtom, safeSessionStorage } from '@/lib/persisted'
 import { useSession } from '@/lib/queries'
 import type { AddTorrentArguments } from '@/lib/rpc/types'
 import { fileToBase64, isMagnetOrUrl, isTorrentFile, torrentFileAccept } from '@/lib/utils'
+
+/**
+ * The folder the last torrent was added to, so adding several to the same place doesn't mean
+ * retyping it. Tab-scoped (sessionStorage) and tied to the server it was used on; `dir: ''` means
+ * the daemon's default.
+ */
+const lastDownloadDirAtom = persistedAtom(
+  'transmission-web.last-download-dir',
+  { server: '', dir: '' },
+  safeSessionStorage(),
+)
 
 interface Props {
   open: boolean
@@ -58,6 +72,8 @@ function AddTorrentForm({
   onDone: () => void
 }) {
   const { data: session } = useSession()
+  const server = rpcUrlFor(useSelector(connectionAtom))
+  const lastDir = useSelector(lastDownloadDirAtom)
   const { mutateAsync: add } = useAddTorrent()
   const fileInput = useRef<HTMLInputElement>(null)
   // On touch screens the keyboard would cover the sheet (and the file button) before you've chosen.
@@ -68,7 +84,7 @@ function AddTorrentForm({
     defaultValues: {
       link: initialLink,
       files: initialFiles,
-      downloadDir: session?.['download-dir'] ?? '',
+      downloadDir: (lastDir.server === server && lastDir.dir) || session?.['download-dir'] || '',
       start: session?.['start-added-torrents'] ?? true,
     },
     validators: {
@@ -106,6 +122,7 @@ function AddTorrentForm({
       }
 
       if (added.length > 0) {
+        lastDownloadDirAtom.set({ server, dir: base['download-dir'] ?? '' })
         toast.success(added.length === 1 ? `Added “${added[0]}”` : `Added ${added.length} torrents`)
       }
       if (problems.length > 0) setSubmitError(problems.join('\n'))
