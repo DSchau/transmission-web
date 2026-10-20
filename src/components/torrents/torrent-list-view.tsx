@@ -2,7 +2,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Check, Ellipsis } from 'lucide-react'
-import { memo, useCallback, useEffect, useRef } from 'react'
+import { memo, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { CategoryIcon } from '@/components/category-badge'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
@@ -16,15 +16,28 @@ import { TorrentMenuContent } from './torrent-menu'
 import { TorrentTransferStatus } from './torrent-transfer-status'
 import { useTorrentsView } from './torrents-view'
 
-/** Phone/tablet list: the same table rows, rendered as cards. Virtualized for large libraries. */
-export function TorrentListView({ className }: { className?: string }) {
+/**
+ * Phone/tablet list: the same table rows, rendered as cards. Virtualized for large libraries.
+ * `header` scrolls with the rows instead of staying pinned above them.
+ */
+export function TorrentListView({ className, header }: { className?: string; header?: ReactNode }) {
   const { table, openTorrent, openTorrentId } = useTorrentsView()
   const selectMode = useSelector(selectModeAtom)
   const selection = useSelector(selectionAtom)
   const showEmpty = useShowsEmptyState()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
   const rows = table.getRowModel().rows
   const router = useRouter()
+
+  const headerRef = useCallback((el: HTMLDivElement) => {
+    const observer = new ResizeObserver(() => setHeaderHeight(el.offsetHeight))
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      setHeaderHeight(0)
+    }
+  }, [])
 
   // Touch devices never fire the hover that preloads the detail route, so without this the first tap
   // waits on the detail chunk with no visible response, and people tap again thinking it missed.
@@ -36,6 +49,7 @@ export function TorrentListView({ className }: { className?: string }) {
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 92,
+    scrollMargin: headerHeight,
     overscan: 8,
     getItemKey: (index) => rows[index]?.id ?? index,
   })
@@ -50,14 +64,18 @@ export function TorrentListView({ className }: { className?: string }) {
 
   if (showEmpty) {
     return (
-      <div className={className}>
-        <ListEmptyState />
+      <div className={cn('flex flex-col', className)}>
+        {header}
+        <div className="min-h-0 flex-1">
+          <ListEmptyState />
+        </div>
       </div>
     )
   }
 
   return (
     <div ref={scrollRef} className={cn('overflow-y-auto overscroll-contain', className)}>
+      {header != null && <div ref={headerRef}>{header}</div>}
       <ul aria-label="Torrents" className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
           const row = rows[item.index]
@@ -68,7 +86,7 @@ export function TorrentListView({ className }: { className?: string }) {
               data-index={item.index}
               ref={virtualizer.measureElement}
               className="absolute inset-x-0"
-              style={{ transform: `translateY(${item.start}px)` }}
+              style={{ transform: `translateY(${item.start - headerHeight}px)` }}
             >
               <TorrentCard
                 torrent={row.original}

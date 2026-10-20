@@ -321,7 +321,7 @@ export const SpeedChart = memo(function SpeedChart({
   const shared = {
     ref: wrapperRef,
     ...handlers,
-    className: cn('relative block w-full touch-none select-none overflow-hidden', className),
+    className: cn('relative block w-full touch-pan-y select-none overflow-hidden', className),
   }
 
   return onActivate ? (

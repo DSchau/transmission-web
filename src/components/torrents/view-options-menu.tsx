@@ -10,7 +10,6 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -59,10 +58,16 @@ export function ViewOptionsMenu() {
               // "Active" is omitted from counts: it flickers with every speed change.
               const count = filter === 'all' || filter === 'active' ? 0 : counts[filter]
               return (
-                <DropdownMenuRadioItem key={filter} value={filter}>
+                // Counts sit flush right, in the checkmark's column; the chosen row shows its check instead
+                // (its count is in the status strip).
+                <DropdownMenuRadioItem key={filter} value={filter} className="group/filter pr-2.5">
                   <info.icon />
                   {info.title}
-                  {count > 0 && <DropdownMenuShortcut>{formatNumber(count)}</DropdownMenuShortcut>}
+                  {count > 0 && (
+                    <span className="ml-auto pl-4 text-muted-foreground text-xs tabular-nums group-data-[state=checked]/filter:invisible">
+                      {formatNumber(count)}
+                    </span>
+                  )}
                 </DropdownMenuRadioItem>
               )
             })}

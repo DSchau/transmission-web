@@ -114,9 +114,9 @@ function Layout() {
     <div className="relative flex h-full flex-col">
       <ListHeader />
       <ConnectionBanner />
-      <StatusPanel chart />
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <TorrentListView className="min-h-0 flex-1" />
+        {/* Scrolls away with the list so the cards get the whole screen; only the header stays put. */}
+        <TorrentListView className="min-h-0 flex-1" header={<StatusPanel chart />} />
         <DropOverlay />
       </div>
       {selectMode && <SelectionBar />}
