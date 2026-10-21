@@ -1,6 +1,7 @@
 import { Ellipsis, Pause, Play, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { CATEGORY_INFO, categoryOf } from '@/lib/category'
 import { formatBytes, formatNumber } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
 import { haveBytes, idsByPausedState, statusTone, toneBg, totalSize } from '@/lib/torrent'
@@ -32,16 +33,21 @@ export function SelectionSummary() {
         <X />
       </Button>
       <div className="relative h-28 w-36" aria-hidden>
-        {cards.map((t, index) => (
-          <div
-            key={t.id}
-            className={cn(
-              'absolute inset-x-2 top-4 h-20 rounded-2xl bg-gradient-to-br from-white/25 to-transparent shadow-lg transition-all duration-300',
-              toneBg[statusTone(t)],
-            )}
-            style={{ transform: `translate(${index * 6}px, ${index * -4}px) rotate(${index * 6 - 6}deg)` }}
-          />
-        ))}
+        {cards.map((t, index) => {
+          const Icon = CATEGORY_INFO[categoryOf(t)].icon
+          return (
+            <div
+              key={t.id}
+              className={cn(
+                'absolute top-3 left-1/2 -ml-11 flex size-22 items-center justify-center rounded-3xl bg-gradient-to-br from-white/25 to-transparent text-white shadow-lg transition-all duration-300',
+                toneBg[statusTone(t)],
+              )}
+              style={{ transform: `translate(${index * 6}px, ${index * -4}px) rotate(${index * 6 - 6}deg)` }}
+            >
+              <Icon className="size-10 drop-shadow-sm" strokeWidth={1.75} />
+            </div>
+          )
+        })}
       </div>
       <div className="text-center">
         <h2 className="font-bold text-xl">{formatNumber(selected.length)} Torrents Selected</h2>
