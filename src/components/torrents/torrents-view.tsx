@@ -2,7 +2,7 @@ import { getRouteApi, useNavigate, useParams } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { functionalUpdate, type OnChangeFn, type SortingState } from '@tanstack/react-table'
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
-import { useTorrents } from '@/lib/queries'
+import { useTorrents, useTrackerUrls } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
 import { filterTorrents, isSortDesc, SORT_INFO, type TorrentSort } from '@/lib/torrent'
 import { closeDialog, exitSelectMode, searchOpenAtom, selectedIds, selectionAtom, selectionOf } from '@/lib/ui'
@@ -45,7 +45,15 @@ export function TorrentsViewProvider({ children }: { children: ReactNode }) {
   const { data: torrents = EMPTY } = useTorrents()
   const selection = useSelector(selectionAtom)
 
-  const visible = useMemo(() => filterTorrents(torrents, search.filter, search.q), [torrents, search.filter, search.q])
+  const wantsTrackers = /(^|[\s-])(trackers?|announce):/i.test(search.q)
+  const { data: trackerUrls } = useTrackerUrls(wantsTrackers)
+  const visible = useMemo(() => {
+    if (!wantsTrackers || !trackerUrls) return filterTorrents(torrents, search.filter, search.q)
+    const searchable = torrents.map((t) => ({ ...t, trackers: trackerUrls.get(t.id) }))
+    // Map matches back to the originals so row identity stays stable for the table.
+    const ids = new Set(filterTorrents(searchable, search.filter, search.q).map((t) => t.id))
+    return torrents.filter((t) => ids.has(t.id))
+  }, [torrents, trackerUrls, wantsTrackers, search.filter, search.q])
 
   const sorting = useMemo<SortingState>(
     () => [{ id: search.sort, desc: isSortDesc(search.sort, search.dir) }],

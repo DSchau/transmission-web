@@ -94,6 +94,8 @@ export interface Torrent {
   fileStats?: TorrentFileStat[]
   trackerStats?: TrackerStat[]
   peers?: Peer[]
+  /** Announce URLs. Fetched separately, only while a search uses `tracker:` (see useTrackerUrls). */
+  trackers?: { announce: string }[]
 }
 
 export const LIST_FIELDS = [

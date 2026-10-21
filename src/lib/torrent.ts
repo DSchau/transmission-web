@@ -345,6 +345,14 @@ export const QUERY_FIELDS: readonly QueryField<Torrent>[] = [
     value: (t) => (hasError(t) ? t.errorString : ''),
   },
   {
+    key: 'tracker',
+    kind: 'text',
+    aliases: ['trackers', 'announce'],
+    describe: 'Any tracker’s announce URL',
+    example: '-tracker:example.org',
+    value: (t) => t.trackers?.map((tracker) => tracker.announce).join(' ') ?? '',
+  },
+  {
     key: 'dir',
     kind: 'text',
     aliases: ['path', 'folder'],

@@ -76,11 +76,18 @@ function lex(input: string): Token[] {
     word = ''
   }
 
+  // Only a term's first colon separates field from value, so values like
+  // "https://host:443" don't need quoting.
+  let colonInTerm = false
   let i = 0
   while (i < input.length) {
     const ch = input[i] ?? ''
     if (isSpace(ch)) {
       pushWord()
+      colonInTerm = false
+      i++
+    } else if (ch === ':' && colonInTerm) {
+      word += ch
       i++
     } else if (ch === '"') {
       pushWord()
@@ -89,6 +96,7 @@ function lex(input: string): Token[] {
       i = end < 0 ? input.length : end + 1
     } else if (ch === ':') {
       pushWord()
+      colonInTerm = true
       tokens.push({ type: 'colon' })
       i++
     } else if (ch === '=' || ((ch === '<' || ch === '>' || ch === '!') && input[i + 1] === '=')) {

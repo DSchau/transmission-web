@@ -177,6 +177,13 @@ describe('enums and text fields', () => {
     expect(names('name:="debian netinst"')).toEqual(['Debian netinst'])
     expect(names('name:!=debian')).toEqual(['Ubuntu 24.04 ISO', 'Sintel 4K'])
   })
+
+  it('keeps colons after the first one in a value, so URLs need no quotes', () => {
+    const { test } = compileQuery('-dir:https://host:443', ENV)
+    expect(test({ dir: 'https://host:443/announce', name: '' } as never)).toBe(false)
+    expect(test({ dir: 'https://other:443/announce', name: '' } as never)).toBe(true)
+    expect(names('dir:movies sintel')).toEqual(['Sintel 4K'])
+  })
 })
 
 describe('graceful degradation', () => {

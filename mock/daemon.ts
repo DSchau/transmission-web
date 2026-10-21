@@ -349,6 +349,13 @@ export function createMockDaemon({ count = SEED_NAMES.length }: MockOptions = {}
             lastAnnounceTime: now() - randInt(30, 1800),
           }))
           break
+        case 'trackers':
+          out.trackers = TRACKERS.slice(0, (t.id % 3) + 1).map((host, i) => ({
+            id: i,
+            announce: `https://${host}/announce`,
+            tier: i,
+          }))
+          break
         case 'peers':
           out.peers =
             t.status === 4 || t.status === 6

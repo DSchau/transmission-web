@@ -86,6 +86,26 @@ export function useTorrents<TData = Torrent[]>(select?: (torrents: Torrent[]) =>
   return useQuery({ ...torrentsQuery(transmission, interval), select, enabled: session.data != null })
 }
 
+/**
+ * Every torrent's tracker announce URLs, keyed by id. They are too heavy to add to every list
+ * poll and rarely change, so this only runs while `enabled` (the search uses `tracker:`) and
+ * refreshes slowly.
+ */
+export function useTrackerUrls(enabled: boolean) {
+  const transmission = useTransmission()
+  return useQuery({
+    queryKey: [...transmission.key, 'trackers'],
+    queryFn: async ({ signal }) => {
+      const torrents = await transmission.client.torrents(['id', 'trackers'], undefined, signal)
+      return new Map(torrents.map((t) => [t.id, t.trackers ?? []]))
+    },
+    enabled,
+    staleTime: 60_000,
+    refetchInterval: enabled ? 60_000 : false,
+    ...retryPolicy,
+  })
+}
+
 /** Files, peers, trackers and pieces for one torrent, merged with the live list entry. */
 export function useTorrentDetail(id: number) {
   const transmission = useTransmission()
