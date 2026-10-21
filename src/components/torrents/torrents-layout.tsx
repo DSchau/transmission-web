@@ -18,7 +18,7 @@ import { SelectionSummary } from './selection-summary'
 import { Sidebar } from './sidebar'
 import { StatusPanel } from './status-panel'
 import { TorrentListView } from './torrent-list-view'
-import { TorrentTableView } from './torrent-table-view'
+import { TORRENT_TABLE_ID, TorrentTableView } from './torrent-table-view'
 import { TorrentsViewProvider, useTorrentsView } from './torrents-view'
 
 /**
@@ -53,6 +53,14 @@ function Layout() {
     const inspectorOpen = multiple || openTorrentId != null
     return (
       <div className="flex h-full">
+        {/* A button, not an anchor: the router owns the URL hash. Hidden until focused. */}
+        <button
+          type="button"
+          onClick={() => document.getElementById(TORRENT_TABLE_ID)?.focus()}
+          className="sr-only z-50 rounded-md bg-primary font-medium text-primary-foreground text-sm shadow-lg outline-none focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:px-3 focus:py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          Skip to torrents
+        </button>
         {!sidebarCollapsed && (
           <ResizablePanel
             edge="right"

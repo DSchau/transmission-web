@@ -10,6 +10,8 @@ import { NUMERIC_COLUMNS, type TorrentRow, toggleRow } from './table-model'
 import { TorrentMenuContent } from './torrent-menu'
 import { useTorrentsView } from './torrents-view'
 
+/** The table's focusable scroll container (target of the "Skip to torrents" link). */
+export const TORRENT_TABLE_ID = 'torrent-table'
 const ROW_HEIGHT = 64
 const NAME_MIN_WIDTH = 220
 /** Columns that make way, in this order, when the table is narrower than its columns. */
@@ -80,23 +82,41 @@ export function TorrentTableView({ className }: { className?: string }) {
     openTorrent(row.original.id)
   }
 
+  // The keyboard cursor: the row the arrow keys are on. Moving it doesn't open anything;
+  // Enter opens the cursor row. It falls back to the open torrent, then the first row.
+  const [cursorId, setCursorId] = useState<number>()
+  const cursorIndex = Math.max(
+    rows.findIndex((row) => row.original.id === cursorId),
+    rows.findIndex((row) => row.original.id === openTorrentId),
+    0,
+  )
+  const cursorRow = rows[cursorIndex]
+
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
-      const current = rows.findIndex((row) => row.original.id === openTorrentId)
-      const next = Math.min(Math.max(current + (event.key === 'ArrowDown' ? 1 : -1), 0), rows.length - 1)
+      const next = Math.min(Math.max(cursorIndex + (event.key === 'ArrowDown' ? 1 : -1), 0), rows.length - 1)
       const row = rows[next]
       if (!row) return
+      setCursorId(row.original.id)
       if (event.shiftKey) toggleRow(row, { range: true })
-      else open(row)
       virtualizer.scrollToIndex(next)
-    } else if (event.key === 'Enter' && openTorrentId === undefined && rows[0]) {
+    } else if (event.key === 'Enter' && cursorRow) {
       event.preventDefault()
-      open(rows[0])
-      virtualizer.scrollToIndex(0)
+      open(cursorRow)
+    } else if (event.key === ' ' && cursorRow) {
+      event.preventDefault()
+      toggleRow(cursorRow)
     } else if (event.key === 'Escape') {
-      // Not prevented, so the global Escape shortcut still clears the selection / closes the detail view.
-      scrollRef.current?.blur()
+      // One step at a time: close the inspector, then clear the selection, then leave the table.
+      // Handled (prevented) here so the page-wide Escape shortcut doesn't also run.
+      event.preventDefault()
+      if (selectedIds(selection).length > 1) clearSelection()
+      else if (openTorrentId != null) {
+        clearSelection()
+        closeDetail()
+      } else if (!noSelection) clearSelection()
+      else scrollRef.current?.blur()
     } else if ((event.metaKey || event.ctrlKey) && event.key === 'a') {
       event.preventDefault()
       table.toggleAllRowsSelected(true)
@@ -108,6 +128,7 @@ export function TorrentTableView({ className }: { className?: string }) {
     // biome-ignore lint/a11y/noStaticElementInteractions: arrow keys move between rows
     <div
       ref={scrollRef}
+      id={TORRENT_TABLE_ID}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: the table is reached by Tab, then driven with arrow keys
       tabIndex={0}
       onKeyDown={onKeyDown}
@@ -177,12 +198,10 @@ export function TorrentTableView({ className }: { className?: string }) {
                       aria-rowindex={item.index + (showHeader ? 2 : 1)}
                       aria-selected={selected}
                       data-state={selected ? 'selected' : undefined}
-                      data-cursor={
-                        (openTorrentId === undefined ? item.index === 0 : row.original.id === openTorrentId) ||
-                        undefined
-                      }
+                      data-cursor={row === cursorRow || undefined}
                       onClick={(event) => {
                         if (event.detail === 1) wasOpen.current = row.original.id === openTorrentId
+                        setCursorId(row.original.id)
                         if (event.metaKey || event.ctrlKey) toggleRow(row)
                         else if (event.shiftKey) toggleRow(row, { range: true })
                         else open(row)

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { Settings } from 'lucide-react'
-import { useMemo } from 'react'
+import { type KeyboardEvent, useMemo } from 'react'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
@@ -11,6 +11,15 @@ import { countByFilter, FILTER_INFO, FILTERS } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
 import { SidebarActivity } from './activity'
 import { useTorrentsView } from './torrents-view'
+
+function moveFilterFocus(event: KeyboardEvent<HTMLUListElement>) {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+  event.preventDefault()
+  const buttons = [...event.currentTarget.querySelectorAll('button')]
+  const current = buttons.indexOf(document.activeElement as HTMLButtonElement)
+  const next = Math.min(Math.max(current + (event.key === 'ArrowDown' ? 1 : -1), 0), buttons.length - 1)
+  buttons[next]?.focus()
+}
 
 /** Desktop filter sidebar (like Mail's mailboxes). */
 export function Sidebar({ className }: { className?: string }) {
@@ -37,7 +46,8 @@ export function Sidebar({ className }: { className?: string }) {
         </button>
       </div>
       <SidebarActivity />
-      <ul className="flex flex-col gap-0.5 p-2">
+      {/* One Tab stop (the current filter); ↑/↓ move between filters and Enter/Space picks one. */}
+      <ul className="flex flex-col gap-0.5 p-2" onKeyDown={moveFilterFocus}>
         {FILTERS.map((filter) => {
           const info = FILTER_INFO[filter]
           const active = search.filter === filter
@@ -45,10 +55,11 @@ export function Sidebar({ className }: { className?: string }) {
             <li key={filter}>
               <button
                 type="button"
+                tabIndex={active ? 0 : -1}
                 onClick={() => setSearch({ filter })}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
+                  'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active
                     ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
                     : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60',
