@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { Settings } from 'lucide-react'
-import { type KeyboardEvent, useMemo } from 'react'
+import { type KeyboardEvent, type ReactNode, useMemo } from 'react'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
 import { formatNumber } from '@/lib/format'
 import { useConnectionState } from '@/lib/queries'
@@ -27,7 +28,6 @@ export function Sidebar({ className }: { className?: string }) {
   const { torrents, search, setSearch, goHome } = useTorrentsView()
   const counts = useMemo(() => countByFilter(torrents), [torrents])
   const config = useSelector(connectionAtom)
-  const state = useConnectionState()
   const host = displayNameFor(config)
   // IPs/localhost don't split meaningfully; names like `transmission.example.com` do.
   const dot = /^[\d[]/.test(host) ? -1 : host.indexOf('.')
@@ -76,17 +76,7 @@ export function Sidebar({ className }: { className?: string }) {
         })}
       </ul>
       <div className="mt-auto flex items-center gap-2 border-t p-2 pl-4">
-        <span
-          className={cn(
-            'size-2 shrink-0 rounded-full',
-            state.status === 'connected'
-              ? 'bg-status-seeding'
-              : state.status === 'connecting'
-                ? 'bg-status-checking'
-                : 'bg-status-error',
-          )}
-          aria-hidden
-        />
+        <ConnectionDot />
         <Link
           to="/connect"
           title={host}
@@ -101,6 +91,102 @@ export function Sidebar({ className }: { className?: string }) {
             <Settings />
           </Link>
         </Button>
+      </div>
+    </nav>
+  )
+}
+
+export const RAIL_WIDTH = 52
+
+function ConnectionDot() {
+  const state = useConnectionState()
+  return (
+    <span
+      className={cn(
+        'size-2 shrink-0 rounded-full',
+        state.status === 'connected'
+          ? 'bg-status-seeding'
+          : state.status === 'connecting'
+            ? 'bg-status-checking'
+            : 'bg-status-error',
+      )}
+      aria-hidden
+    />
+  )
+}
+
+/** A label that pops out to the right of a rail icon. */
+function RailTip({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="right" sideOffset={6}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+/** The sidebar folded to icons: filters, server and settings, with names (and counts) in tooltips. */
+export function SidebarRail({ className }: { className?: string }) {
+  const { torrents, search, setSearch } = useTorrentsView()
+  const counts = useMemo(() => countByFilter(torrents), [torrents])
+  const config = useSelector(connectionAtom)
+  const host = displayNameFor(config)
+
+  return (
+    <nav
+      aria-label="Filters"
+      className={cn('flex flex-col items-center bg-sidebar text-sidebar-foreground', className)}
+    >
+      <div className="flex h-12 w-full shrink-0 items-center justify-center border-b">
+        <SidebarToggle />
+      </div>
+      <ul className="flex flex-col items-center gap-0.5 py-2" onKeyDown={moveFilterFocus}>
+        {FILTERS.map((filter) => {
+          const info = FILTER_INFO[filter]
+          const active = search.filter === filter
+          const label = `${info.title} · ${formatNumber(counts[filter])}`
+          return (
+            <li key={filter}>
+              <RailTip label={label}>
+                <button
+                  type="button"
+                  tabIndex={active ? 0 : -1}
+                  onClick={() => setSearch({ filter })}
+                  aria-current={active ? 'page' : undefined}
+                  aria-label={label}
+                  className={cn(
+                    'flex size-9 items-center justify-center rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    active
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
+                  )}
+                >
+                  <info.icon className="size-4" />
+                </button>
+              </RailTip>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="mt-auto flex w-full flex-col items-center gap-1 border-t py-2">
+        <RailTip label={host}>
+          <Link
+            to="/connect"
+            aria-label={`Server: ${host}`}
+            className="flex size-9 items-center justify-center rounded-md outline-none hover:bg-sidebar-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ConnectionDot />
+          </Link>
+        </RailTip>
+        <RailTip label="Settings">
+          <Button variant="ghost" size="icon" asChild aria-label="Settings">
+            <Link to="/settings">
+              <Settings />
+            </Link>
+          </Button>
+        </RailTip>
       </div>
     </nav>
   )

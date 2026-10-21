@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils'
  * A fixed-width side panel with a drag handle on one edge. `width` is null until the user
  * resizes, so the default (responsive) width comes from `className`. Double-click the handle
  * to go back to it; arrow keys resize when the handle is focused.
+ *
+ * With `railWidth`, dragging (or arrowing) well below `min` snaps the panel to a narrow rail and
+ * dragging back out expands it again; `children` can be a function to render the rail.
  */
 export function ResizablePanel({
   edge,
@@ -16,6 +19,9 @@ export function ResizablePanel({
   maxViewportFraction = 1,
   label,
   className,
+  railWidth,
+  rail = false,
+  onRailChange,
   children,
 }: {
   /** The edge the handle sits on: `right` for a left sidebar, `left` for a right inspector. */
@@ -28,17 +34,23 @@ export function ResizablePanel({
   maxViewportFraction?: number
   label: string
   className?: string
-  children: ReactNode
+  railWidth?: number
+  rail?: boolean
+  onRailChange?: (rail: boolean) => void
+  children: ReactNode | ((rail: boolean) => ReactNode)
 }) {
   const panelRef = useRef<HTMLDivElement>(null)
-  // The width while dragging; committed to `onWidthChange` on release.
-  const [live, setLive] = useState<number | null>(null)
+  // The width while dragging (or 'rail' once it has snapped); committed on release.
+  const [live, setLive] = useState<number | 'rail' | null>(null)
   const drag = useRef<{ x: number; width: number } | null>(null)
 
   const clamp = (value: number) =>
     Math.round(Math.min(Math.max(value, min), Math.max(min, Math.min(max, window.innerWidth * maxViewportFraction))))
   const current = () => panelRef.current?.getBoundingClientRect().width ?? min
-  const effective = live ?? width
+  // Snap to the rail once dragged past halfway between the rail and the minimum width.
+  const snapsToRail = (value: number) => railWidth != null && value < (railWidth + min) / 2
+  const showRail = live != null ? live === 'rail' : rail
+  const effective = showRail ? (railWidth ?? null) : typeof live === 'number' ? live : width
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return
@@ -51,14 +63,20 @@ export function ResizablePanel({
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (!drag.current) return
     const delta = (event.clientX - drag.current.x) * (edge === 'right' ? 1 : -1)
-    setLive(clamp(drag.current.width + delta))
+    const next = drag.current.width + delta
+    setLive(snapsToRail(next) ? 'rail' : clamp(next))
   }
   const onPointerUp = () => {
     if (!drag.current) return
     drag.current = null
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
-    if (live != null) onWidthChange(live)
+    if (live === 'rail') {
+      if (!rail) onRailChange?.(true)
+    } else if (live != null) {
+      if (rail) onRailChange?.(false)
+      onWidthChange(live)
+    }
     setLive(null)
   }
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -67,7 +85,13 @@ export function ResizablePanel({
     const shrink = edge === 'right' ? 'ArrowLeft' : 'ArrowRight'
     if (event.key !== grow && event.key !== shrink) return
     event.preventDefault()
-    onWidthChange(clamp(current() + (event.key === grow ? step : -step)))
+    if (rail) {
+      if (event.key === grow) onRailChange?.(false)
+      return
+    }
+    const next = current() + (event.key === grow ? step : -step)
+    if (railWidth != null && next < min) onRailChange?.(true)
+    else onWidthChange(clamp(next))
   }
 
   const style: CSSProperties = {
@@ -77,7 +101,7 @@ export function ResizablePanel({
 
   return (
     <div ref={panelRef} className={cn('relative flex shrink-0 flex-col', className)} style={style}>
-      {children}
+      {typeof children === 'function' ? children(showRail) : children}
       {/* biome-ignore lint/a11y/useSemanticElements: an <hr> can't be focused or dragged */}
       <div
         role="separator"
@@ -92,7 +116,10 @@ export function ResizablePanel({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onDoubleClick={() => onWidthChange(null)}
+        onDoubleClick={() => {
+          if (rail) onRailChange?.(false)
+          onWidthChange(null)
+        }}
         onKeyDown={onKeyDown}
         title="Drag to resize, double-click to reset"
         className={cn(

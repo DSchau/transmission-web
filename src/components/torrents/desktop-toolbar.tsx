@@ -9,9 +9,15 @@ import { ToolbarSearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
 import { ColumnsMenu, SortMenu } from './view-options-menu'
 
-/** Shown in the sidebar's header while it's open, and in the toolbar once it's hidden. */
+const NEXT_MODE = { full: 'rail', rail: 'hidden', hidden: 'full' } as const
+const TOGGLE_LABEL = { full: 'Collapse sidebar', rail: 'Hide sidebar', hidden: 'Show sidebar' } as const
+
+/**
+ * Steps the sidebar full → icon rail → hidden → full. It lives in the sidebar while that's
+ * showing, and in the toolbar once it's hidden.
+ */
 export function SidebarToggle({ className }: { className?: string }) {
-  const collapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
+  const mode = useSelector(preferencesAtom, (p) => p.sidebar)
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -19,24 +25,24 @@ export function SidebarToggle({ className }: { className?: string }) {
           variant="ghost"
           size="icon"
           className={className}
-          aria-label={collapsed ? 'Show sidebar' : 'Hide sidebar'}
-          onClick={() => updatePreferences({ sidebarCollapsed: !collapsed })}
+          aria-label={TOGGLE_LABEL[mode]}
+          onClick={() => updatePreferences({ sidebar: NEXT_MODE[mode] })}
         >
           <PanelLeft />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{collapsed ? 'Show' : 'Hide'} sidebar</TooltipContent>
+      <TooltipContent side={mode === 'hidden' ? 'bottom' : 'right'}>{TOGGLE_LABEL[mode]}</TooltipContent>
     </Tooltip>
   )
 }
 
 export function DesktopToolbar() {
   const { search, goHome } = useTorrentsView()
-  const collapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
+  const hidden = useSelector(preferencesAtom, (p) => p.sidebar === 'hidden')
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-      {collapsed && <SidebarToggle />}
+      {hidden && <SidebarToggle />}
       <h1 className="min-w-0 truncate font-semibold">
         <button
           type="button"

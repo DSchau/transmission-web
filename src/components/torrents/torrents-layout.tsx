@@ -15,7 +15,7 @@ import { ListHeader } from './list-header'
 import { openSearch } from './search-field'
 import { SelectionBar } from './selection-bar'
 import { SelectionSummary } from './selection-summary'
-import { Sidebar } from './sidebar'
+import { RAIL_WIDTH, Sidebar, SidebarRail } from './sidebar'
 import { StatusPanel } from './status-panel'
 import { TorrentListView } from './torrent-list-view'
 import { TORRENT_TABLE_ID, TorrentTableView } from './torrent-table-view'
@@ -41,7 +41,7 @@ function Layout() {
   const isSplit = useIsSplit()
   const { selected, openTorrentId } = useTorrentsView()
   const selectMode = useSelector(selectModeAtom)
-  const sidebarCollapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
+  const sidebarMode = useSelector(preferencesAtom, (p) => p.sidebar)
   const sidebarWidth = useSelector(preferencesAtom, (p) => p.sidebarWidth)
   const inspectorWidth = useSelector(preferencesAtom, (p) => p.inspectorWidth)
   const multiple = selected.length > 1
@@ -61,7 +61,7 @@ function Layout() {
         >
           Skip to torrents
         </button>
-        {!sidebarCollapsed && (
+        {sidebarMode !== 'hidden' && (
           <ResizablePanel
             edge="right"
             label="Resize sidebar"
@@ -70,16 +70,19 @@ function Layout() {
             min={180}
             max={400}
             maxViewportFraction={0.3}
+            railWidth={RAIL_WIDTH}
+            rail={sidebarMode === 'rail'}
+            onRailChange={(rail) => updatePreferences({ sidebar: rail ? 'rail' : 'full' })}
             className="w-56 border-r xl:w-60"
           >
-            <Sidebar className="min-h-0 flex-1" />
+            {(rail) => (rail ? <SidebarRail className="min-h-0 flex-1" /> : <Sidebar className="min-h-0 flex-1" />)}
           </ResizablePanel>
         )}
         <main className="flex min-w-0 flex-1 flex-col">
           <GlassPane list={(topInset) => <TorrentTableView className="min-h-0 flex-1" topInset={topInset} />}>
             <DesktopToolbar />
             <ConnectionBanner />
-            <StatusPanel chart={sidebarCollapsed} />
+            <StatusPanel chart={sidebarMode !== 'full'} />
           </GlassPane>
         </main>
         {inspectorOpen && (

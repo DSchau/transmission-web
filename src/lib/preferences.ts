@@ -19,13 +19,16 @@ export type ColorTheme =
   | 'nord'
   | 'dracula-pro'
 
+export type SidebarMode = 'full' | 'rail' | 'hidden'
+
 export interface Preferences {
   theme: Theme
   colorTheme: ColorTheme
   /** Seconds between polls. */
   refreshInterval: number
   columnVisibility: ColumnVisibilityState
-  sidebarCollapsed: boolean
+  /** Desktop sidebar: full width, an icon-only rail, or hidden. */
+  sidebar: SidebarMode
   /** Desktop panel widths in px; null = the responsive default. */
   sidebarWidth: number | null
   inspectorWidth: number | null
@@ -52,7 +55,7 @@ export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
     addedDate: false,
     queue: false,
   },
-  sidebarCollapsed: false,
+  sidebar: 'full',
   sidebarWidth: null,
   inspectorWidth: null,
 })
