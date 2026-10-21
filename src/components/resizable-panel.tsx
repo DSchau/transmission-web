@@ -47,8 +47,8 @@ export function ResizablePanel({
   const clamp = (value: number) =>
     Math.round(Math.min(Math.max(value, min), Math.max(min, Math.min(max, window.innerWidth * maxViewportFraction))))
   const current = () => panelRef.current?.getBoundingClientRect().width ?? min
-  // Snap to the rail once dragged past halfway between the rail and the minimum width.
-  const snapsToRail = (value: number) => railWidth != null && value < (railWidth + min) / 2
+  // Snap to the rail as soon as the drag goes a little past the minimum width.
+  const snapsToRail = (value: number) => railWidth != null && value < min - 24
   const showRail = live != null ? live === 'rail' : rail
   const effective = showRail ? (railWidth ?? null) : typeof live === 'number' ? live : width
 

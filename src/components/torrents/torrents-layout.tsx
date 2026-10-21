@@ -10,7 +10,7 @@ import { useSessionStats } from '@/lib/queries'
 import { clearSelection, confirmRemove, openDialog, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ConnectionBanner } from './connection-state'
-import { DesktopToolbar } from './desktop-toolbar'
+import { cycleSidebar, DesktopToolbar } from './desktop-toolbar'
 import { ListHeader } from './list-header'
 import { openSearch } from './search-field'
 import { SelectionBar } from './selection-bar'
@@ -67,7 +67,7 @@ function Layout() {
             label="Resize sidebar"
             width={sidebarWidth}
             onWidthChange={(width) => updatePreferences({ sidebarWidth: width })}
-            min={180}
+            min={220}
             max={400}
             maxViewportFraction={0.3}
             railWidth={RAIL_WIDTH}
@@ -218,6 +218,7 @@ function Shortcuts() {
   useHotkeys({
     '/': openSearch,
     n: () => openDialog({ type: 'add' }),
+    '[': cycleSidebar,
     Escape: () => {
       if (selected.length > 1) clearSelection()
       else if (openTorrentId != null) {

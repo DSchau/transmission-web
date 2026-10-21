@@ -1,6 +1,7 @@
 import { useSelector } from '@tanstack/react-store'
-import { PanelLeft, Plus } from 'lucide-react'
+import { PanelLeftClose, PanelLeftDashed, PanelLeftOpen, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Kbd } from '@/components/ui/kbd'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { filterTitle } from '@/lib/torrent'
@@ -10,6 +11,10 @@ import { useTorrentsView } from './torrents-view'
 import { ColumnsMenu, SortMenu } from './view-options-menu'
 
 const NEXT_MODE = { full: 'rail', rail: 'hidden', hidden: 'full' } as const
+// Each icon shows what pressing will do: shrink to the rail, hide it, bring it back.
+const TOGGLE_ICON = { full: PanelLeftClose, rail: PanelLeftDashed, hidden: PanelLeftOpen } as const
+
+export const cycleSidebar = () => updatePreferences({ sidebar: NEXT_MODE[preferencesAtom.get().sidebar] })
 const TOGGLE_LABEL = { full: 'Collapse sidebar', rail: 'Hide sidebar', hidden: 'Show sidebar' } as const
 
 /**
@@ -18,6 +23,7 @@ const TOGGLE_LABEL = { full: 'Collapse sidebar', rail: 'Hide sidebar', hidden: '
  */
 export function SidebarToggle({ className }: { className?: string }) {
   const mode = useSelector(preferencesAtom, (p) => p.sidebar)
+  const Icon = TOGGLE_ICON[mode]
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -26,12 +32,14 @@ export function SidebarToggle({ className }: { className?: string }) {
           size="icon"
           className={className}
           aria-label={TOGGLE_LABEL[mode]}
-          onClick={() => updatePreferences({ sidebar: NEXT_MODE[mode] })}
+          onClick={cycleSidebar}
         >
-          <PanelLeft />
+          <Icon />
         </Button>
       </TooltipTrigger>
-      <TooltipContent side={mode === 'hidden' ? 'bottom' : 'right'}>{TOGGLE_LABEL[mode]}</TooltipContent>
+      <TooltipContent side={mode === 'hidden' ? 'bottom' : 'right'}>
+        {TOGGLE_LABEL[mode]} <Kbd>[</Kbd>
+      </TooltipContent>
     </Tooltip>
   )
 }
