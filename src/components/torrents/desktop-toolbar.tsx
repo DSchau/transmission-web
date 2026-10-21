@@ -9,25 +9,34 @@ import { ToolbarSearchField } from './search-field'
 import { useTorrentsView } from './torrents-view'
 import { ColumnsMenu, SortMenu } from './view-options-menu'
 
+/** Shown in the sidebar's header while it's open, and in the toolbar once it's hidden. */
+export function SidebarToggle({ className }: { className?: string }) {
+  const collapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={className}
+          aria-label={collapsed ? 'Show sidebar' : 'Hide sidebar'}
+          onClick={() => updatePreferences({ sidebarCollapsed: !collapsed })}
+        >
+          <PanelLeft />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{collapsed ? 'Show' : 'Hide'} sidebar</TooltipContent>
+    </Tooltip>
+  )
+}
+
 export function DesktopToolbar() {
   const { search, goHome } = useTorrentsView()
   const collapsed = useSelector(preferencesAtom, (p) => p.sidebarCollapsed)
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Toggle sidebar"
-            onClick={() => updatePreferences({ sidebarCollapsed: !collapsed })}
-          >
-            <PanelLeft />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{collapsed ? 'Show' : 'Hide'} sidebar</TooltipContent>
-      </Tooltip>
+      {collapsed && <SidebarToggle />}
       <h1 className="min-w-0 truncate font-semibold">
         <button
           type="button"

@@ -10,6 +10,7 @@ import { useConnectionState } from '@/lib/queries'
 import { countByFilter, FILTER_INFO, FILTERS } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
 import { SidebarActivity } from './activity'
+import { SidebarToggle } from './desktop-toolbar'
 import { useTorrentsView } from './torrents-view'
 
 function moveFilterFocus(event: KeyboardEvent<HTMLUListElement>) {
@@ -44,6 +45,7 @@ export function Sidebar({ className }: { className?: string }) {
           <TransmissionLogo className="size-6" />
           <span className="font-semibold">Transmission</span>
         </button>
+        <SidebarToggle className="-mr-2 ml-auto" />
       </div>
       <SidebarActivity />
       {/* One Tab stop (the current filter); ↑/↓ move between filters and Enter/Space picks one. */}
