@@ -70,10 +70,7 @@ export function Sidebar({ className }: { className?: string }) {
                     : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60',
                 )}
               >
-                <info.icon
-                  data-filter-icon={filter}
-                  className={cn('size-4', active ? 'text-foreground' : 'text-muted-foreground')}
-                />
+                <info.icon className={cn('size-4', active ? 'text-foreground' : 'text-muted-foreground')} />
                 <span className="flex-1 text-left">{info.title}</span>
                 <span className="text-muted-foreground text-xs tabular-nums">{formatNumber(counts[filter])}</span>
               </button>
@@ -171,7 +168,7 @@ export function SidebarRail({ className }: { className?: string }) {
                       : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
                   )}
                 >
-                  <info.icon data-filter-icon={filter} className="size-4" />
+                  <info.icon className="size-4" />
                 </button>
               </RailTip>
             </li>
