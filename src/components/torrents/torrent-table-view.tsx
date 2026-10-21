@@ -85,11 +85,8 @@ export function TorrentTableView({ className }: { className?: string }) {
   // The keyboard cursor: the row the arrow keys are on. Moving it doesn't open anything;
   // Enter opens the cursor row. It falls back to the open torrent, then the first row.
   const [cursorId, setCursorId] = useState<number>()
-  const cursorIndex = Math.max(
-    rows.findIndex((row) => row.original.id === cursorId),
-    rows.findIndex((row) => row.original.id === openTorrentId),
-    0,
-  )
+  const indexOf = (id: number | undefined) => rows.findIndex((row) => row.original.id === id)
+  const cursorIndex = [indexOf(cursorId), indexOf(openTorrentId)].find((index) => index >= 0) ?? 0
   const cursorRow = rows[cursorIndex]
 
   const onKeyDown = (event: KeyboardEvent) => {
