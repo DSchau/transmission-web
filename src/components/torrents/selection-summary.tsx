@@ -4,13 +4,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { CATEGORY_INFO, categoryOf, type TorrentCategory } from '@/lib/category'
 import { formatBytes, formatNumber } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
-import { haveBytes, idsByPausedState, type StatusTone, statusTone, toneBg, totalSize } from '@/lib/torrent'
+import type { Torrent } from '@/lib/rpc/types'
+import { haveBytes, idsByPausedState, statusTone, toneBg, totalSize } from '@/lib/torrent'
 import { clearSelection, confirmRemove } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ActionMenuItems, useBulkActionGroups } from './actions'
 import { useTorrentsView } from './torrents-view'
 
-const MAX_CARDS = 5
+const MAX_CARDS = 24
 
 /** Detail column when several torrents are selected (like Mail's stacked selection). */
 export function SelectionSummary() {
@@ -20,21 +21,33 @@ export function SelectionSummary() {
   const size = totalSize(selected)
   const have = selected.reduce((sum, t) => sum + haveBytes(t), 0)
   const { paused, running } = idsByPausedState(selected)
-  // One card per kind of torrent (category × state), biggest group in front, so a mixed selection
-  // shows every kind instead of whichever three happen to be first.
-  const kinds = new Map<string, { category: TorrentCategory; tone: StatusTone; count: number }>()
+  // One card per selected torrent, up to MAX_CARDS. When there are more, pick round-robin across
+  // kinds (category × state) so every kind gets at least one card, then keep each kind's cards together.
+  const kinds = new Map<string, Torrent[]>()
   const categories = new Map<TorrentCategory, number>()
   for (const t of selected) {
     const category = categoryOf(t)
-    const tone = statusTone(t)
-    const key = `${category}:${tone}`
-    const kind = kinds.get(key) ?? { category, tone, count: 0 }
-    kind.count++
-    kinds.set(key, kind)
+    const key = `${category}:${statusTone(t)}`
+    kinds.set(key, [...(kinds.get(key) ?? []), t])
     categories.set(category, (categories.get(category) ?? 0) + 1)
   }
-  const cards = [...kinds.entries()].sort(([, a], [, b]) => b.count - a.count).slice(0, MAX_CARDS)
+  const byKind = [...kinds.values()].sort((a, b) => b.length - a.length)
+  const picked = byKind.map(() => 0)
+  for (let round = 0, total = 0; total < Math.min(MAX_CARDS, selected.length); round++) {
+    byKind.forEach((group, i) => {
+      if (round < group.length && total < MAX_CARDS) {
+        picked[i] = round + 1
+        total++
+      }
+    })
+  }
+  const cards = byKind.flatMap((group, i) => group.slice(0, picked[i]))
+  const hidden = selected.length - cards.length
   const breakdown = [...categories].sort(([, a], [, b]) => b - a)
+  // The hand gets tighter as it grows so its width and arc stay bounded.
+  const half = (cards.length - 1) / 2
+  const spread = half > 0 ? Math.min(36, 100 / half) : 0
+  const maxTilt = Math.min(20, half * 8)
 
   return (
     <div className="relative flex h-full flex-col items-center justify-center gap-7 p-6">
@@ -47,32 +60,32 @@ export function SelectionSummary() {
       >
         <X />
       </Button>
-      <div className="relative h-28 w-56" aria-hidden>
-        {cards.map(([key, { category, tone }], index) => {
-          const Icon = CATEGORY_INFO[category].icon
-          // Fan out like a hand of cards centered on the column; the largest group sits nearest the middle,
-          // on top, with smaller groups alternating outward behind it.
-          // Odd counts: 0, -1, +1, -2, +2. Even counts: -½, +½, -1½, +1½.
-          const offset =
-            cards.length % 2
-              ? Math.ceil(index / 2) * (index % 2 ? -1 : 1)
-              : (Math.floor(index / 2) + 0.5) * (index % 2 ? 1 : -1)
+      <div className="relative h-28 w-64" aria-hidden>
+        {cards.map((t, index) => {
+          const Icon = CATEGORY_INFO[categoryOf(t)].icon
+          // Fan out like a hand of cards, centered on the column, each card overlapping the one to its left.
+          const offset = index - half
+          const edge = half > 0 ? offset / half : 0
           return (
             <div
-              key={key}
+              key={t.id}
               className={cn(
-                'absolute top-4 left-1/2 -ml-10 flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-white/25 to-transparent text-white shadow-lg ring-2 ring-background transition-all duration-300',
-                toneBg[tone],
+                'absolute top-5 left-1/2 -ml-9 flex size-18 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-white/25 to-transparent text-white shadow-lg ring-2 ring-background transition-all duration-300',
+                toneBg[statusTone(t)],
               )}
               style={{
-                zIndex: MAX_CARDS - index,
-                transform: `translateX(${offset * 40}px) translateY(${Math.abs(offset) * 6}px) rotate(${offset * 8}deg)`,
+                transform: `translateX(${offset * spread}px) translateY(${edge ** 2 * Math.min(12, half * 4)}px) rotate(${edge * maxTilt}deg)`,
               }}
             >
-              <Icon className="size-9 drop-shadow-sm" strokeWidth={1.75} />
+              <Icon className="size-8 drop-shadow-sm" strokeWidth={1.75} />
             </div>
           )
         })}
+        {hidden > 0 && (
+          <span className="absolute right-0 bottom-0 z-10 rounded-full bg-foreground px-2 py-0.5 font-medium text-background text-xs tabular-nums shadow">
+            +{formatNumber(hidden)}
+          </span>
+        )}
       </div>
       <div className="flex flex-col items-center gap-1.5 text-center">
         <h2 className="font-bold text-xl">{formatNumber(selected.length)} Torrents Selected</h2>

@@ -2,6 +2,7 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { Folder } from 'lucide-react'
 import { useId, useState } from 'react'
+import { HoldButton } from '@/components/hold-button'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import {
   AlertDialog,
@@ -16,11 +17,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { torrentCountLabel } from '@/lib/format'
+import { CATEGORY_INFO, categoryOf, type TorrentCategory } from '@/lib/category'
+import { formatBytes, formatNumber, torrentCountLabel } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
 import { useSession, useTorrents } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
+import { haveBytes } from '@/lib/torrent'
 import { closeDialog, type DialogRequest, dialogAtom, exitSelectMode } from '@/lib/ui'
+import { cn } from '@/lib/utils'
 import { AddTorrentDialog } from './add-torrent-dialog'
 import { StatisticsDialog } from './statistics-dialog'
 
@@ -69,7 +73,12 @@ function RemoveDialog({
   const checkboxId = useId()
   const [deleteData, setDeleteData] = useState(false)
   const ids = request?.ids ?? []
-  const title = ids.length === 1 ? `Remove “${request?.names[0] ?? ''}”?` : `Remove ${torrentCountLabel(ids.length)}?`
+  const many = ids.length > 1
+  const title = many ? `Remove ${torrentCountLabel(ids.length)}?` : `Remove “${request?.names[0] ?? ''}”?`
+  const { data: targets = [] } = useTorrents((torrents) => torrents.filter((t) => ids.includes(t.id)))
+  const onDisk = targets.reduce((sum, t) => sum + haveBytes(t), 0)
+  const categories = new Map<TorrentCategory, number>()
+  for (const t of targets) categories.set(categoryOf(t), (categories.get(categoryOf(t)) ?? 0) + 1)
 
   // Always start unchecked so data is never trashed by a leftover choice.
   const [lastRequest, setLastRequest] = useState(request)
@@ -91,6 +100,21 @@ function RemoveDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="wrap-anywhere">{title}</AlertDialogTitle>
         </AlertDialogHeader>
+        {many && (
+          <ul className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground text-sm tabular-nums">
+            {[...categories]
+              .sort(([, a], [, b]) => b - a)
+              .map(([category, count]) => {
+                const info = CATEGORY_INFO[category]
+                return (
+                  <li key={category} className="flex items-center gap-1">
+                    <info.icon className={cn('size-3.5', info.text)} aria-hidden />
+                    {formatNumber(count)} {info.title}
+                  </li>
+                )
+              })}
+          </ul>
+        )}
         <label htmlFor={checkboxId} className="flex w-fit cursor-pointer items-center gap-2 text-sm">
           <Checkbox
             id={checkboxId}
@@ -98,12 +122,22 @@ function RemoveDialog({
             onCheckedChange={(checked) => setDeleteData(checked === true)}
           />
           Remove data
+          {deleteData && onDisk > 0 && (
+            <span className="text-destructive tabular-nums">· deletes {formatBytes(onDisk)} from disk</span>
+          )}
         </label>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="items-center">
+          {many && <p className="mr-auto text-muted-foreground text-xs max-sm:order-last">Press and hold to remove</p>}
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
-            Remove
-          </Button>
+          {many ? (
+            <HoldButton variant={deleteData ? 'destructive' : 'default'} onConfirm={confirm}>
+              Remove {formatNumber(ids.length)}
+            </HoldButton>
+          ) : (
+            <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
+              Remove
+            </Button>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
