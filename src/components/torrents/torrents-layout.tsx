@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { type ReactNode, useCallback, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { DropOverlay } from '@/components/drop-zone'
 import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
@@ -37,6 +37,34 @@ export function TorrentsLayout() {
   )
 }
 
+/** A button, not an anchor: the router owns the URL hash. Hidden until focused. */
+function SkipToTorrents() {
+  const ref = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    // Browsers start Tab from wherever you last clicked, so a click into the window would
+    // skip past this link. With nothing focused, Tab always lands here first instead.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || event.shiftKey || event.altKey || event.metaKey || event.ctrlKey) return
+      if (document.activeElement && document.activeElement !== document.body) return
+      event.preventDefault()
+      ref.current?.focus()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={() => document.getElementById(TORRENT_TABLE_ID)?.focus()}
+      className="sr-only z-50 rounded-md bg-primary font-medium text-primary-foreground text-sm shadow-lg outline-none focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:px-3 focus:py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      Skip to torrents
+    </button>
+  )
+}
+
 function Layout() {
   const isDesktop = useIsDesktop()
   const isSplit = useIsSplit()
@@ -54,14 +82,7 @@ function Layout() {
     const inspectorOpen = multiple || openTorrentId != null
     return (
       <div className="flex h-full">
-        {/* A button, not an anchor: the router owns the URL hash. Hidden until focused. */}
-        <button
-          type="button"
-          onClick={() => document.getElementById(TORRENT_TABLE_ID)?.focus()}
-          className="sr-only z-50 rounded-md bg-primary font-medium text-primary-foreground text-sm shadow-lg outline-none focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:px-3 focus:py-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          Skip to torrents
-        </button>
+        <SkipToTorrents />
         {sidebarMode !== 'hidden' && (
           <ResizablePanel
             edge="right"
