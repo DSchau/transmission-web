@@ -77,11 +77,17 @@ export function StatusPanel({
         <div
           inert={chartCollapsed}
           className={cn(
-            'grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none',
-            chartCollapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
+            'grid transition-[grid-template-rows] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
+            chartCollapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
           )}
         >
-          <div className="min-h-0 overflow-hidden">
+          {/* The chart fades and lifts a little faster than the row closes, so it's gone before it gets clipped. */}
+          <div
+            className={cn(
+              'min-h-0 overflow-hidden transition-[opacity,translate,filter] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
+              chartCollapsed && '-translate-y-2 opacity-0 blur-[2px]',
+            )}
+          >
             <SpeedChart
               samples={samples}
               range={INLINE_RANGE}

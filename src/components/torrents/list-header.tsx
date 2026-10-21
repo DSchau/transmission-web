@@ -17,11 +17,7 @@ import { ViewOptionsMenu } from './view-options-menu'
  */
 export function ListHeader() {
   const selectMode = useSelector(selectModeAtom)
-  return (
-    <header className="pt-safe shrink-0 border-b bg-background/80 backdrop-blur-md">
-      {selectMode ? <SelectModeBar /> : <TitleBar />}
-    </header>
-  )
+  return <header className="pt-safe shrink-0 border-b">{selectMode ? <SelectModeBar /> : <TitleBar />}</header>
 }
 
 function TitleBar() {

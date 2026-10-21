@@ -1,6 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { useState } from 'react'
+import { type ReactNode, useCallback, useRef, useState } from 'react'
 import { DropOverlay } from '@/components/drop-zone'
 import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
@@ -106,13 +106,7 @@ function Layout() {
     return (
       <div className="flex h-full">
         <section className="flex w-[22rem] shrink-0 flex-col border-r lg:w-[24rem]">
-          <ListHeader />
-          <ConnectionBanner />
-          <StatusPanel chart />
-          <div className="relative flex min-h-0 flex-1 flex-col">
-            <TorrentListView className="min-h-0 flex-1" />
-            <DropOverlay />
-          </div>
+          <GlassList chrome={<StatusPanel chart />} />
           {selectMode && <SelectionBar />}
         </section>
         <main className="flex min-w-0 flex-1 flex-col">{multiple ? <SelectionSummary /> : <Outlet />}</main>
@@ -122,14 +116,12 @@ function Layout() {
 
   return (
     <div className="relative flex h-full flex-col">
-      <ListHeader />
-      <ConnectionBanner />
-      {/* Once the list scrolls, the strip folds down to its one-line summary to give the cards room. */}
-      <StatusPanel chart chartCollapsed={listScrolled} />
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <TorrentListView className="min-h-0 flex-1" onScrolledChange={setListScrolled} />
-        <DropOverlay />
-      </div>
+      <GlassList
+        // Once the list scrolls, the strip folds down to its one-line summary to give the cards room.
+        chrome={<StatusPanel chart chartCollapsed={listScrolled} />}
+        scrolled={listScrolled}
+        onScrolledChange={setListScrolled}
+      />
       {selectMode && <SelectionBar />}
       {/* Kept mounted underneath so the list keeps its scroll position. */}
       <div
@@ -140,6 +132,58 @@ function Layout() {
       >
         {openTorrentId != null && <Outlet />}
       </div>
+    </div>
+  )
+}
+
+/**
+ * The phone/tablet list with its header, banner and status strip on one frosted pane overlaid on
+ * top, so cards scroll underneath it instead of stopping at its edge.
+ */
+function GlassList({
+  chrome,
+  scrolled = false,
+  onScrolledChange,
+}: {
+  chrome: ReactNode
+  scrolled?: boolean
+  onScrolledChange?: (scrolled: boolean) => void
+}) {
+  const [height, setHeight] = useState(0)
+  const scrolledRef = useRef(scrolled)
+  scrolledRef.current = scrolled
+  const paneRef = useCallback((pane: HTMLDivElement | null) => {
+    if (!pane) return
+    let settle: ReturnType<typeof setTimeout> | undefined
+    // The inset grows right away but only shrinks once the pane has stopped moving, and never while
+    // scrolled: the chart folding away just reveals more cards under the glass, and following it
+    // frame by frame would shift the list (and on unfold, snap it to the folded height first).
+    const observer = new ResizeObserver(() => {
+      setHeight((current) => Math.max(current, pane.offsetHeight))
+      clearTimeout(settle)
+      settle = setTimeout(() => {
+        if (!scrolledRef.current) setHeight(pane.offsetHeight)
+      }, 450)
+    })
+    observer.observe(pane)
+    return () => {
+      clearTimeout(settle)
+      observer.disconnect()
+    }
+  }, [])
+
+  return (
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <TorrentListView className="min-h-0 flex-1" topInset={height} onScrolledChange={onScrolledChange} />
+      <div
+        ref={paneRef}
+        className="absolute inset-x-0 top-0 z-20 bg-background/70 backdrop-blur-xl backdrop-saturate-150"
+      >
+        <ListHeader />
+        <ConnectionBanner />
+        {chrome}
+      </div>
+      <DropOverlay />
     </div>
   )
 }

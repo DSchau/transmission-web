@@ -18,13 +18,16 @@ import { useTorrentsView } from './torrents-view'
 
 /**
  * Phone/tablet list: the same table rows, rendered as cards. Virtualized for large libraries.
- * `onScrolledChange` reports whether the list has left the top.
+ * `onScrolledChange` reports whether the list has left the top. `topInset` leaves room for chrome
+ * overlaid on the list, which the cards then scroll underneath.
  */
 export function TorrentListView({
   className,
+  topInset = 0,
   onScrolledChange,
 }: {
   className?: string
+  topInset?: number
   onScrolledChange?: (scrolled: boolean) => void
 }) {
   const { table, openTorrent, openTorrentId } = useTorrentsView()
@@ -46,6 +49,8 @@ export function TorrentListView({
     getScrollElement: () => scrollRef.current,
     estimateSize: () => 92,
     overscan: 8,
+    paddingStart: topInset,
+    scrollPaddingStart: topInset,
     getItemKey: (index) => rows[index]?.id ?? index,
   })
 
@@ -59,7 +64,7 @@ export function TorrentListView({
 
   if (showEmpty) {
     return (
-      <div className={className}>
+      <div className={className} style={{ paddingTop: topInset }}>
         <ListEmptyState />
       </div>
     )
@@ -69,8 +74,16 @@ export function TorrentListView({
     <div
       ref={scrollRef}
       className={cn('overflow-y-auto overscroll-contain', className)}
-      // A small dead zone so iOS rubber-banding at the top doesn't flicker it.
-      onScroll={onScrolledChange && ((event) => onScrolledChange(event.currentTarget.scrollTop > 16))}
+      // Folds past 24px, unfolds only back within 4px: the gap keeps small scrolls (and iOS
+      // rubber-banding at the top) from flapping it open and shut.
+      onScroll={
+        onScrolledChange &&
+        ((event) => {
+          const top = event.currentTarget.scrollTop
+          if (top > 24) onScrolledChange(true)
+          else if (top <= 4) onScrolledChange(false)
+        })
+      }
     >
       <ul aria-label="Torrents" className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
