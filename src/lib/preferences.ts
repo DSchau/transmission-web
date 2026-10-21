@@ -8,6 +8,7 @@ export type Theme = 'system' | 'light' | 'dark'
 /** Color palettes, each with a light and dark variant (see src/themes.css). */
 export type ColorTheme =
   | 'default'
+  | 'high-contrast'
   | 'github'
   | 'one'
   | 'dracula'

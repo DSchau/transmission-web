@@ -20,6 +20,12 @@ export const COLOR_THEMES: ColorThemeInfo[] = [
     dark: { bg: '#0a0a0a', accents: ['#e5e5e5', '#51a2ff', '#05df72'] },
   },
   {
+    id: 'high-contrast',
+    name: 'High Contrast',
+    light: { bg: '#ffffff', accents: ['#0f4a85', '#b5200d', '#1e6b1e'] },
+    dark: { bg: '#000000', accents: ['#6fc3df', '#f38518', '#89d185'] },
+  },
+  {
     id: 'github',
     name: 'GitHub',
     light: { bg: '#ffffff', accents: ['#0969da', '#1a7f37', '#d1242f'] },

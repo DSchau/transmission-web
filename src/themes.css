@@ -230,6 +230,38 @@
 }
 
 /* Nord (Snow Storm / Polar Night) */
+/* High Contrast — after VS Code's High Contrast Light/Dark: pure black/white, strong borders. */
+[data-theme="high-contrast"] {
+  --t-bg: #ffffff;
+  --t-fg: #000000;
+  --t-card: #ffffff;
+  --t-sidebar: #ffffff;
+  --t-muted: #e6e6e6;
+  --t-muted-fg: #2b2b2b;
+  --t-border: #0f4a85;
+  --t-primary: #0f4a85;
+  --t-primary-fg: #ffffff;
+  --t-red: #b5200d;
+  --t-green: #1e6b1e;
+  --t-blue: #0055b3;
+  --t-orange: #8f4400;
+}
+[data-theme="high-contrast"].dark {
+  --t-bg: #000000;
+  --t-fg: #ffffff;
+  --t-card: #000000;
+  --t-sidebar: #000000;
+  --t-muted: #262626;
+  --t-muted-fg: #e0e0e0;
+  --t-border: #6fc3df;
+  --t-primary: #6fc3df;
+  --t-primary-fg: #000000;
+  --t-red: #f48771;
+  --t-green: #89d185;
+  --t-blue: #4daafc;
+  --t-orange: #f38518;
+}
+
 [data-theme="nord"] {
   --t-bg: #eceff4;
   --t-fg: #2e3440;
