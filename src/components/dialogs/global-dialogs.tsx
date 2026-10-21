@@ -131,7 +131,7 @@ function RemoveDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           {many ? (
             <HoldButton variant={deleteData ? 'destructive' : 'default'} onConfirm={confirm}>
-              Remove {formatNumber(ids.length)}
+              Remove
             </HoldButton>
           ) : (
             <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
