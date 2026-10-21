@@ -196,6 +196,17 @@ export const filterTitle = (filter: TorrentFilter) => (filter === 'all' ? 'Torre
 
 // MARK: Search queries
 
+const DEFAULT_PORTS: Record<string, string> = { 'http:': '80', 'https:': '443', 'udp:': '80' }
+/** "https://tracker.example/abc/announce" → "https://tracker.example:443", like Transmission's tracker host. */
+function trackerHost(announce: string) {
+  try {
+    const url = new URL(announce)
+    return `${url.protocol}//${url.hostname}:${url.port || DEFAULT_PORTS[url.protocol] || ''}`
+  } catch {
+    return ''
+  }
+}
+
 /** What plain words search — first among the fields so the cheat sheet leads with it. */
 const NAME_QUERY_FIELD: QueryField<Torrent> = {
   key: 'name',
@@ -350,7 +361,9 @@ export const QUERY_FIELDS: readonly QueryField<Torrent>[] = [
     aliases: ['trackers', 'announce'],
     describe: 'Any tracker’s announce URL',
     example: '-tracker:example.org',
-    value: (t) => t.trackers?.map((tracker) => tracker.announce).join(' ') ?? '',
+    // Also match the "https://host:443" form the Trackers tab shows, which the announce URL
+    // itself usually omits the port from.
+    value: (t) => t.trackers?.map(({ announce }) => `${announce} ${trackerHost(announce)}`).join(' ') ?? '',
   },
   {
     key: 'dir',
