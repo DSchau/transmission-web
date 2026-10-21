@@ -109,7 +109,7 @@ function RemoveDialog({
                 return (
                   <li key={category} className="flex items-center gap-1">
                     <info.icon className={cn('size-3.5', info.text)} aria-hidden />
-                    {formatNumber(count)} {info.title}
+                    {formatNumber(count)} {count === 1 ? info.one : info.title}
                   </li>
                 )
               })}

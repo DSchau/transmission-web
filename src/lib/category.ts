@@ -9,13 +9,13 @@ import type { Torrent } from './rpc/types'
 export const CATEGORIES = ['movies', 'tv', 'books', 'music', 'software', 'other'] as const
 export type TorrentCategory = (typeof CATEGORIES)[number]
 
-export const CATEGORY_INFO: Record<TorrentCategory, { title: string; icon: LucideIcon; text: string }> = {
-  movies: { title: 'Movies', icon: Clapperboard, text: 'text-rose-500' },
-  tv: { title: 'TV Shows', icon: Tv, text: 'text-violet-500' },
-  books: { title: 'Books', icon: BookOpen, text: 'text-amber-600 dark:text-amber-500' },
-  music: { title: 'Music', icon: Music, text: 'text-emerald-600 dark:text-emerald-500' },
-  software: { title: 'Software', icon: Disc3, text: 'text-sky-600 dark:text-sky-500' },
-  other: { title: 'Other', icon: File, text: 'text-muted-foreground' },
+export const CATEGORY_INFO: Record<TorrentCategory, { title: string; one: string; icon: LucideIcon; text: string }> = {
+  movies: { title: 'Movies', one: 'Movie', icon: Clapperboard, text: 'text-rose-500' },
+  tv: { title: 'TV Shows', one: 'TV Show', icon: Tv, text: 'text-violet-500' },
+  books: { title: 'Books', one: 'Book', icon: BookOpen, text: 'text-amber-600 dark:text-amber-500' },
+  music: { title: 'Music', one: 'Music', icon: Music, text: 'text-emerald-600 dark:text-emerald-500' },
+  software: { title: 'Software', one: 'Software', icon: Disc3, text: 'text-sky-600 dark:text-sky-500' },
+  other: { title: 'Other', one: 'Other', icon: File, text: 'text-muted-foreground' },
 }
 
 /** Folder names (lowercased, letters and digits only) that identify a category. */
