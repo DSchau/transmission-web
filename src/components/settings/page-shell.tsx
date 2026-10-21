@@ -25,7 +25,9 @@ export function PageShell({ title, children, actions }: { title: string; childre
           <div className="flex justify-end">{actions}</div>
         </div>
       </header>
-      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6">{children}</main>
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6">
+        {children}
+      </main>
     </div>
   )
 }
