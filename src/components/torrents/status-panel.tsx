@@ -45,8 +45,8 @@ export function StatusPanel({
   const rates = totalRates(torrents)
 
   return (
-    <footer className={cn('shrink-0 border-b text-muted-foreground text-xs tabular-nums', className)}>
-      <div className="flex min-h-8 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-1.5">
+    <footer className={cn('shrink-0 border-b bg-muted/40 text-[11px] text-muted-foreground tabular-nums', className)}>
+      <div className="flex min-h-7 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1">
         <span className={cn('min-w-0 truncate', scrub && 'text-foreground')}>
           {scrub
             ? formatSampleTime(scrub)
@@ -58,16 +58,20 @@ export function StatusPanel({
           {!scrub && selected.length > 1 && ` · ${selected.length} selected (${formatBytes(totalSize(selected))})`}
         </span>
         <div className="min-w-0 flex-1" />
-        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-          <ArrowDown className="size-3 text-status-downloading" aria-label="Download" />
-          {connecting ? '–' : formatSpeed(scrub ? scrub.down : rates.down)}
-        </span>
-        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-          <ArrowUp className="size-3 text-status-seeding" aria-label="Upload" />
-          {connecting ? '–' : formatSpeed(scrub ? scrub.up : rates.up)}
-        </span>
+        <Rate
+          icon={ArrowDown}
+          label="Download"
+          tone="text-status-downloading"
+          value={connecting ? null : scrub ? scrub.down : rates.down}
+        />
+        <Rate
+          icon={ArrowUp}
+          label="Upload"
+          tone="text-status-seeding"
+          value={connecting ? null : scrub ? scrub.up : rates.up}
+        />
         {freeSpace > 0 && (
-          <span className="hidden md:inline" title="Free space in the download directory">
+          <span className="hidden border-l pl-3 md:inline" title="Free space in the download directory">
             {formatBytes(freeSpace)} free
           </span>
         )}
@@ -101,6 +105,33 @@ export function StatusPanel({
         </div>
       )}
     </footer>
+  )
+}
+
+/** A transfer rate: tinted and bright while something is moving, quiet at zero. */
+function Rate({
+  icon: Icon,
+  label,
+  tone,
+  value,
+}: {
+  icon: typeof ArrowDown
+  label: string
+  tone: string
+  value: number | null
+}) {
+  const active = value !== null && value > 0
+  return (
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-px transition-colors',
+        active && 'bg-current/10',
+        active ? tone : '',
+      )}
+    >
+      <Icon className={cn('size-3', !active && tone, !active && 'opacity-60')} aria-label={label} />
+      <span className={cn(active && 'font-medium')}>{value === null ? '–' : formatSpeed(value)}</span>
+    </span>
   )
 }
 
