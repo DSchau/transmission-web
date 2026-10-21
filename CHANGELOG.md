@@ -1,6 +1,6 @@
 # Changelog
 
-## October 20, 2026
+## 1.0.0 — October 20, 2026
 
 ### Themes
 - Pick a colour theme in Settings or the More menu: GitHub, One, Dracula, Dracula PRO, Catppuccin, Tokyo Night, Solarized, Gruvbox, Nord and High Contrast. Each has a light and a dark version.
