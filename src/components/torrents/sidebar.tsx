@@ -4,6 +4,7 @@ import { Settings } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useMemo } from 'react'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
+import { Kbd } from '@/components/ui/kbd'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { connectionAtom, displayNameFor } from '@/lib/connection'
 import { formatNumber } from '@/lib/format'
@@ -50,7 +51,7 @@ export function Sidebar({ className }: { className?: string }) {
       <SidebarActivity />
       {/* One Tab stop (the current filter); ↑/↓ move between filters and Enter/Space picks one. */}
       <ul className="flex flex-col gap-0.5 p-2" onKeyDown={moveFilterFocus}>
-        {FILTERS.map((filter) => {
+        {FILTERS.map((filter, i) => {
           const info = FILTER_INFO[filter]
           const active = search.filter === filter
           return (
@@ -60,6 +61,8 @@ export function Sidebar({ className }: { className?: string }) {
                 tabIndex={active ? 0 : -1}
                 onClick={() => setSearch({ filter })}
                 aria-current={active ? 'page' : undefined}
+                aria-keyshortcuts={String(i + 1)}
+                title={`${info.title} (${i + 1})`}
                 className={cn(
                   'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   active
@@ -67,7 +70,10 @@ export function Sidebar({ className }: { className?: string }) {
                     : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60',
                 )}
               >
-                <info.icon className={cn('size-4', active ? 'text-foreground' : 'text-muted-foreground')} />
+                <info.icon
+                  data-filter-icon={filter}
+                  className={cn('size-4', active ? 'text-foreground' : 'text-muted-foreground')}
+                />
                 <span className="flex-1 text-left">{info.title}</span>
                 <span className="text-muted-foreground text-xs tabular-nums">{formatNumber(counts[filter])}</span>
               </button>
@@ -116,12 +122,13 @@ function ConnectionDot() {
 }
 
 /** A label that pops out to the right of a rail icon. */
-function RailTip({ label, children }: { label: string; children: ReactNode }) {
+function RailTip({ label, shortcut, children }: { label: string; shortcut?: string; children: ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side="right" sideOffset={6}>
         {label}
+        {shortcut && <Kbd>{shortcut}</Kbd>}
       </TooltipContent>
     </Tooltip>
   )
@@ -143,19 +150,20 @@ export function SidebarRail({ className }: { className?: string }) {
         <SidebarToggle />
       </div>
       <ul className="flex flex-col items-center gap-0.5 py-2" onKeyDown={moveFilterFocus}>
-        {FILTERS.map((filter) => {
+        {FILTERS.map((filter, i) => {
           const info = FILTER_INFO[filter]
           const active = search.filter === filter
           const label = `${info.title} · ${formatNumber(counts[filter])}`
           return (
             <li key={filter}>
-              <RailTip label={label}>
+              <RailTip label={label} shortcut={String(i + 1)}>
                 <button
                   type="button"
                   tabIndex={active ? 0 : -1}
                   onClick={() => setSearch({ filter })}
                   aria-current={active ? 'page' : undefined}
                   aria-label={label}
+                  aria-keyshortcuts={String(i + 1)}
                   className={cn(
                     'flex size-9 items-center justify-center rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     active
@@ -163,7 +171,7 @@ export function SidebarRail({ className }: { className?: string }) {
                       : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
                   )}
                 >
-                  <info.icon className="size-4" />
+                  <info.icon data-filter-icon={filter} className="size-4" />
                 </button>
               </RailTip>
             </li>

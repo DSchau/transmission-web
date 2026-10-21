@@ -8,7 +8,8 @@ const isTyping = (target: EventTarget | null) =>
 
 /**
  * Minimal global shortcuts. Keys are `KeyboardEvent.key` values; `|` separates alternatives.
- * Skipped while typing, with modifier keys held, or when a dialog/menu is open.
+ * Skipped while typing (including IME composition), with modifier keys held, or when a
+ * dialog, menu or listbox is open.
  */
 export function useHotkeys(handlers: Handlers) {
   const ref = useRef(handlers)
@@ -16,8 +17,16 @@ export function useHotkeys(handlers: Handlers) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return
-      if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"]')) return
+      if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        isTyping(event.target)
+      )
+        return
+      if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]')) return
       for (const [keys, handler] of Object.entries(ref.current)) {
         if (keys.split('|').includes(event.key)) {
           event.preventDefault()

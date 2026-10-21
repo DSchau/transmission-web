@@ -7,6 +7,7 @@ import { useHotkeys } from '@/hooks/use-hotkeys'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
 import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { useSessionStats } from '@/lib/queries'
+import { FILTERS } from '@/lib/torrent'
 import { clearSelection, confirmRemove, openDialog, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ConnectionBanner } from './connection-state'
@@ -217,9 +218,11 @@ function GlassPane({
 
 /** Keyboard shortcuts for the list (ignored while typing in a field). */
 function Shortcuts() {
-  const { selected, openTorrentId, torrents, closeDetail } = useTorrentsView()
+  const { selected, openTorrentId, torrents, closeDetail, setSearch } = useTorrentsView()
 
   useHotkeys({
+    // 1–7 pick a filter in sidebar order, like Finder/Mail's numbered views.
+    ...Object.fromEntries(FILTERS.map((filter, i) => [String(i + 1), () => setSearch({ filter })])),
     '/': openSearch,
     n: () => openDialog({ type: 'add' }),
     '[': cycleSidebar,
