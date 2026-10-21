@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useNavigate } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { type ReactNode, useCallback, useRef, useState } from 'react'
 import { DropOverlay } from '@/components/drop-zone'
@@ -219,6 +219,7 @@ function GlassPane({
 /** Keyboard shortcuts for the list (ignored while typing in a field). */
 function Shortcuts() {
   const { selected, openTorrentId, torrents, closeDetail, setSearch } = useTorrentsView()
+  const navigate = useNavigate()
 
   useHotkeys({
     // 1–7 pick a filter in sidebar order, like Finder/Mail's numbered views.
@@ -226,6 +227,8 @@ function Shortcuts() {
     '/': openSearch,
     n: () => openDialog({ type: 'add' }),
     '[': cycleSidebar,
+    // ⌘, is the Mac convention, but the browser keeps it for its own settings.
+    ',': () => navigate({ to: '/settings' }),
     Escape: () => {
       if (selected.length > 1) clearSelection()
       else if (openTorrentId != null) {

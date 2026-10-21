@@ -92,7 +92,7 @@ export function Sidebar({ className }: { className?: string }) {
           <span className="truncate">{hostHead}</span>
           <span className="shrink-0">{hostTail}</span>
         </Link>
-        <Button variant="ghost" size="icon-sm" asChild aria-label="Settings">
+        <Button variant="ghost" size="icon-sm" asChild aria-label="Settings" aria-keyshortcuts="," title="Settings (,)">
           <Link to="/settings">
             <Settings />
           </Link>
@@ -188,7 +188,7 @@ export function SidebarRail({ className }: { className?: string }) {
             <ConnectionDot />
           </Link>
         </RailTip>
-        <RailTip label="Settings">
+        <RailTip label="Settings" shortcut=",">
           <Button variant="ghost" size="icon" asChild aria-label="Settings">
             <Link to="/settings">
               <Settings />

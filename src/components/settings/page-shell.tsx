@@ -2,6 +2,7 @@ import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
 import { ChevronLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { useHotkeys } from '@/hooks/use-hotkeys'
 import { cn } from '@/lib/utils'
 
 /** Full-page settings layout with a back button and iOS-style grouped sections. */
@@ -9,16 +10,14 @@ export function PageShell({ title, children, actions }: { title: string; childre
   const router = useRouter()
   const navigate = useNavigate()
   const canGoBack = useCanGoBack()
+  const goBack = () => (canGoBack ? router.history.back() : navigate({ to: '/' }))
+  useHotkeys({ Escape: goBack })
 
   return (
     <div className="h-full overflow-y-auto bg-muted/40">
       <header className="pt-safe sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
         <div className="grid h-12 grid-cols-[1fr_auto_1fr] items-center gap-2 px-2">
-          <Button
-            variant="ghost"
-            onClick={() => (canGoBack ? router.history.back() : navigate({ to: '/' }))}
-            className="-ml-1 justify-self-start text-base"
-          >
+          <Button variant="ghost" onClick={goBack} className="-ml-1 justify-self-start text-base">
             <ChevronLeft data-icon="inline-start" className="size-5" />
             Back
           </Button>
