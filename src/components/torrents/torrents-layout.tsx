@@ -79,10 +79,14 @@ function Layout() {
           </ResizablePanel>
         )}
         <main className="flex min-w-0 flex-1 flex-col">
-          <GlassPane list={(topInset) => <TorrentTableView className="min-h-0 flex-1" topInset={topInset} />}>
+          <GlassPane
+            list={(topInset) => (
+              <TorrentTableView className="min-h-0 flex-1" topInset={topInset} onScrolledChange={setListScrolled} />
+            )}
+          >
             <DesktopToolbar />
             <ConnectionBanner />
-            <StatusPanel chart={sidebarMode !== 'full'} />
+            <StatusPanel chart={sidebarMode !== 'full'} chartCollapsed={listScrolled} />
           </GlassPane>
         </main>
         {inspectorOpen && (

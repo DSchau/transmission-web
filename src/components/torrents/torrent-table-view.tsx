@@ -23,7 +23,15 @@ const AUTO_HIDE_ORDER = ['queue', 'addedDate', 'ratio', 'eta', 'rateUpload', 'si
  * Desktop table: virtualized rows, sortable headers, click / ⌘-click / ⇧-click selection,
  * right-click menus, and arrow-key navigation.
  */
-export function TorrentTableView({ className, topInset = 0 }: { className?: string; topInset?: number }) {
+export function TorrentTableView({
+  className,
+  topInset = 0,
+  onScrolledChange,
+}: {
+  className?: string
+  topInset?: number
+  onScrolledChange?: (scrolled: boolean) => void
+}) {
   const { table, openTorrent, openTorrentId, closeDetail } = useTorrentsView()
   const selection = useSelector(selectionAtom)
   const showEmpty = useShowsEmptyState()
@@ -140,6 +148,15 @@ export function TorrentTableView({ className, topInset = 0 }: { className?: stri
       // biome-ignore lint/a11y/noNoninteractiveTabindex: the table is reached by Tab, then driven with arrow keys
       tabIndex={0}
       onKeyDown={onKeyDown}
+      onScroll={
+        onScrolledChange &&
+        ((event) => {
+          // Same hysteresis as the phone list, so rubber-banding doesn't flicker the chart.
+          const top = event.currentTarget.scrollTop
+          if (top > 24) onScrolledChange(true)
+          else if (top <= 4) onScrolledChange(false)
+        })
+      }
       onPointerDown={() => {
         pointerDown.current = true
         setKeyboarding(false)
