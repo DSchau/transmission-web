@@ -88,8 +88,13 @@ export function TorrentTableView({ className }: { className?: string }) {
   const indexOf = (id: number | undefined) => rows.findIndex((row) => row.original.id === id)
   const cursorIndex = [indexOf(cursorId), indexOf(openTorrentId)].find((index) => index >= 0) ?? 0
   const cursorRow = rows[cursorIndex]
+  // Outline the cursor row only while driving with the keyboard. Tracked here rather than via
+  // :focus-visible, whose rules for script-focused elements differ between browsers.
+  const [keyboarding, setKeyboarding] = useState(false)
+  const pointerDown = useRef(false)
 
   const onKeyDown = (event: KeyboardEvent) => {
+    setKeyboarding(true)
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
       const next = Math.min(Math.max(cursorIndex + (event.key === 'ArrowDown' ? 1 : -1), 0), rows.length - 1)
@@ -129,6 +134,17 @@ export function TorrentTableView({ className }: { className?: string }) {
       // biome-ignore lint/a11y/noNoninteractiveTabindex: the table is reached by Tab, then driven with arrow keys
       tabIndex={0}
       onKeyDown={onKeyDown}
+      onPointerDown={() => {
+        pointerDown.current = true
+        setKeyboarding(false)
+      }}
+      onFocus={(event) => {
+        // Arriving by Tab or the skip link shows the outline; arriving by click doesn't.
+        if (event.target === event.currentTarget) setKeyboarding(!pointerDown.current)
+        pointerDown.current = false
+      }}
+      onBlur={() => setKeyboarding(false)}
+      data-keyboarding={keyboarding || undefined}
       className={cn('group/table relative overflow-auto outline-none', className)}
     >
       {/* Real table elements laid out with CSS grid, so rows can be absolutely positioned (virtualized). */}
@@ -221,7 +237,7 @@ export function TorrentTableView({ className }: { className?: string }) {
                         item.index % 2 === 1 && 'bg-muted/30',
                         'hover:bg-muted/50 data-[state=selected]:bg-status-downloading/10',
                         // Keyboard focus lives on the scroll container; show it on the row the arrows move.
-                        'group-focus-visible/table:data-cursor:outline-2 group-focus-visible/table:data-cursor:outline-ring group-focus-visible/table:data-cursor:-outline-offset-2',
+                        'group-data-keyboarding/table:data-cursor:outline-2 group-data-keyboarding/table:data-cursor:outline-ring group-data-keyboarding/table:data-cursor:-outline-offset-2',
                       )}
                       style={{ gridTemplateColumns, height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}
                     >
