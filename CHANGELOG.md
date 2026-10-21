@@ -34,3 +34,25 @@
 ## October 16, 2026
 
 - Torrents get a category (movies, TV, books, music, software) based on their folder and name, shown as an icon and searchable with `type:`.
+- On phones, tapping anywhere on a torrent card opens it on the first try.
+
+## October 12–15, 2026
+
+- Adding torrents works properly on iPhone: the `.torrent` file picker, no zooming in on form fields, and drag-and-drop anywhere in the window.
+- The phone header has an Add button and a search field that is always visible.
+- Phone cards show each torrent's status and speeds on one line that is easy to scan.
+
+## October 7, 2026
+
+- Search with filters such as `status:downloading size:>1gb added:30d`. A leading `-` excludes a term, and the query is kept in the URL.
+- The sidebar and inspector can be resized by dragging.
+- One-command deploy to the server, with `--rollback`.
+
+## October 6, 2026 — First release
+
+- A web remote for a Transmission daemon, with layouts for phone (list, then detail), tablet (split view) and desktop (sidebar, table and inspector).
+- Torrent details: overview, files, peers, trackers and a piece map.
+- Add torrents from a magnet link, a `.torrent` file or drag-and-drop.
+- Pause, resume, verify, move and remove torrents, one at a time or several at once.
+- Connect to this server or another one. Sign-in uses a dialog, and passwords are never saved to disk.
+- Dark mode, plus a built-in fake daemon for development.
