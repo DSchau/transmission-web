@@ -1,5 +1,16 @@
 import { Link } from '@tanstack/react-router'
-import { ChartArea, CheckSquare, Ellipsis, Moon, Palette, Plug, Settings, Sun, SunMoon, Turtle } from 'lucide-react'
+import {
+  ChartArea,
+  CheckSquare,
+  CircleEllipsis,
+  Moon,
+  Palette,
+  Plug,
+  Settings,
+  Sun,
+  SunMoon,
+  Turtle,
+} from 'lucide-react'
 import { ThemeSwatch } from '@/components/theme-swatch'
 import { Button } from '@/components/ui/button'
 import {
@@ -32,7 +43,7 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="More">
-          <Ellipsis />
+          <CircleEllipsis />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
