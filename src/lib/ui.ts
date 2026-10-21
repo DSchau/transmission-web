@@ -22,9 +22,19 @@ export const selectionAtom = createAtom<RowSelectionState>({})
 export const clearSelection = () => selectionAtom.set({})
 export const selectionOf = (ids: (number | string)[]): RowSelectionState =>
   Object.fromEntries(ids.map((id) => [String(id), true as const]))
+/** When each selected id was added. Object keys can't carry this — numeric keys always iterate
+ * in ascending order — so it's tracked alongside. Ids added in one go keep id order. */
+const selectedAt = new Map<string, number>()
+let selectionSeq = 0
+selectionAtom.subscribe((selection) => {
+  for (const id of selectedAt.keys()) if (!selection[id]) selectedAt.delete(id)
+  for (const id of Object.keys(selection)) if (selection[id] && !selectedAt.has(id)) selectedAt.set(id, selectionSeq++)
+})
+/** Selected ids, in the order they were selected. */
 export const selectedIds = (selection: RowSelectionState) =>
   Object.keys(selection)
     .filter((id) => selection[id])
+    .sort((a, b) => (selectedAt.get(a) ?? Infinity) - (selectedAt.get(b) ?? Infinity))
     .map(Number)
 
 /** Select mode on touch layouts (like Mail's Edit). Desktop multi-selects with modifier keys. */

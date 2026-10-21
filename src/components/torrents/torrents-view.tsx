@@ -81,8 +81,10 @@ export function TorrentsViewProvider({ children }: { children: ReactNode }) {
   }, [torrents])
 
   const selected = useMemo(() => {
-    const ids = new Set(selectedIds(selection))
-    return ids.size ? torrents.filter((t) => ids.has(t.id)) : EMPTY
+    const ids = selectedIds(selection)
+    if (!ids.length) return EMPTY
+    const byId = new Map(torrents.map((t) => [t.id, t]))
+    return ids.flatMap((id) => byId.get(id) ?? [])
   }, [selection, torrents])
 
   const openTorrent = useCallback(

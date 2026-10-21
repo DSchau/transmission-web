@@ -4,7 +4,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { CATEGORY_INFO, categoryOf, type TorrentCategory } from '@/lib/category'
 import { formatBytes, formatNumber } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
-import type { Torrent } from '@/lib/rpc/types'
 import { haveBytes, idsByPausedState, statusTone, toneBg, totalSize } from '@/lib/torrent'
 import { clearSelection, confirmRemove } from '@/lib/ui'
 import { cn } from '@/lib/utils'
@@ -21,27 +20,11 @@ export function SelectionSummary() {
   const size = totalSize(selected)
   const have = selected.reduce((sum, t) => sum + haveBytes(t), 0)
   const { paused, running } = idsByPausedState(selected)
-  // One card per selected torrent, up to MAX_CARDS. When there are more, pick round-robin across
-  // kinds (category × state) so every kind gets at least one card, then keep each kind's cards together.
-  const kinds = new Map<string, Torrent[]>()
+  // One card per torrent in selection order, so each one you add is dealt on top (rightmost).
+  // Past MAX_CARDS, only the most recent stay in hand.
   const categories = new Map<TorrentCategory, number>()
-  for (const t of selected) {
-    const category = categoryOf(t)
-    const key = `${category}:${statusTone(t)}`
-    kinds.set(key, [...(kinds.get(key) ?? []), t])
-    categories.set(category, (categories.get(category) ?? 0) + 1)
-  }
-  const byKind = [...kinds.values()].sort((a, b) => b.length - a.length)
-  const picked = byKind.map(() => 0)
-  for (let round = 0, total = 0; total < Math.min(MAX_CARDS, selected.length); round++) {
-    byKind.forEach((group, i) => {
-      if (round < group.length && total < MAX_CARDS) {
-        picked[i] = round + 1
-        total++
-      }
-    })
-  }
-  const cards = byKind.flatMap((group, i) => group.slice(0, picked[i]))
+  for (const t of selected) categories.set(categoryOf(t), (categories.get(categoryOf(t)) ?? 0) + 1)
+  const cards = selected.slice(-MAX_CARDS)
   const hidden = selected.length - cards.length
   const breakdown = [...categories].sort(([, a], [, b]) => b - a)
   // The hand gets tighter as it grows so its width and arc stay bounded.
