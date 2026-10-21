@@ -76,13 +76,11 @@ function Layout() {
           </ResizablePanel>
         )}
         <main className="flex min-w-0 flex-1 flex-col">
-          <DesktopToolbar />
-          <ConnectionBanner />
-          <StatusPanel chart={sidebarCollapsed} />
-          <div className="relative flex min-h-0 flex-1 flex-col">
-            <TorrentTableView className="min-h-0 flex-1" />
-            <DropOverlay />
-          </div>
+          <GlassPane list={(topInset) => <TorrentTableView className="min-h-0 flex-1" topInset={topInset} />}>
+            <DesktopToolbar />
+            <ConnectionBanner />
+            <StatusPanel chart={sidebarCollapsed} />
+          </GlassPane>
         </main>
         {inspectorOpen && (
           <ResizablePanel
@@ -136,10 +134,7 @@ function Layout() {
   )
 }
 
-/**
- * The phone/tablet list with its header, banner and status strip on one frosted pane overlaid on
- * top, so cards scroll underneath it instead of stopping at its edge.
- */
+/** The phone/tablet list with its header, banner and status strip on a frosted pane over the cards. */
 function GlassList({
   chrome,
   scrolled = false,
@@ -148,6 +143,33 @@ function GlassList({
   chrome: ReactNode
   scrolled?: boolean
   onScrolledChange?: (scrolled: boolean) => void
+}) {
+  return (
+    <GlassPane
+      scrolled={scrolled}
+      list={(topInset) => (
+        <TorrentListView className="min-h-0 flex-1" topInset={topInset} onScrolledChange={onScrolledChange} />
+      )}
+    >
+      <ListHeader />
+      <ConnectionBanner />
+      {chrome}
+    </GlassPane>
+  )
+}
+
+/**
+ * Overlays `children` on a frosted pane on top of `list`, so rows scroll underneath it instead of
+ * stopping at its edge. `list` gets the pane's height to inset its content by.
+ */
+function GlassPane({
+  list,
+  children,
+  scrolled = false,
+}: {
+  list: (topInset: number) => ReactNode
+  children: ReactNode
+  scrolled?: boolean
 }) {
   const [height, setHeight] = useState(0)
   const scrolledRef = useRef(scrolled)
@@ -174,14 +196,12 @@ function GlassList({
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <TorrentListView className="min-h-0 flex-1" topInset={height} onScrolledChange={onScrolledChange} />
+      {list(height)}
       <div
         ref={paneRef}
         className="absolute inset-x-0 top-0 z-20 bg-background/70 backdrop-blur-xl backdrop-saturate-150"
       >
-        <ListHeader />
-        <ConnectionBanner />
-        {chrome}
+        {children}
       </div>
       <DropOverlay />
     </div>

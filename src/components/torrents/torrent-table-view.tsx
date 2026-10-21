@@ -13,6 +13,8 @@ import { useTorrentsView } from './torrents-view'
 /** The table's focusable scroll container (target of the "Skip to torrents" link). */
 export const TORRENT_TABLE_ID = 'torrent-table'
 const ROW_HEIGHT = 64
+/** The sticky column header: an h-9 row plus its 1px bottom border. */
+const HEADER_HEIGHT = 37
 const NAME_MIN_WIDTH = 220
 /** Columns that make way, in this order, when the table is narrower than its columns. */
 const AUTO_HIDE_ORDER = ['queue', 'addedDate', 'ratio', 'eta', 'rateUpload', 'size', 'status', 'progress']
@@ -21,7 +23,7 @@ const AUTO_HIDE_ORDER = ['queue', 'addedDate', 'ratio', 'eta', 'rateUpload', 'si
  * Desktop table: virtualized rows, sortable headers, click / ⌘-click / ⇧-click selection,
  * right-click menus, and arrow-key navigation.
  */
-export function TorrentTableView({ className }: { className?: string }) {
+export function TorrentTableView({ className, topInset = 0 }: { className?: string; topInset?: number }) {
   const { table, openTorrent, openTorrentId, closeDetail } = useTorrentsView()
   const selection = useSelector(selectionAtom)
   const showEmpty = useShowsEmptyState()
@@ -31,13 +33,6 @@ export function TorrentTableView({ className }: { className?: string }) {
   const wasOpen = useRef(false)
 
   const rows = table.getRowModel().rows
-  const virtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 12,
-    getItemKey: (index) => rows[index]?.id ?? index,
-  })
 
   // Fit the columns to the available width (e.g. when the inspector opens) instead of scrolling
   // sideways. This is a rendering concern only; the user's column choices are untouched.
@@ -76,6 +71,17 @@ export function TorrentTableView({ className }: { className?: string }) {
   const noSelection = selectedIds(selection).length === 0
   // Name alone carries everything, so headers only appear once there are columns to label.
   const showHeader = columns.length > 1
+  // Rows start below the chrome overlaid on the table and the sticky column header.
+  const rowsTop = topInset + (showHeader ? HEADER_HEIGHT : 0)
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 12,
+    scrollMargin: rowsTop,
+    scrollPaddingStart: rowsTop,
+    getItemKey: (index) => rows[index]?.id ?? index,
+  })
 
   const open = (row: TorrentRow) => {
     toggleRow(row, { only: true })
@@ -147,6 +153,8 @@ export function TorrentTableView({ className }: { className?: string }) {
       data-keyboarding={keyboarding || undefined}
       className={cn('group/table relative overflow-auto outline-none', className)}
     >
+      {/* Room for the chrome overlaid on the table; rows scroll up underneath it. */}
+      <div aria-hidden style={{ height: topInset }} />
       {/* Real table elements laid out with CSS grid, so rows can be absolutely positioned (virtualized). */}
       <table
         aria-label="Torrents"
@@ -155,7 +163,11 @@ export function TorrentTableView({ className }: { className?: string }) {
         style={{ minWidth }}
       >
         <thead
-          className={cn('sticky top-0 z-10 grid border-b bg-background/95 backdrop-blur', !showHeader && 'hidden')}
+          className={cn(
+            'sticky z-10 grid border-b bg-background/70 backdrop-blur-xl backdrop-saturate-150',
+            !showHeader && 'hidden',
+          )}
+          style={{ top: topInset }}
         >
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id} className="grid h-9 items-center" style={{ gridTemplateColumns }}>
@@ -239,7 +251,11 @@ export function TorrentTableView({ className }: { className?: string }) {
                         // Keyboard focus lives on the scroll container; show it on the row the arrows move.
                         'group-data-keyboarding/table:data-cursor:outline-2 group-data-keyboarding/table:data-cursor:outline-ring group-data-keyboarding/table:data-cursor:-outline-offset-2',
                       )}
-                      style={{ gridTemplateColumns, height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}
+                      style={{
+                        gridTemplateColumns,
+                        height: ROW_HEIGHT,
+                        transform: `translateY(${item.start - rowsTop}px)`,
+                      }}
                     >
                       {row
                         .getVisibleCells()
@@ -267,7 +283,7 @@ export function TorrentTableView({ className }: { className?: string }) {
         )}
       </table>
       {showEmpty && (
-        <div className={cn('absolute inset-x-0 bottom-0', showHeader ? 'top-9' : 'top-0')}>
+        <div className="absolute inset-x-0 bottom-0" style={{ top: rowsTop }}>
           <ListEmptyState />
         </div>
       )}
