@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useSelector } from '@tanstack/react-store'
-import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react'
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 import { type ConnectionConfig, connectionAtom, credentialsAtom, rpcUrlFor } from './connection'
 import { PendingChanges } from './pending'
 import { SessionHistory } from './rate-history'
 import { TransmissionClient } from './rpc/client'
+import { exitSelectMode, signInDismissedAtom } from './ui'
 
 export interface Transmission {
   client: TransmissionClient
@@ -32,9 +34,22 @@ export function TransmissionProvider({ children }: { children: ReactNode }) {
       config,
       key: ['transmission', ++generation] as const,
     }),
-    [config.url, credentials],
+    [config.id, config.url, credentials],
   )
   useEffect(() => value.history.attach(), [value])
+
+  // Nothing from the previous connection may show under this one.
+  const queryClient = useQueryClient()
+  const serverId = useRef(config.id)
+  useEffect(() => {
+    queryClient.removeQueries({
+      predicate: ({ queryKey }) => queryKey[0] === value.key[0] && queryKey[1] !== value.key[1],
+    })
+    if (serverId.current === config.id) return
+    serverId.current = config.id
+    exitSelectMode()
+    signInDismissedAtom.set(false)
+  }, [value, config.id, queryClient])
 
   return <TransmissionContext.Provider value={value}>{children}</TransmissionContext.Provider>
 }

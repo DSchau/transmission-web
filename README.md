@@ -59,6 +59,12 @@ go live without restarting the daemon, and `--rollback` switches back to the pre
 Connecting to a daemon on another origin works from **Connection** settings, but that server must
 allow CORS (including exposing `X-Transmission-Session-Id`). A reverse proxy serving both avoids it.
 
+## Servers
+
+**Connection** keeps a list of servers (e.g. a home NUC and a seedbox), each with a name, address and
+username, saved in localStorage. Switch between them from the sidebar's server menu or the **…** menu.
+Switching clears the previous server's data and selection, and passwords stay per server for the tab.
+
 ## Credentials
 
 Never written to localStorage. Same-origin, the browser's own Basic Auth prompt is used. Otherwise

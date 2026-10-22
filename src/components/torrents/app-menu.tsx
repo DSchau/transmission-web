@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useSelector } from '@tanstack/react-store'
 import {
   ChartArea,
   CheckSquare,
@@ -18,6 +19,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
@@ -26,17 +28,20 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { serversAtom } from '@/lib/connection'
 import { useSessionMutation } from '@/lib/mutations'
 import type { ColorTheme, Theme } from '@/lib/preferences'
 import { useSession } from '@/lib/queries'
 import { COLOR_THEMES, useTheme } from '@/lib/theme'
 import { clearSelection, selectModeAtom } from '@/lib/ui'
 import { openStatistics } from './activity'
+import { ServerRadioItems } from './server-menu'
 
 /** The list's secondary actions (the iOS app's overflow menu). */
 export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
   const { data: session } = useSession()
   const { mutate: updateSession } = useSessionMutation()
+  const hasServers = useSelector(serversAtom, (s) => s.servers.length > 1)
   const { theme, setTheme, resolvedTheme, colorTheme, setColorTheme } = useTheme()
 
   return (
@@ -70,6 +75,13 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
               <Turtle />
               Alternative Speeds
             </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {hasServers && (
+          <>
+            <DropdownMenuLabel>Server</DropdownMenuLabel>
+            <ServerRadioItems />
             <DropdownMenuSeparator />
           </>
         )}

@@ -15,6 +15,7 @@ import {
   offerToPasswordManager,
   rpcUrlFor,
   setCredentials,
+  updateServer,
 } from '@/lib/connection'
 import { useConnectionState } from '@/lib/queries'
 import { TransmissionClient } from '@/lib/rpc/client'
@@ -58,7 +59,7 @@ function SignInForm({ onDone }: { onDone: () => void }) {
         setError((e as Error).message)
         return
       }
-      connectionAtom.set({ ...config, username: credentials.username })
+      updateServer(config.id, { username: credentials.username })
       setCredentials(credentials, { rememberInTab: value.remember })
       void offerToPasswordManager(credentials)
       onDone()
