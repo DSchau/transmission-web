@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog), and the
 project uses [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+### Features
+
+* **servers:** save several servers (e.g. home and a seedbox) and switch between them from the sidebar or the menu ([8362f0f](https://github.com/DSchau/transmission-web/commit/8362f0f))
+
 ## [1.0.0](https://github.com/DSchau/transmission-web/compare/v0.1.0...v1.0.0) (2026-10-20)
 
 ### Features
