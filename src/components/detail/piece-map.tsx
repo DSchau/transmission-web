@@ -99,13 +99,14 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
         const row = index % rows
         const x = column / lastColumn
 
-        const appear = progress(time, state.appearStart, x * 350 + row * 15, 350)
-        const sweep = fromColor ? progress(time, state.toneStart, x * 450, 300) : 1
+        // Each effect finishes within ~300ms end to end, stagger included, so it never holds up the view.
+        const appear = progress(time, state.appearStart, x * 120 + row * 10, 150)
+        const sweep = fromColor ? progress(time, state.toneStart, x * 150, 150) : 1
         let fill = cells[index] ?? 0
         let fillProgress = 1
         const previous = state.previousCells?.[index]
         if (previous !== undefined && previous !== fill) {
-          fillProgress = progress(time, state.fillStart, x * 300, 400)
+          fillProgress = progress(time, state.fillStart, x * 100, 200)
           fill = previous + (fill - previous) * fillProgress
         }
         if (appear < 1 || sweep < 1 || fillProgress < 1) animating = true
