@@ -48,8 +48,6 @@ function StatisticsContent() {
   const live = useLiveRates()
   const shown = scrub ?? live
   const span = visibleSpan(samples, range.ms)
-  const end = samples[samples.length - 1]?.time ?? 0
-  const averaged = samples.some((s) => !s.live && s.time > end - span)
 
   return (
     <div className="flex min-w-0 flex-col gap-6 pb-4 sm:pb-0">
@@ -96,8 +94,6 @@ function StatisticsContent() {
                 <span className="text-foreground">{formatSampleTime(scrub)}</span>
               ) : limits ? (
                 'Dashed lines: alternative speed limits'
-              ) : averaged ? (
-                'Faint: averages from while no tab was open'
               ) : null}
             </span>
             <span className="shrink-0">Now</span>
