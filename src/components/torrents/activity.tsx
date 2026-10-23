@@ -75,7 +75,7 @@ export function RateFigure({
 
 /**
  * Desktop sidebar's live activity (like Flood's): current rates in large type over the last few
- * minutes of history. Hovering scrubs through it; clicking opens Statistics.
+ * minutes of history. Hovering scrubs the rates through it; clicking opens Statistics.
  */
 export function SidebarActivity() {
   const samples = useRateHistory()
@@ -101,9 +101,7 @@ export function SidebarActivity() {
       />
       <div className="flex h-7 items-center justify-between gap-2 px-4 text-[11px] text-muted-foreground tabular-nums">
         <span className="truncate">
-          {scrub
-            ? formatSampleTime(scrub)
-            : `Last ${Math.max(1, Math.round(visibleSpan(samples, INLINE_RANGE) / 60_000))} min`}
+          Last {Math.max(1, Math.round(visibleSpan(samples, INLINE_RANGE) / 60_000))} min
         </span>
         <button
           type="button"

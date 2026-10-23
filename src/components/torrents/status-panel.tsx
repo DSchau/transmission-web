@@ -7,7 +7,7 @@ import type { RateSample } from '@/lib/rate-history'
 import type { Torrent } from '@/lib/rpc/types'
 import { totalSize } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
-import { formatSampleTime, INLINE_RANGE, openStatistics, useAltSpeedLimits } from './activity'
+import { INLINE_RANGE, openStatistics, useAltSpeedLimits } from './activity'
 import { useTorrentsView } from './torrents-view'
 
 /**
@@ -47,15 +47,9 @@ export function StatusPanel({
   return (
     <footer className={cn('shrink-0 border-b bg-muted/40 text-[11px] text-muted-foreground tabular-nums', className)}>
       <div className="flex min-h-7 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1">
-        <span className={cn('min-w-0 truncate', scrub && 'text-foreground')}>
-          {scrub
-            ? formatSampleTime(scrub)
-            : offline
-              ? 'Offline'
-              : connecting
-                ? 'Connecting…'
-                : countText(visible.length, torrents.length)}
-          {!scrub && selected.length > 1 && ` · ${selected.length} selected (${formatBytes(totalSize(selected))})`}
+        <span className="min-w-0 truncate">
+          {offline ? 'Offline' : connecting ? 'Connecting…' : countText(visible.length, torrents.length)}
+          {selected.length > 1 && ` · ${selected.length} selected (${formatBytes(totalSize(selected))})`}
         </span>
         <div className="min-w-0 flex-1" />
         <Rate
