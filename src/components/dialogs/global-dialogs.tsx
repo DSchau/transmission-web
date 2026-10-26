@@ -18,6 +18,8 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/c
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { CATEGORY_INFO, categoryOf, type TorrentCategory } from '@/lib/category'
+import { connectionAtom, rpcUrlFor } from '@/lib/connection'
+import { rememberFolder, suggestFolders, useRecentFolders } from '@/lib/folders'
 import { formatBytes, formatNumber, torrentCountLabel } from '@/lib/format'
 import { useTorrentActions } from '@/lib/mutations'
 import { useSession, useTorrents } from '@/lib/queries'
@@ -243,15 +245,25 @@ function SetLocationForm({ torrents, onDone }: { torrents: Torrent[]; onDone: ()
   const { setLocation } = useTorrentActions()
   const { data: session } = useSession()
   const { data: dirs = [] } = useTorrents(selectLocations)
+  const server = rpcUrlFor(useSelector(connectionAtom))
+  const recent = useRecentFolders(server)
   const id = useId()
   const current = torrents[0]?.downloadDir ?? ''
   const [location, setLocationText] = useState(current)
+  // Typing searches every known folder; a picked suggestion keeps the suggestions in view.
+  const [searching, setSearching] = useState(false)
   const [move, setMove] = useState(true)
   const trimmed = location.trim()
   const unchanged = torrents.every((t) => t.downloadDir === trimmed)
 
-  // Every folder currently in use — handy suggestions.
-  const suggestions = [...new Set([session?.['download-dir'] ?? '', ...dirs])].filter((dir) => dir && dir !== trimmed)
+  const suggestions = suggestFolders({
+    torrents,
+    dirs,
+    recent,
+    defaultDir: session?.['download-dir'] ?? '',
+    input: location,
+    searching,
+  })
 
   return (
     <form
@@ -264,6 +276,7 @@ function SetLocationForm({ torrents, onDone }: { torrents: Torrent[]; onDone: ()
           trimmed,
           move,
         )
+        rememberFolder(server, trimmed)
         onDone()
       }}
     >
@@ -279,7 +292,10 @@ function SetLocationForm({ torrents, onDone }: { torrents: Torrent[]; onDone: ()
             spellCheck={false}
             placeholder="/path/to/folder"
             value={location}
-            onChange={(event) => setLocationText(event.target.value)}
+            onChange={(event) => {
+              setLocationText(event.target.value)
+              setSearching(true)
+            }}
           />
         </Field>
         <Field orientation="horizontal">
@@ -295,17 +311,21 @@ function SetLocationForm({ torrents, onDone }: { torrents: Torrent[]; onDone: ()
         </Field>
         {suggestions.length > 0 && (
           <Field>
-            <FieldLabel>Recent Folders</FieldLabel>
-            <ul className="max-h-40 divide-y overflow-y-auto rounded-lg border">
-              {suggestions.slice(0, 12).map((dir) => (
+            <FieldLabel>{searching ? 'Matching Folders' : 'Suggestions'}</FieldLabel>
+            <ul className="max-h-48 divide-y overflow-y-auto rounded-lg border">
+              {suggestions.map(({ dir, hint }) => (
                 <li key={dir}>
                   <button
                     type="button"
-                    onClick={() => setLocationText(dir)}
+                    onClick={() => {
+                      setLocationText(dir)
+                      setSearching(false)
+                    }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs hover:bg-muted"
                   >
                     <Folder className="size-3.5 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{dir}</span>
+                    <span className="min-w-0 flex-1 truncate">{dir}</span>
+                    {hint && <span className="shrink-0 font-sans text-muted-foreground">{hint}</span>}
                   </button>
                 </li>
               ))}
