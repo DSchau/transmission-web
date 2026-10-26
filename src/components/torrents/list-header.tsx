@@ -33,7 +33,7 @@ function TitleBar() {
               type="button"
               onClick={goHome}
               aria-label="Reset view"
-              className="-mx-2 rounded-md px-2 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+              className="-mx-2.5 -my-1 rounded-md px-2.5 py-1 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
             >
               {filterTitle(search.filter)}
             </button>

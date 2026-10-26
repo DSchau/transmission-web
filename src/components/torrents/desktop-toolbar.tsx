@@ -56,7 +56,7 @@ export function DesktopToolbar() {
           type="button"
           onClick={goHome}
           aria-label="Reset view"
-          className="-mx-1 rounded-md px-2 py-0.5 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
+          className="-mx-1.5 rounded-md px-2.5 py-1 transition-colors outline-none hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring"
         >
           {filterTitle(search.filter)}
         </button>
