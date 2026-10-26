@@ -15,8 +15,9 @@ interface Props {
  * Grid of cells showing which pieces we have, filled column by column (left → right), so a
  * sequential download reads like a progress bar but gaps stay visible.
  *
- * Motion (skipped with reduced motion): cells cascade in on mount, a new state color sweeps
- * across left to right, and newly completed pieces pop in.
+ * Motion is deliberately quiet (and skipped with reduced motion): the map renders instantly,
+ * newly completed pieces fade in, and a state change crossfades the color. Nothing scales or
+ * staggers, so frequent refreshes don't make the grid shimmer.
  */
 export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -47,7 +48,6 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
 
   // Animation bookkeeping lives in a ref: it changes every frame and shouldn't re-render.
   const anim = useRef({
-    appearStart: 0,
     fromTone: null as StatusTone | null,
     toneStart: 0,
     previousCells: null as number[] | null,
@@ -62,8 +62,12 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
     const state = anim.current
     const now = performance.now()
     if (!reduceMotion) {
-      if (state.lastCells === null) state.appearStart = now
-      else if (state.lastCells.length === cells.length && state.lastCells.some((v, i) => v !== cells[i])) {
+      // Only animate real changes to the same grid, never the first paint or a resize.
+      if (
+        state.lastCells &&
+        state.lastCells.length === cells.length &&
+        state.lastCells.some((v, i) => v !== cells[i])
+      ) {
         state.previousCells = state.lastCells
         state.fillStart = now
       }
@@ -84,64 +88,44 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
     if (!context) return
 
     const cellWidth = (width - (columns - 1) * gap) / columns
-    const lastColumn = Math.max(columns - 1, 1)
+    const radius = Math.min(cellWidth, cellSize) * 0.3
 
     const draw = (time: number) => {
       const styles = getComputedStyle(canvas)
       const color = styles.getPropertyValue(`--status-${tone}`).trim() || 'gray'
       const fromColor = state.fromTone ? styles.getPropertyValue(`--status-${state.fromTone}`).trim() : null
+      const blend = fromColor ? progress(time, state.toneStart, 200) : 1
+      const fillProgress = state.previousCells ? progress(time, state.fillStart, 250) : 1
+
       context.setTransform(dpr, 0, 0, dpr, 0, 0)
       context.clearRect(0, 0, width, height)
-      let animating = false
 
       for (let index = 0; index < cells.length; index++) {
         const column = Math.floor(index / rows)
         const row = index % rows
-        const x = column / lastColumn
+        const target = cells[index] ?? 0
+        const previous = state.previousCells?.[index] ?? target
+        const fill = previous + (target - previous) * fillProgress
+        const alpha = 0.14 + 0.86 * fill
+        const x = column * (cellWidth + gap)
+        const y = row * (cellSize + gap)
 
-        // Each effect finishes within ~300ms end to end, stagger included, so it never holds up the view.
-        const appear = progress(time, state.appearStart, x * 120 + row * 10, 150)
-        const sweep = fromColor ? progress(time, state.toneStart, x * 150, 150) : 1
-        let fill = cells[index] ?? 0
-        let fillProgress = 1
-        const previous = state.previousCells?.[index]
-        if (previous !== undefined && previous !== fill) {
-          fillProgress = progress(time, state.fillStart, x * 100, 200)
-          fill = previous + (fill - previous) * fillProgress
-        }
-        if (appear < 1 || sweep < 1 || fillProgress < 1) animating = true
-
-        const pop = Math.max(
-          sweep < 1 ? Math.sin(Math.PI * sweep) * 0.35 : 0,
-          fillProgress < 1 ? Math.sin(Math.PI * fillProgress) * 0.5 : 0,
-        )
-        const scale = appear * (1 + pop)
-        if (scale <= 0) continue
-
-        const w = cellWidth * scale
-        const h = cellSize * scale
-        const cx = column * (cellWidth + gap) + cellWidth / 2
-        const cy = row * (cellSize + gap) + cellSize / 2
-        const alpha = (0.14 + 0.86 * fill) * appear
-        const radius = Math.min(w, h) * 0.3
-
-        // Crossfade from the previous state's color as the sweep passes.
-        if (fromColor && sweep < 1) {
-          context.globalAlpha = alpha * (1 - sweep)
+        if (fromColor && blend < 1) {
+          context.globalAlpha = alpha * (1 - blend)
           context.fillStyle = fromColor
           context.beginPath()
-          context.roundRect(cx - w / 2, cy - h / 2, w, h, radius)
+          context.roundRect(x, y, cellWidth, cellSize, radius)
           context.fill()
         }
-        context.globalAlpha = alpha * (fromColor ? sweep : 1)
+        context.globalAlpha = alpha * blend
         context.fillStyle = color
         context.beginPath()
-        context.roundRect(cx - w / 2, cy - h / 2, w, h, radius)
+        context.roundRect(x, y, cellWidth, cellSize, radius)
         context.fill()
       }
       context.globalAlpha = 1
 
-      if (animating) {
+      if (blend < 1 || fillProgress < 1) {
         state.frame = requestAnimationFrame(draw)
       } else {
         state.fromTone = null
@@ -177,9 +161,9 @@ function useThemeVersion() {
   return version
 }
 
-/** Eased (cubic out) 0…1 progress of a staggered animation. */
-function progress(now: number, start: number, delay: number, duration: number): number {
-  const t = (now - start - delay) / duration
+/** Eased (cubic out) 0…1 progress of an animation. */
+function progress(now: number, start: number, duration: number): number {
+  const t = (now - start) / duration
   const clamped = Math.min(Math.max(t, 0), 1)
   return 1 - (1 - clamped) ** 3
 }
