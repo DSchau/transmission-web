@@ -21,13 +21,28 @@ export class PieceBitfield {
   }
 
   /**
-   * Synthetic map filled front-to-back to `progress` — used while real piece data loads,
-   * so the header doesn't jump when it arrives.
+   * Synthetic map filled front-to-back to `progress`, for progress that really is sequential
+   * (e.g. fetching a magnet's metadata).
    */
   static placeholder(progress: number, count = 512): PieceBitfield {
-    const filled = Math.round(Math.min(Math.max(progress, 0), 1) * count)
+    const filled = Math.round(clamp01(progress) * count)
     const bytes = new Uint8Array(Math.ceil(count / 8))
     for (let i = 0; i < filled; i++) bytes[i >> 3]! |= 0x80 >> (i & 7)
+    return new PieceBitfield(bytes, count)
+  }
+
+  /**
+   * Synthetic map with `progress` spread evenly across every piece — used while real piece
+   * data loads. Downloads aren't sequential, so this looks like the real map (every cell
+   * partly shaded) and the swap is barely visible. The default count is high enough that the
+   * grid always buckets it, which shades cells evenly instead of scattering single pieces.
+   */
+  static spread(progress: number, count = 8192): PieceBitfield {
+    const p = clamp01(progress)
+    const bytes = new Uint8Array(Math.ceil(count / 8))
+    for (let i = 0; i < count; i++) {
+      if (Math.floor((i + 1) * p) > Math.floor(i * p)) bytes[i >> 3]! |= 0x80 >> (i & 7)
+    }
     return new PieceBitfield(bytes, count)
   }
 
@@ -111,4 +126,8 @@ export function pieceGridLayout(
       perCell: 1,
     }
   )
+}
+
+function clamp01(value: number): number {
+  return Math.min(Math.max(value, 0), 1)
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { pieceGridLayout } from './pieces'
+import { PieceBitfield, pieceGridLayout } from './pieces'
 
 // The detail header: 6 rows of 6px cells with 2px gaps → 46px tall.
 const layout = (count: number, width = 700) => pieceGridLayout(count, width, 46, 6, 6, 2)
@@ -30,5 +30,23 @@ describe('pieceGridLayout', () => {
     expect(grid.rows).toBe(6)
     expect(grid.columns).toBe(87)
     expect(grid.perCell).toBeGreaterThan(1)
+  })
+})
+
+describe('PieceBitfield.spread', () => {
+  it('has the requested share of pieces', () => {
+    expect(PieceBitfield.spread(0).haveCount).toBe(0)
+    expect(PieceBitfield.spread(1).haveCount).toBe(8192)
+    expect(PieceBitfield.spread(0.1).haveCount).toBe(819)
+  })
+
+  it('spreads them evenly instead of filling from the front', () => {
+    const bitfield = PieceBitfield.spread(0.1)
+    const buckets = 500
+    for (let cell = 0; cell < buckets; cell++) {
+      const start = Math.floor((cell * bitfield.count) / buckets)
+      const end = Math.floor(((cell + 1) * bitfield.count) / buckets)
+      expect(Math.abs(bitfield.fraction(start, end) - 0.1)).toBeLessThan(0.07)
+    }
   })
 })

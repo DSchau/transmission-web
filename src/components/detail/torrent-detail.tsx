@@ -204,7 +204,7 @@ function Header({ torrent: t }: { torrent: Torrent }) {
   const tone = statusTone(t)
   const bitfield = isMagnetPending(t)
     ? PieceBitfield.placeholder(t.metadataPercentComplete)
-    : (pieceBitfield(t) ?? PieceBitfield.placeholder(displayProgress(t)))
+    : (pieceBitfield(t) ?? PieceBitfield.spread(displayProgress(t)))
   const eta = t.status === TorrentStatus.Downloading && !hasError(t) ? formatEta(t.eta) : null
 
   return (
