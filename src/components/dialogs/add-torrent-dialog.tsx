@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useHasFinePointer } from '@/hooks/use-media-query'
 import { connectionAtom, rpcUrlFor } from '@/lib/connection'
+import { rememberFolder } from '@/lib/folders'
 import { useAddTorrent } from '@/lib/mutations'
 import { persistedAtom, safeSessionStorage } from '@/lib/persisted'
 import { useSession } from '@/lib/queries'
@@ -123,6 +124,7 @@ function AddTorrentForm({
 
       if (added.length > 0) {
         lastDownloadDirAtom.set({ server, dir: base['download-dir'] ?? '' })
+        if (base['download-dir']) rememberFolder(server, base['download-dir'])
         toast.success(added.length === 1 ? `Added “${added[0]}”` : `Added ${added.length} torrents`)
       }
       if (problems.length > 0) setSubmitError(problems.join('\n'))

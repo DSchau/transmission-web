@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file. The format foll
 [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog), and the
 project uses [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+### Features
+
+* **set location:** suggests the folder a torrent belongs in (matching show and season, or its category's folder), plus folders you've recently used, and searches every known folder as you type ([ba4fca2](https://github.com/DSchau/transmission-web/commit/ba4fca2))
+
 ## [1.0.0](https://github.com/DSchau/transmission-web/compare/v0.1.0...v1.0.0) (2026-10-20)
 
 ### Features
