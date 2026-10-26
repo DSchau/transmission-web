@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-media-query'
-import type { PieceBitfield } from '@/lib/pieces'
+import { type PieceBitfield, pieceGridLayout } from '@/lib/pieces'
 import type { StatusTone } from '@/lib/torrent'
 
 interface Props {
@@ -13,7 +13,9 @@ interface Props {
 
 /**
  * Grid of cells showing which pieces we have, filled column by column (left → right), so a
- * sequential download reads like a progress bar but gaps stay visible.
+ * sequential download reads like a progress bar but gaps stay visible. Small torrents get one
+ * cell per piece, stretched to fill the box; larger ones shade each cell by how much of its
+ * range of pieces is done.
  *
  * Motion is deliberately quiet (and skipped with reduced motion): the map renders instantly,
  * newly completed pieces fade in, and a state change crossfades the color. Nothing scales or
@@ -35,16 +37,19 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
     return () => observer.disconnect()
   }, [])
 
-  const columns = Math.max(1, Math.floor((width + gap) / (cellSize + gap)))
+  const grid = pieceGridLayout(bitfield.count, width, height, rows, cellSize, gap)
+  const { columns, cellWidth, cellHeight } = grid
+  const gridRows = grid.rows
   const cells = useMemo(() => {
-    const total = columns * rows
     const count = bitfield.count
+    if (grid.perCell === 1) return Array.from({ length: count }, (_, piece) => (bitfield.has(piece) ? 1 : 0))
+    const total = columns * gridRows
     return Array.from({ length: total }, (_, cell) => {
       const lower = Math.floor((cell * count) / total)
       const upper = Math.max(lower + 1, Math.floor(((cell + 1) * count) / total))
       return bitfield.fraction(lower, Math.min(upper, count))
     })
-  }, [bitfield, columns, rows])
+  }, [bitfield, columns, gridRows, grid.perCell])
 
   // Animation bookkeeping lives in a ref: it changes every frame and shouldn't re-render.
   const anim = useRef({
@@ -87,8 +92,7 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
     const context = canvas.getContext('2d')
     if (!context) return
 
-    const cellWidth = (width - (columns - 1) * gap) / columns
-    const radius = Math.min(cellWidth, cellSize) * 0.3
+    const radius = Math.min(cellWidth, cellHeight, cellSize) * 0.3
 
     const draw = (time: number) => {
       const styles = getComputedStyle(canvas)
@@ -101,26 +105,26 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
       context.clearRect(0, 0, width, height)
 
       for (let index = 0; index < cells.length; index++) {
-        const column = Math.floor(index / rows)
-        const row = index % rows
+        const column = Math.floor(index / gridRows)
+        const row = index % gridRows
         const target = cells[index] ?? 0
         const previous = state.previousCells?.[index] ?? target
         const fill = previous + (target - previous) * fillProgress
         const alpha = 0.14 + 0.86 * fill
         const x = column * (cellWidth + gap)
-        const y = row * (cellSize + gap)
+        const y = row * (cellHeight + gap)
 
         if (fromColor && blend < 1) {
           context.globalAlpha = alpha * (1 - blend)
           context.fillStyle = fromColor
           context.beginPath()
-          context.roundRect(x, y, cellWidth, cellSize, radius)
+          context.roundRect(x, y, cellWidth, cellHeight, radius)
           context.fill()
         }
         context.globalAlpha = alpha * blend
         context.fillStyle = color
         context.beginPath()
-        context.roundRect(x, y, cellWidth, cellSize, radius)
+        context.roundRect(x, y, cellWidth, cellHeight, radius)
         context.fill()
       }
       context.globalAlpha = 1
@@ -136,7 +140,7 @@ export function PieceMap({ bitfield, tone, rows = 6, cellSize = 6, gap = 2 }: Pr
     cancelAnimationFrame(state.frame)
     state.frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(state.frame)
-  }, [cells, tone, width, height, columns, rows, cellSize, gap, reduceMotion, themeVersion])
+  }, [cells, tone, width, height, columns, gridRows, cellWidth, cellHeight, cellSize, gap, reduceMotion, themeVersion])
 
   return (
     <div

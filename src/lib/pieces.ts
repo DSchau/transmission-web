@@ -50,3 +50,65 @@ export class PieceBitfield {
     return have / (end - start)
   }
 }
+
+export interface PieceGridLayout {
+  columns: number
+  rows: number
+  cellWidth: number
+  cellHeight: number
+  /** Pieces per cell: 1 when every piece gets its own cell, otherwise cells are buckets. */
+  perCell: number
+}
+
+/**
+ * Lays out `count` pieces in a `width` × `height` box. When the pieces fit at the minimum
+ * cell size, each gets its own cell and the cells grow to fill the box, with the row count
+ * picked to keep them as square as possible. Otherwise the box is filled with minimum-size
+ * cells that each stand for a range of pieces.
+ */
+export function pieceGridLayout(
+  count: number,
+  width: number,
+  height: number,
+  maxRows: number,
+  minCell: number,
+  gap: number,
+): PieceGridLayout {
+  const span = (size: number, n: number) => (size - (n - 1) * gap) / n
+  const maxColumns = Math.max(1, Math.floor((width + gap) / (minCell + gap)))
+  const capacity = maxColumns * maxRows
+
+  if (count > capacity || count <= 0) {
+    return {
+      columns: maxColumns,
+      rows: maxRows,
+      cellWidth: span(width, maxColumns),
+      cellHeight: span(height, maxRows),
+      perCell: Math.max(1, count / capacity),
+    }
+  }
+
+  let best: PieceGridLayout | null = null
+  let bestScore = Number.POSITIVE_INFINITY
+  for (let rows = 1; rows <= Math.min(maxRows, count); rows++) {
+    const columns = Math.ceil(count / rows)
+    if (columns > maxColumns) continue
+    const cellWidth = span(width, columns)
+    const cellHeight = span(height, rows)
+    const score = Math.abs(Math.log(cellWidth / cellHeight))
+    if (score < bestScore) {
+      bestScore = score
+      best = { columns, rows, cellWidth, cellHeight, perCell: 1 }
+    }
+  }
+  // Unreachable: maxRows rows always fit since count <= capacity.
+  return (
+    best ?? {
+      columns: maxColumns,
+      rows: maxRows,
+      cellWidth: span(width, maxColumns),
+      cellHeight: span(height, maxRows),
+      perCell: 1,
+    }
+  )
+}
