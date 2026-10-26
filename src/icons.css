@@ -3,7 +3,8 @@
  * keyboard focus or menu highlight. Only icons whose motion previews what the action does get
  * one (the gear turns, the bin lid lifts, chevrons point the way). Status, close, add and
  * decorative icons stay still: motion there doesn't explain anything, and some of it (an X
- * turning into a +) changes what the icon seems to mean.
+ * turning into a +) changes what the icon seems to mean. The sidebar filters are the exception:
+ * each acts out its status, but only there, so the same icons stay still elsewhere.
  * Children are lucide's SVG elements, in source order.
  */
 .lucide > * {
@@ -22,9 +23,10 @@
     [role="menuitemradio"],
     [role="menuitemcheckbox"]
   ):is(:hover, :focus-visible, [data-highlighted]) {
-    /* Settings: the gear turns one tooth with a little overshoot, as if clicking into place. */
+    /* Settings: the gear turns one tooth (60°, so the last frame matches the resting gear and
+       nothing snaps back while hovered) with a little overshoot, as if clicking into place. */
     & .lucide-settings > :first-child {
-      animation: icon-turn-90 640ms var(--ease-spring);
+      animation: icon-turn-tooth 640ms var(--ease-spring);
     }
     /* Sidebar toggle: the arrow points the way the panel is about to go. */
     & .lucide-panel-left-close > :nth-child(3) {
@@ -32,6 +34,10 @@
     }
     & .lucide-panel-left-open > :nth-child(3) {
       animation: icon-nudge-right 480ms var(--ease-spring);
+    }
+    /* Rail: the dashes flicker out. */
+    & .lucide-panel-left-dashed > :not(:first-child) {
+      animation: icon-blink 480ms steps(1);
     }
     /* Chevrons nudge the way they lead. */
     & .lucide-chevron-right {
@@ -64,18 +70,61 @@
       animation: icon-slide-up-left 420ms var(--ease-spring);
     }
   }
+  /* Sidebar filters: each icon acts out the status it filters by. */
+  [data-sidebar-filters] button:is(:hover, :focus-visible) {
+    /* All: the tray takes a little drop, the way a letter lands in it. */
+    & .lucide-inbox > :first-child {
+      animation: icon-drop 520ms var(--ease-spring);
+    }
+    /* Active: a jolt of current. */
+    & .lucide-zap {
+      animation: icon-zap 460ms ease-out;
+    }
+    /* Downloading / Seeding: the arrow slips out through the circle and comes back around. */
+    & .lucide-circle-arrow-down > :not(:first-child) {
+      animation: icon-pass-down 560ms var(--ease-in-out);
+    }
+    & .lucide-circle-arrow-up > :not(:first-child) {
+      animation: icon-pass-up 560ms var(--ease-in-out);
+    }
+    /* Paused: the two bars take a slow breath, one after the other. */
+    & .lucide-circle-pause > :nth-child(2) {
+      animation: icon-breathe 700ms ease-in-out;
+    }
+    & .lucide-circle-pause > :nth-child(3) {
+      animation: icon-breathe 700ms ease-in-out 120ms;
+    }
+    /* Completed: the tick is drawn again, with a small pop of the outline. */
+    & .lucide-circle-check > :nth-child(2) {
+      stroke-dasharray: 24;
+      animation: icon-draw 420ms var(--ease-in-out) 60ms backwards;
+    }
+    & .lucide-circle-check > :first-child {
+      animation: icon-pop 420ms var(--ease-spring);
+    }
+    /* Errors: the sign wobbles on its base and the dot blinks. */
+    & .lucide-triangle-alert {
+      transform-origin: 50% 90%;
+      animation: icon-wobble 520ms ease-in-out;
+    }
+    & .lucide-triangle-alert > :nth-child(3) {
+      animation: icon-blink 520ms steps(1);
+    }
+  }
 }
 
 :root {
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-@keyframes icon-turn-90 {
+/* Every gesture must end on the icon's resting look: the rule keeps matching while hovered. */
+@keyframes icon-turn-tooth {
   from {
     transform: rotate(0);
   }
   to {
-    transform: rotate(90deg);
+    transform: rotate(60deg);
   }
 }
 @keyframes icon-nudge-left {
@@ -106,5 +155,86 @@
 @keyframes icon-lid {
   40% {
     transform: translateY(-2px) rotate(-14deg);
+  }
+}
+@keyframes icon-drop {
+  0% {
+    transform: translateY(-3px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0.75px);
+    opacity: 1;
+  }
+}
+@keyframes icon-zap {
+  20% {
+    transform: scale(1.18) rotate(-8deg);
+    opacity: 0.55;
+  }
+  35% {
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.96) rotate(4deg);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 1;
+  }
+}
+@keyframes icon-pass-down {
+  45% {
+    transform: translateY(5px);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(-5px);
+    opacity: 0;
+  }
+}
+@keyframes icon-pass-up {
+  45% {
+    transform: translateY(-5px);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(5px);
+    opacity: 0;
+  }
+}
+@keyframes icon-breathe {
+  50% {
+    transform: scaleY(0.45);
+  }
+}
+@keyframes icon-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes icon-pop {
+  40% {
+    transform: scale(0.88);
+  }
+}
+@keyframes icon-wobble {
+  20% {
+    transform: rotate(-10deg);
+  }
+  45% {
+    transform: rotate(7deg);
+  }
+  70% {
+    transform: rotate(-3deg);
+  }
+}
+@keyframes icon-blink {
+  25%,
+  75% {
+    opacity: 0;
   }
 }

@@ -50,7 +50,7 @@ export function Sidebar({ className }: { className?: string }) {
       </div>
       <SidebarActivity />
       {/* One Tab stop (the current filter); ↑/↓ move between filters and Enter/Space picks one. */}
-      <ul className="flex flex-col gap-0.5 p-2" onKeyDown={moveFilterFocus}>
+      <ul data-sidebar-filters className="flex flex-col gap-0.5 p-2" onKeyDown={moveFilterFocus}>
         {FILTERS.map((filter, i) => {
           const info = FILTER_INFO[filter]
           const active = search.filter === filter
@@ -146,7 +146,7 @@ export function SidebarRail({ className }: { className?: string }) {
       <div className="flex h-12 w-full shrink-0 items-center justify-center border-b">
         <SidebarToggle />
       </div>
-      <ul className="flex flex-col items-center gap-0.5 py-2" onKeyDown={moveFilterFocus}>
+      <ul data-sidebar-filters className="flex flex-col items-center gap-0.5 py-2" onKeyDown={moveFilterFocus}>
         {FILTERS.map((filter, i) => {
           const info = FILTER_INFO[filter]
           const active = search.filter === filter
