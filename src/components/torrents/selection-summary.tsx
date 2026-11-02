@@ -53,7 +53,7 @@ export function SelectionSummary() {
             <div
               key={t.id}
               className={cn(
-                'absolute top-5 left-1/2 -ml-9 flex size-18 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-white/25 to-transparent text-white shadow-lg ring-2 ring-background transition-all duration-300',
+                'absolute top-5 left-1/2 -ml-9 flex size-18 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-white/25 to-transparent text-white shadow-lg ring-2 ring-background transition-[transform,scale,opacity,background-color] duration-300 ease-out starting:scale-90 starting:opacity-0 motion-reduce:transition-none',
                 toneBg[statusTone(t)],
               )}
               style={{

@@ -185,6 +185,8 @@
   html {
     @apply font-sans;
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -198,6 +200,18 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+  /* No double-tap-zoom wait on taps, and no iOS long-press callout on controls (text stays selectable). */
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  [role="switch"],
+  [role="checkbox"] {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
   }
 }
 
@@ -237,9 +251,19 @@
   padding-top: env(safe-area-inset-top);
 }
 
+/* Reduced motion keeps the cue but drops the movement: the push becomes a fade, the shimmer stops. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-shimmer,
-  .animate-push-in {
+  .animate-shimmer {
     animation: none;
+    opacity: 0;
+  }
+  .animate-push-in {
+    animation: fade-in 150ms ease-out;
   }
 }

@@ -212,7 +212,7 @@ export function ToolbarSearchField({ className }: { className?: string }) {
                 }
           }
           className={cn(
-            'h-8 shrink cursor-pointer overflow-hidden transition-[width,background-color,border-color] duration-200',
+            'h-8 shrink cursor-pointer overflow-hidden transition-[background-color,border-color] duration-150',
             expanded
               ? 'w-56 cursor-text xl:w-72'
               : 'w-8 border-transparent bg-transparent hover:bg-accent dark:bg-transparent',

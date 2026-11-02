@@ -1,5 +1,5 @@
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { formatRelative } from '@/lib/format'
+import { formatDateTime, formatRelative } from '@/lib/format'
 import type { Torrent } from '@/lib/rpc/types'
 import { EmptyRow, LoadingRow } from './detail-rows'
 
@@ -25,7 +25,10 @@ export function TrackersTab({ torrent, loading }: { torrent: Torrent; loading: b
             ) : (
               <XCircle className="size-3.5 shrink-0 text-status-error" />
             )}
-            <span className="min-w-0 flex-1 truncate">
+            <span
+              className="min-w-0 flex-1 truncate"
+              title={tracker.lastAnnounceTime > 0 ? formatDateTime(tracker.lastAnnounceTime) : undefined}
+            >
               {tracker.lastAnnounceResult || 'Not announced yet'}
               {tracker.lastAnnounceTime > 0 && ` · ${formatRelative(tracker.lastAnnounceTime)}`}
             </span>
