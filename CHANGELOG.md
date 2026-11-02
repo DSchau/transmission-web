@@ -8,6 +8,7 @@ project uses [Semantic Versioning](https://semver.org).
 
 ### Features
 
+* **mobile:** the detail page slides back out and can be swiped away from the left edge, the app can be added to the home screen, and buttons respond to the press ([bf004d5](https://github.com/DSchau/transmission-web/commit/bf004d5))
 * **set location:** suggests the folder a torrent belongs in (matching show and season, or its category's folder), plus folders you've recently used, and searches every known folder as you type ([ba4fca2](https://github.com/DSchau/transmission-web/commit/ba4fca2))
 
 ## [1.0.0](https://github.com/DSchau/transmission-web/compare/v0.1.0...v1.0.0) (2026-10-20)
