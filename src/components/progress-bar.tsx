@@ -28,13 +28,14 @@ export function ProgressBar({
       <div className={cn('absolute inset-0 opacity-15 transition-colors duration-500', toneBg[tone])} />
       <div
         className={cn(
-          'absolute inset-y-0 left-0 overflow-hidden rounded-full transition-[width,background-color] duration-500 ease-out',
+          'absolute inset-0 overflow-hidden rounded-full transition-[transform,background-color] duration-500 ease-out',
           toneBg[tone],
           clamped === 0 && 'opacity-0',
         )}
-        style={{ width: `max(${clamped * 100}%, 0.375rem)` }}
+        // A full-width fill slid in from the left: transforms skip layout, which matters with a bar on every row.
+        style={{ transform: `translateX(calc(max(${clamped * 100}%, 0.375rem) - 100%))` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/35 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/35 to-transparent" />
         {active && (
           <div className="animate-shimmer absolute inset-y-0 left-0 w-2/5 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
         )}

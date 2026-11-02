@@ -20,7 +20,7 @@ import { ProgressBar } from '@/components/progress-bar'
 import { Rate } from '@/components/rate'
 import {
   formatBytes,
-  formatDate,
+  formatDateTime,
   formatEta,
   formatPercent,
   formatRatio,
@@ -185,7 +185,7 @@ export const columns = helper.columns([
     size: 116,
     ...sortBy('addedDate'),
     cell: ({ getValue }) => (
-      <span className="truncate text-muted-foreground" title={formatDate(getValue())}>
+      <span className="truncate text-muted-foreground" title={formatDateTime(getValue())}>
         {formatRelative(getValue())}
       </span>
     ),

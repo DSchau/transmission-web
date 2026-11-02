@@ -95,16 +95,15 @@ export function formatShortTime(ms: number, now = Date.now()): string {
 export const formatDateTime = (unixSeconds: number) => dateTime.format(unixSeconds * 1000)
 export const formatDate = (unixSeconds: number) => dateOnly.format(unixSeconds * 1000)
 
-/** "3 days ago", "in 5 minutes" */
+/** "3 days ago", "in 5 minutes"; past a week, the date itself ("Mar 4, 2025") — "11 months ago" is too vague to use. */
 export function formatRelative(unixSeconds: number, now = Date.now()): string {
   const diff = unixSeconds - now / 1000
   const abs = Math.abs(diff)
   if (abs < 60) return relative.format(Math.round(diff), 'second')
   if (abs < 3600) return relative.format(Math.round(diff / 60), 'minute')
   if (abs < 86400) return relative.format(Math.round(diff / 3600), 'hour')
-  if (abs < 86400 * 30) return relative.format(Math.round(diff / 86400), 'day')
-  if (abs < 86400 * 365) return relative.format(Math.round(diff / (86400 * 30)), 'month')
-  return relative.format(Math.round(diff / (86400 * 365)), 'year')
+  if (abs < 86400 * 7) return relative.format(Math.round(diff / 86400), 'day')
+  return formatDate(unixSeconds)
 }
 
 export const torrentCountLabel = (count: number) => (count === 1 ? '1 torrent' : `${formatNumber(count)} torrents`)

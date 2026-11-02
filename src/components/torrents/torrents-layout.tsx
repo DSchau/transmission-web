@@ -9,10 +9,10 @@ import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { useSessionStats } from '@/lib/queries'
 import { FILTERS } from '@/lib/torrent'
 import { clearSelection, confirmRemove, openDialog, selectModeAtom } from '@/lib/ui'
-import { cn } from '@/lib/utils'
 import { ConnectionBanner } from './connection-state'
 import { cycleSidebar, DesktopToolbar } from './desktop-toolbar'
 import { ListHeader } from './list-header'
+import { MobileDetail } from './mobile-detail'
 import { openSearch } from './search-field'
 import { SelectionBar } from './selection-bar'
 import { SelectionSummary } from './selection-summary'
@@ -150,15 +150,9 @@ function Layout() {
         onScrolledChange={setListScrolled}
       />
       {selectMode && <SelectionBar />}
-      {/* Kept mounted underneath so the list keeps its scroll position. */}
-      <div
-        className={cn(
-          'animate-push-in fixed inset-0 z-40 flex flex-col bg-background',
-          openTorrentId == null && 'hidden',
-        )}
-      >
-        {openTorrentId != null && <Outlet />}
-      </div>
+      <MobileDetail open={openTorrentId != null}>
+        <Outlet />
+      </MobileDetail>
     </div>
   )
 }

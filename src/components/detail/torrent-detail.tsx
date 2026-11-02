@@ -1,6 +1,7 @@
-import { useCanGoBack, useNavigate, useRouter, useSearch } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { ChevronLeft, Ellipsis, Pause, Play, TriangleAlert, X } from 'lucide-react'
 import { ActionMenuItems, useTorrentActionGroups } from '@/components/torrents/actions'
+import { useDetailBack } from '@/components/torrents/mobile-detail'
 import { useTorrentsView } from '@/components/torrents/torrents-view'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -76,13 +77,7 @@ function DetailToolbar({ torrent }: { torrent: Torrent | null }) {
   const isSplit = useIsSplit()
   const isDesktop = useIsDesktop()
   const { closeDetail } = useTorrentsView()
-  const router = useRouter()
-  const canGoBack = useCanGoBack()
-
-  const back = () => {
-    if (canGoBack) router.history.back()
-    else closeDetail()
-  }
+  const back = useDetailBack()
 
   return (
     <div className="pt-safe flex h-12 shrink-0 items-center gap-1 border-b px-2">
