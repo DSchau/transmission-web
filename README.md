@@ -52,7 +52,8 @@ bun run build
 TRANSMISSION_WEB_HOME=/path/to/dist transmission-daemon   # or copy dist/ into the web folder
 ```
 
-For the NUC, `scripts/deploy.sh` builds and ships `dist/` over SSH into `/opt/transmission-web/current`. Updates
+For the HTPC (Mac Studio), `scripts/deploy.sh` builds and installs `dist/` into `~/htpc-data/transmission-web/current`,
+locally when run on the Studio and over SSH otherwise. Updates
 go live without restarting the daemon, and `--rollback` switches back to the previous build. One-time setup is in
 `../htpc/TRANSMISSION-WEB.md`.
 
