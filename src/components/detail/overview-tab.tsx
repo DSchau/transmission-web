@@ -22,14 +22,24 @@ export function OverviewTab({ torrent: t }: { torrent: Torrent }) {
 
       <Section title="Information">
         <Row label="Location">
-          <button
-            type="button"
-            onClick={() => openDialog({ type: 'location', torrents: [t] })}
-            className="break-all text-right font-mono text-foreground text-xs underline-offset-2 hover:underline"
-            title="Set location…"
-          >
-            {t.downloadDir}
-          </button>
+          <span className="inline-flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => openDialog({ type: 'location', torrents: [t] })}
+              className="break-all text-right font-mono text-foreground text-xs underline-offset-2 hover:underline"
+              title="Set location…"
+            >
+              {t.downloadDir}
+            </button>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Copy location"
+              onClick={() => copyText(t.downloadDir, 'Location copied')}
+            >
+              <Copy />
+            </Button>
+          </span>
         </Row>
         <Row label="Size">{formatBytes(t.totalSize)}</Row>
         <Row label="Added">{formatDateTime(t.addedDate)}</Row>
