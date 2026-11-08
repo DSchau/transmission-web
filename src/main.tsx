@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ThemeSync } from '@/lib/theme'
 import { TransmissionProvider } from '@/lib/transmission'
+import { watchForUpdates } from '@/lib/update-check'
 import { routeTree } from './routeTree.gen'
 
 const queryClient = new QueryClient({
@@ -49,3 +50,5 @@ createRoot(root).render(
     </QueryClientProvider>
   </StrictMode>,
 )
+
+watchForUpdates()
