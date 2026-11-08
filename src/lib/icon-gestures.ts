@@ -36,6 +36,8 @@ export interface Slot {
   copy?: boolean
   /** Stroke width of the copy. */
   width?: number
+  /** Fills the copy solid and gives it a glow, for a flash. */
+  fill?: boolean
   /** Leaves a trail of fading echoes behind it while it moves. */
   trail?: boolean
   /** Clips it to this circle, so it slides out through the edge rather than fading. */
@@ -182,8 +184,8 @@ const pass = (icon: string, dir: 1 | -1): Gesture => {
     duration: 0.75,
     slots: [
       { els: [0], origin: [12, 12] },
-      { els: [1, 2], origin: [12, 12], clip, trail: true },
-      { els: [1, 2], origin: [12, 12], clip, trail: true, copy: true },
+      { els: [1, 2], origin: [12, 12], clip },
+      { els: [1, 2], origin: [12, 12], clip, copy: true },
     ],
     pose: (t) => {
       const y = dir * (travel * arrive(t - 0.08, 0.67, 1.7, 0.62) - 1.1 * bell(span(t, 0, 0.18)))
@@ -192,21 +194,24 @@ const pass = (icon: string, dir: 1 | -1): Gesture => {
   }
 }
 
+/** A flash of light: snaps on by `at` and decays fast. */
+const strobe = (t: number, at: number) => (t < at ? easeOut(span(t, at - 0.045, at)) : Math.exp(-(t - at) / 0.06))
+
 /** Paused: one bar after the other takes a slow breath. */
 const breathe = (t: number, delay: number) => 1 - 0.55 * bell(span(t, delay, delay + 0.6))
 
 export const gestures: Gesture[] = [
   {
-    // Settings: the gear clicks round one tooth (60°, so it lands on its resting look) and the hub tightens.
+    // Settings: the gear clicks round two teeth (120°, so it lands on its resting look) and the hub tightens.
     icon: 'settings',
     duration: 0.8,
     slots: [
-      { els: [0], origin: [12, 12], period: 60, trail: true },
+      { els: [0], origin: [12, 12], period: 60 },
       { els: [1], origin: [12, 12] },
     ],
     pose: (t) =>
       frame(
-        { r: 60 * arrive(t - 0.06, 0.74, 1.9, 0.42) - 6 * bell(span(t, 0, 0.14)) },
+        { r: 120 * arrive(t - 0.06, 0.74, 1.9, 0.5) - 8 * bell(span(t, 0, 0.14)) },
         { s: 1 - 0.2 * bell(span(t, 0.06, 0.4)) },
       ),
   },
@@ -263,7 +268,7 @@ export const gestures: Gesture[] = [
     duration: 0.75,
     slots: [
       { els: [0], origin: [15, 15] },
-      { els: [0], origin: [15, 15], copy: true, trail: true },
+      { els: [0], origin: [15, 15], copy: true },
     ],
     pose: (t) => {
       const back = -6 * (1 - arrive(t, 0.5, 2.1, 0.6))
@@ -290,18 +295,26 @@ export const gestures: Gesture[] = [
     },
   },
   {
-    // Active: a jolt, and a spark of current runs along the bolt.
+    // Active: the bolt goes dark, current strikes down its outline, and when it lands the
+    // bolt flashes solid twice, like lightning, with a jolt.
     icon: 'zap',
     only: '[data-sidebar-filters] button',
-    duration: 0.7,
+    duration: 0.9,
     slots: [
       { els: [0], origin: [12, 12] },
-      { els: [0], origin: [12, 12], copy: true, width: 3.25 },
+      { els: [0], origin: [12, 12], copy: true, width: 2.5 },
+      { els: [0], origin: [12, 12], copy: true, fill: true },
     ],
     pose: (t) => {
-      const jolt = { s: 1 + 0.12 * flick(t, 0.6, 2.6), r: -8 * flick(t - 0.02, 0.5, 3.4, 0.3) }
-      const head = easeInOut(span(t, 0.06, 0.6)) * 1.3
-      return frame(jolt, { ...jolt, d0: clamp01(head - 0.3), d1: clamp01(head) })
+      const jolt = 1 + 0.14 * flick(t - 0.3, 0.55, 3, 0.36)
+      const dim = easeInOut(span(t, 0, 0.08)) * (1 - easeInOut(span(t, 0.4, 0.62)))
+      const strike = easeInOut(span(t, 0.04, 0.3))
+      const flash = Math.min(1, strobe(t, 0.32) + 0.65 * strobe(t, 0.47))
+      return frame(
+        { s: jolt, o: 1 - 0.85 * dim },
+        { s: jolt, d1: strike, o: 1 - easeInOut(span(t, 0.5, 0.75)) },
+        { s: jolt, o: settleTo(flash, 0, t, 0.85) },
+      )
     },
   },
   pass('circle-arrow-down', 1),
@@ -326,7 +339,7 @@ export const gestures: Gesture[] = [
       { els: [1], origin: [12, 12] },
     ],
     pose: (t) => {
-      const tick = { d1: t < 0.18 ? 1 - easeInOut(span(t, 0, 0.18)) : easeOut(span(t, 0.2, 0.52)) }
+      const tick = { d1: t < 0.12 ? 1 - easeInOut(span(t, 0, 0.12)) : easeOut(span(t, 0.14, 0.46)) }
       return frame({ s: 1 - 0.08 * bell(span(t, 0, 0.24)) + 0.07 * flick(t - 0.38, 0.4, 2.6) }, tick)
     },
   },

@@ -63,9 +63,11 @@ function cloneParts(svg: SVGSVGElement, slot: Slot) {
     const el = children[i]?.cloneNode() as SVGGeometryElement | undefined
     if (!el) continue
     if (slot.width) el.setAttribute('stroke-width', String(slot.width))
+    if (slot.fill) el.setAttribute('fill', 'currentColor')
     el.setAttribute('pathLength', '1')
     g.append(el)
   }
+  if (slot.fill) g.style.filter = 'drop-shadow(0 0 1.5px currentColor)'
   return g
 }
 
@@ -147,7 +149,8 @@ function draw(run: Run, t: number) {
   })
 }
 
-function tick(time: number) {
+function tick() {
+  const time = performance.now()
   for (const run of runs.values()) {
     const t = (time - run.start) / 1000
     if (!run.svg.isConnected || t >= run.gesture.duration) stop(run)
