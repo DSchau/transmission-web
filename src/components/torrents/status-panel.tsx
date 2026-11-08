@@ -45,8 +45,14 @@ export function StatusPanel({
   const rates = totalRates(torrents)
 
   return (
-    <footer className={cn('shrink-0 border-b bg-muted/40 text-[11px] text-muted-foreground tabular-nums', className)}>
-      <div className="flex min-h-7 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1">
+    <footer
+      className={cn(
+        '@container shrink-0 border-b bg-muted/40 text-[11px] text-muted-foreground tabular-nums',
+        className,
+      )}
+    >
+      {/* One line always: the count truncates, and free space only shows when the strip itself is wide enough. */}
+      <div className="flex min-h-7 items-center gap-3 px-4 py-1">
         <span className="min-w-0 truncate">
           {offline ? 'Offline' : connecting ? 'Connecting…' : countText(visible.length, torrents.length)}
           {selected.length > 1 && ` · ${selected.length} selected (${formatBytes(totalSize(selected))})`}
@@ -65,7 +71,10 @@ export function StatusPanel({
           value={connecting ? null : scrub ? scrub.up : rates.up}
         />
         {freeSpace > 0 && (
-          <span className="hidden border-l pl-3 md:inline" title="Free space in the download directory">
+          <span
+            className="hidden shrink-0 whitespace-nowrap border-l pl-3 @sm:inline"
+            title="Free space in the download directory"
+          >
             {formatBytes(freeSpace)} free
           </span>
         )}
