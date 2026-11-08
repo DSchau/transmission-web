@@ -21,8 +21,7 @@ type Action = ActionItem | ActionSubmenu
 /** The everyday actions, in order. Pause/Resume is always shown. */
 const PRIMARY = ['pause-resume', 'rename', 'remove', 'location']
 /** Shown after a divider, dimmer, as space allows. */
-const SECONDARY = ['verify', 'reannounce', 'copy-magnet', 'queue', 'copy-name']
-// Anything else (Resume Now, Remove and Delete Data) only lives in the "…" menu.
+const SECONDARY = ['verify', 'reannounce', 'copy-magnet', 'queue', 'copy-name', 'resume-now', 'delete-data']
 
 // Icon buttons are `size-8` with `gap-1` between them; the divider is `w-px` + `mx-1`.
 const SLOT_REM = 2
@@ -33,7 +32,8 @@ const DIVIDER_REM = 0.5
  * Detail toolbar actions as icon buttons, most common first, then a divider and the
  * secondary ones. They fill a `flex-1` box; we count how many whole icons fit its width and
  * move the rest (lowest priority first) into the "…" menu, so an icon is never clipped or
- * overlapping at any width.
+ * overlapping at any width. When every action fits, the "…" menu goes away and its slot is
+ * used for icons too.
  */
 export function DetailActions({ torrent }: { torrent: Torrent }) {
   const { togglePaused } = useTorrentActions()
@@ -53,25 +53,28 @@ export function DetailActions({ torrent }: { torrent: Torrent }) {
   const primary = pick(PRIMARY)
   const secondary = pick(SECONDARY)
 
-  const count = fitCount(width, rem, primary.length, secondary.length)
+  // The "…" button lives inside the measured box, so hiding it frees its slot without a resize loop.
+  const all = fitCount(width, rem, primary.length, secondary.length)
+  const count =
+    all === primary.length + secondary.length
+      ? all
+      : fitCount(width - (SLOT_REM + GAP_REM) * rem, rem, primary.length, secondary.length)
   const shownPrimary = primary.slice(0, count)
   const shownSecondary = secondary.slice(0, Math.max(0, count - primary.length))
   const shown = new Set([...shownPrimary, ...shownSecondary].map((item) => item.id))
   const overflow = groups.map((group) => group.filter((item) => !shown.has(item.id))).filter((g) => g.length > 0)
 
   return (
-    <>
-      <div ref={ref} className="flex min-w-0 flex-1 items-center justify-end gap-1">
-        {shownPrimary.map((item) => (
-          <InlineAction key={item.id} item={item} />
-        ))}
-        {shownSecondary.length > 0 && <div aria-hidden className="mx-1 h-4 w-px shrink-0 bg-border" />}
-        {shownSecondary.map((item) => (
-          <InlineAction key={item.id} item={item} secondary />
-        ))}
-      </div>
-      <OverflowMenu groups={overflow} />
-    </>
+    <div ref={ref} className="flex min-w-0 flex-1 items-center justify-end gap-1">
+      {shownPrimary.map((item) => (
+        <InlineAction key={item.id} item={item} />
+      ))}
+      {shownSecondary.length > 0 && <div aria-hidden className="mx-1 h-4 w-px shrink-0 bg-border" />}
+      {shownSecondary.map((item) => (
+        <InlineAction key={item.id} item={item} secondary />
+      ))}
+      {overflow.length > 0 && <OverflowMenu groups={overflow} />}
+    </div>
   )
 }
 
