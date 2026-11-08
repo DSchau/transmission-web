@@ -1,5 +1,4 @@
-/// <reference types="bun" />
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { compileQuery, type QueryField } from './query'
 
 /**

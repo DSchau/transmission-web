@@ -1,6 +1,5 @@
-/// <reference types="bun" />
-import { describe, expect, it } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { describe, expect, it } from 'vitest'
 import { type Torrent, TorrentStatus } from '../../lib/rpc/types'
 import { TorrentTransferStatus } from './torrent-transfer-status'
 

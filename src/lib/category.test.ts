@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'vitest'
 import { categoryFromFolder, categoryFromName } from './category'
 import type { Torrent } from './rpc/types'
 import { compileTorrentQuery } from './torrent'

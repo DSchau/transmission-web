@@ -30,16 +30,16 @@ so they survive reloads and can be shared.
 ## Develop
 
 ```sh
-bun install
-bun run dev:mock     # fake daemon built into the dev server (MOCK_COUNT=1600, MOCK_AUTH=user:pass)
-bun run dev          # proxies /transmission/rpc to TRANSMISSION_URL (default http://localhost:9091)
+pnpm install
+pnpm run dev:mock     # fake daemon built into the dev server (MOCK_COUNT=1600, MOCK_AUTH=user:pass)
+pnpm run dev          # proxies /transmission/rpc to TRANSMISSION_URL (default http://localhost:9091)
 ```
 
 To use a real daemon while developing, either set `TRANSMISSION_URL=http://192.168.0.250:9091` and
 keep **This server**, or pick **Another server** in Connection settings. In `vite dev`, requests to
 another origin are forwarded by the dev server (`dev/rpc-proxy.ts`), so the daemon needs no CORS setup.
 
-`bun run build` · `bun run lint` · `bun run typecheck`
+`pnpm run build` · `pnpm run lint` · `pnpm run typecheck` · `pnpm test`
 
 ## Deploy
 
@@ -48,11 +48,11 @@ simplest setup is to serve it as Transmission's own web UI (same origin → no C
 handles sign-in):
 
 ```sh
-bun run build
+pnpm run build
 TRANSMISSION_WEB_HOME=/path/to/dist transmission-daemon   # or copy dist/ into the web folder
 ```
 
-For the HTPC (Mac Studio), `scripts/deploy.sh` builds and installs `dist/` into `~/htpc-data/transmission-web/current`,
+For the HTPC (Mac Studio), `pnpm run deploy` (`scripts/deploy.sh`) builds and installs `dist/` into `~/htpc-data/transmission-web/current`,
 locally when run on the Studio and over SSH otherwise. Updates
 go live without restarting the daemon, and `--rollback` switches back to the previous build. One-time setup is in
 `../htpc/TRANSMISSION-WEB.md`.

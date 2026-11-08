@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it } from 'vitest'
 import { PieceBitfield, pieceGridLayout } from './pieces'
 
 // The detail header: 6 rows of 6px cells with 2px gaps → 46px tall.

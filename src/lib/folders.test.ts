@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'vitest'
 import { matchFolder, parseRelease, suggestFolders } from './folders'
 import type { Torrent } from './rpc/types'
 

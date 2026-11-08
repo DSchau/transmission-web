@@ -1,5 +1,7 @@
-import { describe, expect, test } from 'bun:test'
+/// <reference types="node" />
+
 import { readFileSync } from 'node:fs'
+import { describe, expect, test } from 'vitest'
 import { COLOR_THEMES } from './theme'
 
 const KEYS = [

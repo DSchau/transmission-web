@@ -65,8 +65,8 @@ if [[ -n "$(git status --porcelain)" ]]; then
 fi
 release="$(date +%Y%m%d-%H%M%S)-$sha"
 
-bun install --frozen-lockfile
-bun run build
+pnpm install --frozen-lockfile
+pnpm run build
 entry=$(grep -o 'assets/index-[^"]*\.js' dist/index.html | head -n1)
 
 # Runs on the target; stdin carries the tarball.

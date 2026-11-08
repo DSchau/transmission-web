@@ -2,10 +2,10 @@
 
 ## Workflow
 
-- Use `bun` only (`bun install`, `bun run …`). Don't use pnpm or npm: a second lockfile installs a duplicate React and breaks the app.
-- Before committing, run `bun run typecheck`, `bun run lint`, `bun test` and `bun run build`.
+- Use `pnpm` only (`pnpm install`, `pnpm run …`). Don't use bun or npm: a second lockfile installs a duplicate React and breaks the app.
+- Before committing, run `pnpm run typecheck`, `pnpm run lint`, `pnpm test` and `pnpm run build`.
 - Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, …).
-- `bun run dev:mock` starts the app against a built-in fake daemon.
+- `pnpm run dev:mock` starts the app against a built-in fake daemon.
 
 ## Changelog
 
