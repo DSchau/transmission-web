@@ -290,7 +290,7 @@ export function TorrentTableView({
                         ))}
                     </tr>
                   </ContextMenuTrigger>
-                  <ContextMenuContent className="w-60">
+                  <ContextMenuContent className="w-max min-w-60">
                     <TorrentMenuContent torrent={row.original} kind="context" />
                   </ContextMenuContent>
                 </ContextMenu>

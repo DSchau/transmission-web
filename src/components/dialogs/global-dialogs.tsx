@@ -88,7 +88,7 @@ function RemoveDialog({
     setDeleteData(request?.deleteData ?? false)
   }
   const subject = many ? torrentCountLabel(ids.length) : `“${request?.names[0] ?? ''}”`
-  const title = deleteData ? `Delete ${subject} and ${many ? 'their' : 'its'} files?` : `Remove ${subject}?`
+  const title = `Remove ${subject}${deleteData ? ` and delete ${many ? 'their' : 'its'} data` : ''}?`
   // Deleting files can't be undone, so it always takes a press-and-hold, like removing many.
   const hold = many || deleteData
 
@@ -126,7 +126,7 @@ function RemoveDialog({
             checked={deleteData}
             onCheckedChange={(checked) => setDeleteData(checked === true)}
           />
-          Also delete downloaded files
+          Also delete downloaded data
         </label>
         {deleteData && (
           <p
@@ -140,9 +140,9 @@ function RemoveDialog({
                   Permanently deletes <strong className="tabular-nums">{formatBytes(onDisk)}</strong> from disk.
                 </>
               ) : (
-                'Permanently deletes the downloaded files from disk.'
+                'Permanently deletes the downloaded data from disk.'
               )}{' '}
-              They won’t go to the Trash, and this can’t be undone.
+              It won’t go to the Trash, and this can’t be undone.
             </span>
           </p>
         )}
@@ -155,7 +155,7 @@ function RemoveDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           {hold ? (
             <HoldButton variant={deleteData ? 'destructive' : 'default'} onConfirm={confirm}>
-              {deleteData ? 'Delete Files' : 'Remove'}
+              {deleteData ? 'Remove and Delete Data' : 'Remove'}
             </HoldButton>
           ) : (
             <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>

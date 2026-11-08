@@ -36,7 +36,7 @@ export function SelectionBar() {
               <Ellipsis />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" side="top" className="w-60">
+          <DropdownMenuContent align="end" side="top" className="w-max min-w-60">
             <ActionMenuItems groups={groups.slice(1)} kind="dropdown" />
           </DropdownMenuContent>
         </DropdownMenu>

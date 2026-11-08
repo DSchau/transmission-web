@@ -109,7 +109,7 @@ export function SelectionSummary() {
               <Ellipsis />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="center" className="w-60">
+          <DropdownMenuContent align="center" className="w-max min-w-60">
             <ActionMenuItems groups={groups.slice(1, -1)} kind="dropdown" />
           </DropdownMenuContent>
         </DropdownMenu>

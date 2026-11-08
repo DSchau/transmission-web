@@ -255,6 +255,10 @@ function Shortcuts() {
       const targets = selected.length > 0 ? selected : torrents.filter((t) => t.id === openTorrentId)
       if (targets.length > 0) confirmRemove(targets)
     },
+    'Mod+Delete|Mod+Backspace': () => {
+      const targets = selected.length > 0 ? selected : torrents.filter((t) => t.id === openTorrentId)
+      if (targets.length > 0) confirmRemove(targets, { deleteData: true })
+    },
   })
   return null
 }

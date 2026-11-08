@@ -124,9 +124,10 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
       },
       {
         id: 'delete-data',
-        label: 'Delete Files & Remove…',
+        label: 'Remove and Delete Data…',
         icon: FileXCorner,
         destructive: true,
+        shortcut: '⌘⌫',
         onSelect: () => confirmRemove([torrent], { deleteData: true }),
       },
     ],
@@ -191,9 +192,10 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
       },
       {
         id: 'delete-data',
-        label: `Delete Files & Remove ${torrentCountLabel(ids.length)}…`,
+        label: `Remove ${torrentCountLabel(ids.length)} and Delete Data…`,
         icon: FileXCorner,
         destructive: true,
+        shortcut: '⌘⌫',
         onSelect: () => confirmRemove(torrents, { deleteData: true }),
       },
     ],
