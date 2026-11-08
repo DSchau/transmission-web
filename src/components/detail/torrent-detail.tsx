@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { ChevronLeft, Pause, Play, TriangleAlert, X } from 'lucide-react'
+import { ChevronLeft, TriangleAlert, X } from 'lucide-react'
 import { useDetailBack } from '@/components/torrents/mobile-detail'
 import { useTorrentsView } from '@/components/torrents/torrents-view'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
 import { formatBytes, formatEta, formatRatio, formatSpeed } from '@/lib/format'
-import { useTorrentActions } from '@/lib/mutations'
 import { PieceBitfield } from '@/lib/pieces'
 import { useTorrentDetail } from '@/lib/queries'
 import { type Torrent, TorrentStatus } from '@/lib/rpc/types'
@@ -20,7 +19,6 @@ import {
   hasError,
   isComplete,
   isMagnetPending,
-  isPaused,
   pieceBitfield,
   pieceSummary,
   stateLabel,
@@ -86,13 +84,7 @@ function DetailToolbar({ torrent }: { torrent: Torrent | null }) {
           Torrents
         </Button>
       )}
-      {torrent ? (
-        <DetailActions torrent={torrent}>
-          <PauseResumeButton torrent={torrent} />
-        </DetailActions>
-      ) : (
-        <div className="flex-1" />
-      )}
+      {torrent ? <DetailActions torrent={torrent} /> : <div className="flex-1" />}
       {isDesktop && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -114,21 +106,6 @@ function DetailToolbar({ torrent }: { torrent: Torrent | null }) {
         </Tooltip>
       )}
     </div>
-  )
-}
-
-function PauseResumeButton({ torrent }: { torrent: Torrent }) {
-  const { togglePaused } = useTorrentActions()
-  const paused = isPaused(torrent)
-  return (
-    <Button variant="ghost" onClick={() => togglePaused(torrent)}>
-      {paused ? (
-        <Play data-icon="inline-start" className="fill-current" />
-      ) : (
-        <Pause data-icon="inline-start" className="fill-current" />
-      )}
-      {paused ? 'Resume' : 'Pause'}
-    </Button>
   )
 }
 
