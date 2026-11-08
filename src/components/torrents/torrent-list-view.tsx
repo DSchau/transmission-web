@@ -158,7 +158,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
           {!selectMode && <CardActions torrent={t} />}
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-60">
+      <ContextMenuContent className="w-max min-w-60">
         <TorrentMenuContent torrent={t} kind="context" />
       </ContextMenuContent>
     </ContextMenu>
@@ -176,7 +176,7 @@ function CardActions({ torrent }: { torrent: Torrent }) {
             <Ellipsis />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-60">
+        <DropdownMenuContent align="end" className="w-max min-w-60">
           <TorrentMenuContent torrent={torrent} kind="dropdown" />
         </DropdownMenuContent>
       </DropdownMenu>

@@ -34,8 +34,9 @@ export class PendingChanges {
     return (list: Torrent[] | undefined) => list?.map((t) => (set.has(t.id) ? apply(t) : t))
   }
 
-  remove(ids: number[]) {
-    const expires = this.now() + this.timeout
+  /** Hides `ids` until the server drops them or `timeout` passes; pass Infinity to hold them indefinitely. */
+  remove(ids: number[], timeout = this.timeout) {
+    const expires = this.now() + timeout
     const set = new Set(ids)
     for (const id of ids) this.removals.set(id, expires)
     return (list: Torrent[] | undefined) => list?.filter((t) => !set.has(t.id))

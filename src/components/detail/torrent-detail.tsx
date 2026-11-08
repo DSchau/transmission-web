@@ -137,7 +137,7 @@ function DetailMenu({ torrent }: { torrent: Torrent }) {
           <Ellipsis />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
+      <DropdownMenuContent align="end" className="w-max min-w-60">
         <DetailMenuItems torrent={torrent} />
       </DropdownMenuContent>
     </DropdownMenu>

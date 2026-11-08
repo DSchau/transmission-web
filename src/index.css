@@ -243,6 +243,20 @@
   animation: push-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* The Undo button empties as its countdown runs out. */
+@keyframes drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@utility animate-drain {
+  animation: drain linear forwards;
+}
+
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }

@@ -7,9 +7,9 @@ const isTyping = (target: EventTarget | null) =>
   (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
 
 /**
- * Minimal global shortcuts. Keys are `KeyboardEvent.key` values; `|` separates alternatives.
- * Skipped while typing (including IME composition), with modifier keys held, or when a
- * dialog, menu or listbox is open.
+ * Minimal global shortcuts. Keys are `KeyboardEvent.key` values; `|` separates alternatives, and a
+ * `Mod+` prefix means ⌘ (or Ctrl) must be held. Other keys only fire with no modifiers held.
+ * Skipped while typing (including IME composition) or when a dialog, menu or listbox is open.
  */
 export function useHotkeys(handlers: Handlers) {
   const ref = useRef(handlers)
@@ -17,18 +17,11 @@ export function useHotkeys(handlers: Handlers) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.defaultPrevented ||
-        event.isComposing ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        isTyping(event.target)
-      )
-        return
+      if (event.defaultPrevented || event.isComposing || event.altKey || isTyping(event.target)) return
       if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]')) return
+      const key = event.metaKey || event.ctrlKey ? `Mod+${event.key}` : event.key
       for (const [keys, handler] of Object.entries(ref.current)) {
-        if (keys.split('|').includes(event.key)) {
+        if (keys.split('|').includes(key)) {
           event.preventDefault()
           handler(event)
           return

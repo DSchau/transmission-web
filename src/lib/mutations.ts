@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { torrentCountLabel } from './format'
 import { torrentKeys } from './queries'
 import type { AddTorrentArguments, FileUpdate, QueueDirection, SessionInfo, SessionUpdate, Torrent } from './rpc/types'
 import { TorrentStatus } from './rpc/types'
 import { isChecking, isComplete, isPaused } from './torrent'
 import { useTransmission } from './transmission'
+import { undoToast } from './undo-toast'
 
 export type TorrentAction =
   | { type: 'start'; ids: number[]; now?: boolean }
@@ -146,10 +148,32 @@ function optimisticUpdate(
 /** Convenience wrappers so call sites read like the iOS store's API. */
 export function useTorrentActions() {
   const { mutate: run } = useTorrentMutation()
+  const transmission = useTransmission()
+  const queryClient = useQueryClient()
+  const listKey = torrentKeys.list(transmission)
   // An empty selection is a no-op, never a request.
   const mutate = (action: TorrentAction) => {
     if (idsOf(action).length > 0) run(action)
   }
+
+  /** Hides the torrents right away but only sends the request once the Undo toast runs out. */
+  const remove = (ids: number[], deleteData: boolean) => {
+    if (ids.length === 0) return
+    const names = queryClient
+      .getQueryData<Torrent[]>(listKey)
+      ?.filter((t) => ids.includes(t.id))
+      .map((t) => t.name)
+    const subject = ids.length === 1 && names?.length === 1 ? `“${names[0]}”` : torrentCountLabel(ids.length)
+    queryClient.setQueryData<Torrent[]>(listKey, transmission.pending.remove(ids, Number.POSITIVE_INFINITY))
+    undoToast(deleteData ? `Deleted ${subject}` : `Removed ${subject}`, {
+      onCommit: () => mutate({ type: 'remove', ids, deleteData }),
+      onUndo: () => {
+        transmission.pending.discard(ids)
+        queryClient.invalidateQueries({ queryKey: listKey })
+      },
+    })
+  }
+
   return {
     resume: (ids: number[]) => mutate({ type: 'start', ids }),
     /** Starts immediately, bypassing the download queue. */
@@ -162,7 +186,7 @@ export function useTorrentActions() {
       mutate({ type: 'reannounce', ids })
       toast.success(ids.length === 1 ? 'Asked tracker for more peers' : 'Asked trackers for more peers')
     },
-    remove: (ids: number[], deleteData: boolean) => mutate({ type: 'remove', ids, deleteData }),
+    remove,
     setLocation: (ids: number[], location: string, move: boolean) =>
       mutate({ type: 'setLocation', ids, location, move }),
     rename: (t: Torrent, name: string) => mutate({ type: 'rename', id: t.id, path: t.name, name }),
