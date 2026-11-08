@@ -6,6 +6,7 @@ import type { AddTorrentArguments, FileUpdate, QueueDirection, SessionInfo, Sess
 import { TorrentStatus } from './rpc/types'
 import { isChecking, isComplete, isPaused } from './torrent'
 import { useTransmission } from './transmission'
+import { undoToast } from './undo-toast'
 
 export type TorrentAction =
   | { type: 'start'; ids: number[]; now?: boolean }
@@ -17,9 +18,6 @@ export type TorrentAction =
   | { type: 'rename'; id: number; path: string; name: string }
   | { type: 'queue'; ids: number[]; direction: QueueDirection }
   | { type: 'files'; id: number; update: FileUpdate }
-
-/** How long a removal can be undone before it's sent to the daemon. */
-const UNDO_WINDOW = 5000
 
 const idsOf = (action: TorrentAction) => ('ids' in action ? action.ids : [action.id])
 
@@ -167,16 +165,11 @@ export function useTorrentActions() {
       .map((t) => t.name)
     const subject = ids.length === 1 && names?.length === 1 ? `“${names[0]}”` : torrentCountLabel(ids.length)
     queryClient.setQueryData<Torrent[]>(listKey, transmission.pending.remove(ids))
-    const timer = setTimeout(() => mutate({ type: 'remove', ids, deleteData }), UNDO_WINDOW)
-    toast(deleteData ? `Deleted ${subject} and ${ids.length === 1 ? 'its' : 'their'} data` : `Removed ${subject}`, {
-      duration: UNDO_WINDOW,
-      action: {
-        label: 'Undo',
-        onClick: () => {
-          clearTimeout(timer)
-          transmission.pending.discard(ids)
-          queryClient.invalidateQueries({ queryKey: listKey })
-        },
+    undoToast(deleteData ? `Deleted ${subject}` : `Removed ${subject}`, {
+      onCommit: () => mutate({ type: 'remove', ids, deleteData }),
+      onUndo: () => {
+        transmission.pending.discard(ids)
+        queryClient.invalidateQueries({ queryKey: listKey })
       },
     })
   }
