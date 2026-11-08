@@ -8,7 +8,7 @@ project uses [Semantic Versioning](https://semver.org).
 
 ### Features
 
-* **updates:** an open tab notices when a new version has been deployed and offers to reload, instead of showing the cached old UI
+* **updates:** an open tab notices when a new version has been deployed and offers to reload, instead of showing the cached old UI ([e2d252c](https://github.com/DSchau/transmission-web/commit/e2d252c))
 * **remove:** "Remove and Delete Data…" (⌘⌫) next to Remove in the torrent menu, and removing shows an Undo toast for 5 seconds instead of asking you to press and hold ([51b2c1d](https://github.com/DSchau/transmission-web/commit/51b2c1d))
 * **mobile:** the detail page slides back out and can be swiped away from the left edge, the app can be added to the home screen, and buttons respond to the press ([bf004d5](https://github.com/DSchau/transmission-web/commit/bf004d5))
 * **set location:** suggests the folder a torrent belongs in (matching show and season, or its category's folder), plus folders you've recently used, and searches every known folder as you type ([ba4fca2](https://github.com/DSchau/transmission-web/commit/ba4fca2))
