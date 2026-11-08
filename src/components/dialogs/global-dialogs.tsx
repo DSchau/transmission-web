@@ -1,8 +1,8 @@
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { Folder, TriangleAlert } from 'lucide-react'
 import { useId, useState } from 'react'
-import { HoldButton } from '@/components/hold-button'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import {
   AlertDialog,
@@ -25,6 +25,7 @@ import { useTorrentActions } from '@/lib/mutations'
 import { useSession, useTorrents } from '@/lib/queries'
 import type { Torrent } from '@/lib/rpc/types'
 import { haveBytes } from '@/lib/torrent'
+import { useTransmission } from '@/lib/transmission'
 import { closeDialog, type DialogRequest, dialogAtom, exitSelectMode } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { AddTorrentDialog } from './add-torrent-dialog'
@@ -70,18 +71,31 @@ function RemoveDialog({
   request: Extract<DialogRequest, { type: 'remove' }> | null
 }) {
   const { remove } = useTorrentActions()
+  const transmission = useTransmission()
   const navigate = useNavigate()
   const { torrentId } = useParams({ strict: false })
   const checkboxId = useId()
   const [deleteData, setDeleteData] = useState(false)
   const ids = request?.ids ?? []
   const many = ids.length > 1
+  // "Remove and Delete Data" already says what it does, so only plain Remove offers the choice.
+  const deleting = request?.deleteData === true
   const { data: targets = [] } = useTorrents((torrents) => torrents.filter((t) => ids.includes(t.id)))
   const onDisk = targets.reduce((sum, t) => sum + haveBytes(t), 0)
   const categories = new Map<TorrentCategory, number>()
   for (const t of targets) categories.set(categoryOf(t), (categories.get(categoryOf(t)) ?? 0) + 1)
+  // The list poll doesn't include files, so count them only when they're about to be deleted.
+  const { data: fileCount } = useQuery({
+    enabled: open && deleteData && ids.length > 0,
+    queryKey: [...transmission.key, 'file-count', ids],
+    queryFn: async ({ signal }) =>
+      (await transmission.client.torrents(['id', 'files'], ids, signal)).reduce(
+        (sum, t) => sum + (t.files?.length ?? 0),
+        0,
+      ),
+  })
 
-  // Start from what was asked for, so data is never trashed by a leftover choice.
+  // Start from what was asked for, so data is never deleted by a leftover choice.
   const [lastRequest, setLastRequest] = useState(request)
   if (request !== lastRequest) {
     setLastRequest(request)
@@ -89,8 +103,6 @@ function RemoveDialog({
   }
   const subject = many ? torrentCountLabel(ids.length) : `“${request?.names[0] ?? ''}”`
   const title = `Remove ${subject}${deleteData ? ` and delete ${many ? 'their' : 'its'} data` : ''}?`
-  // Deleting files can't be undone, so it always takes a press-and-hold, like removing many.
-  const hold = many || deleteData
 
   const confirm = () => {
     remove(ids, deleteData)
@@ -120,48 +132,39 @@ function RemoveDialog({
               })}
           </ul>
         )}
-        <label htmlFor={checkboxId} className="flex w-fit cursor-pointer items-center gap-2 text-sm">
-          <Checkbox
-            id={checkboxId}
-            checked={deleteData}
-            onCheckedChange={(checked) => setDeleteData(checked === true)}
-          />
-          Also delete downloaded data
-        </label>
+        {!deleting && (
+          <label htmlFor={checkboxId} className="flex w-fit cursor-pointer items-center gap-2 text-sm">
+            <Checkbox
+              id={checkboxId}
+              checked={deleteData}
+              onCheckedChange={(checked) => setDeleteData(checked === true)}
+            />
+            Remove downloaded data
+          </label>
+        )}
         {deleteData && (
           <p
             role="alert"
-            className="flex gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive text-sm"
+            className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive text-sm"
           >
-            <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <span>
-              {onDisk > 0 ? (
+            <TriangleAlert className="size-4 shrink-0" aria-hidden />
+            <span className="tabular-nums">
+              Permanently deletes {onDisk > 0 ? <strong>{formatBytes(onDisk)}</strong> : 'the downloaded data'}
+              {fileCount != null && fileCount > 0 && (
                 <>
-                  Permanently deletes <strong className="tabular-nums">{formatBytes(onDisk)}</strong> from disk.
+                  {' '}
+                  and <strong>{formatNumber(fileCount)}</strong> {fileCount === 1 ? 'file' : 'files'}
                 </>
-              ) : (
-                'Permanently deletes the downloaded data from disk.'
-              )}{' '}
-              It won’t go to the Trash, and this can’t be undone.
+              )}
+              .
             </span>
           </p>
         )}
-        <AlertDialogFooter className="items-center">
-          {hold && (
-            <p className="mr-auto text-muted-foreground text-xs max-sm:order-last">
-              Press and hold to {deleteData ? 'delete' : 'remove'}
-            </p>
-          )}
+        <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          {hold ? (
-            <HoldButton variant={deleteData ? 'destructive' : 'default'} onConfirm={confirm}>
-              {deleteData ? 'Remove and Delete Data' : 'Remove'}
-            </HoldButton>
-          ) : (
-            <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
-              Remove
-            </Button>
-          )}
+          <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
+            {deleteData ? 'Delete' : 'Remove'}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

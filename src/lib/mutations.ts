@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { torrentCountLabel } from './format'
 import { torrentKeys } from './queries'
 import type { AddTorrentArguments, FileUpdate, QueueDirection, SessionInfo, SessionUpdate, Torrent } from './rpc/types'
 import { TorrentStatus } from './rpc/types'
@@ -16,6 +17,9 @@ export type TorrentAction =
   | { type: 'rename'; id: number; path: string; name: string }
   | { type: 'queue'; ids: number[]; direction: QueueDirection }
   | { type: 'files'; id: number; update: FileUpdate }
+
+/** How long a removal can be undone before it's sent to the daemon. */
+const UNDO_WINDOW = 5000
 
 const idsOf = (action: TorrentAction) => ('ids' in action ? action.ids : [action.id])
 
@@ -146,10 +150,37 @@ function optimisticUpdate(
 /** Convenience wrappers so call sites read like the iOS store's API. */
 export function useTorrentActions() {
   const { mutate: run } = useTorrentMutation()
+  const transmission = useTransmission()
+  const queryClient = useQueryClient()
+  const listKey = torrentKeys.list(transmission)
   // An empty selection is a no-op, never a request.
   const mutate = (action: TorrentAction) => {
     if (idsOf(action).length > 0) run(action)
   }
+
+  /** Hides the torrents right away but only sends the request once the Undo toast runs out. */
+  const remove = (ids: number[], deleteData: boolean) => {
+    if (ids.length === 0) return
+    const names = queryClient
+      .getQueryData<Torrent[]>(listKey)
+      ?.filter((t) => ids.includes(t.id))
+      .map((t) => t.name)
+    const subject = ids.length === 1 && names?.length === 1 ? `“${names[0]}”` : torrentCountLabel(ids.length)
+    queryClient.setQueryData<Torrent[]>(listKey, transmission.pending.remove(ids))
+    const timer = setTimeout(() => mutate({ type: 'remove', ids, deleteData }), UNDO_WINDOW)
+    toast(deleteData ? `Deleted ${subject} and ${ids.length === 1 ? 'its' : 'their'} data` : `Removed ${subject}`, {
+      duration: UNDO_WINDOW,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          clearTimeout(timer)
+          transmission.pending.discard(ids)
+          queryClient.invalidateQueries({ queryKey: listKey })
+        },
+      },
+    })
+  }
+
   return {
     resume: (ids: number[]) => mutate({ type: 'start', ids }),
     /** Starts immediately, bypassing the download queue. */
@@ -162,7 +193,7 @@ export function useTorrentActions() {
       mutate({ type: 'reannounce', ids })
       toast.success(ids.length === 1 ? 'Asked tracker for more peers' : 'Asked trackers for more peers')
     },
-    remove: (ids: number[], deleteData: boolean) => mutate({ type: 'remove', ids, deleteData }),
+    remove,
     setLocation: (ids: number[], location: string, move: boolean) =>
       mutate({ type: 'setLocation', ids, location, move }),
     rename: (t: Torrent, name: string) => mutate({ type: 'rename', id: t.id, path: t.name, name }),
