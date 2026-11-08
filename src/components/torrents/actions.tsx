@@ -61,7 +61,7 @@ export interface ActionSubmenu {
 
 export type ActionGroup = (ActionItem | ActionSubmenu)[]
 
-const isSubmenu = (item: ActionItem | ActionSubmenu): item is ActionSubmenu => 'items' in item
+export const isSubmenu = (item: ActionItem | ActionSubmenu): item is ActionSubmenu => 'items' in item
 
 /** Mirrors the Transmission web UI's context menu (and the iOS app's long-press menu). */
 export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = true } = {}): ActionGroup[] {

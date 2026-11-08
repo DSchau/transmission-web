@@ -1,10 +1,8 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { ChevronLeft, Ellipsis, Pause, Play, TriangleAlert, X } from 'lucide-react'
-import { ActionMenuItems, useTorrentActionGroups } from '@/components/torrents/actions'
+import { ChevronLeft, Pause, Play, TriangleAlert, X } from 'lucide-react'
 import { useDetailBack } from '@/components/torrents/mobile-detail'
 import { useTorrentsView } from '@/components/torrents/torrents-view'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,6 +29,7 @@ import {
 } from '@/lib/torrent'
 import { clearSelection } from '@/lib/ui'
 import { cn } from '@/lib/utils'
+import { DetailActions } from './detail-actions'
 import { FilesTab } from './files-tab'
 import { OverviewTab } from './overview-tab'
 import { PeersTab } from './peers-tab'
@@ -87,9 +86,13 @@ function DetailToolbar({ torrent }: { torrent: Torrent | null }) {
           Torrents
         </Button>
       )}
-      <div className="flex-1" />
-      {torrent && <PauseResumeButton torrent={torrent} />}
-      {torrent && <DetailMenu torrent={torrent} />}
+      {torrent ? (
+        <DetailActions torrent={torrent}>
+          <PauseResumeButton torrent={torrent} />
+        </DetailActions>
+      ) : (
+        <div className="flex-1" />
+      )}
       {isDesktop && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -127,27 +130,6 @@ function PauseResumeButton({ torrent }: { torrent: Torrent }) {
       {paused ? 'Resume' : 'Pause'}
     </Button>
   )
-}
-
-function DetailMenu({ torrent }: { torrent: Torrent }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="More actions">
-          <Ellipsis />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-max min-w-60">
-        <DetailMenuItems torrent={torrent} />
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
-function DetailMenuItems({ torrent }: { torrent: Torrent }) {
-  // Pause/Resume already has its own toolbar button.
-  const groups = useTorrentActionGroups(torrent, { includePauseResume: false })
-  return <ActionMenuItems groups={groups} kind="dropdown" />
 }
 
 function DetailContent({ torrent, hasDetail }: { torrent: Torrent; hasDetail: boolean }) {
