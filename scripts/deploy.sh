@@ -79,6 +79,12 @@ tar -xzf - -C "$dir"
 test -f "$dir/index.html"
 switch_to "$RELEASE"
 
+# Docker Desktop's file sharing caches the old target of `current`, so the Caddy container in front of
+# transmission.dschau.dev keeps serving the previous build (or 404s once it's pruned). A restart clears it.
+if command -v docker >/dev/null && docker ps -q --filter name=^transmission-web$ | grep -q .; then
+  docker restart transmission-web >/dev/null && echo "Restarted transmission-web (Caddy)"
+fi
+
 # Prune old builds, never the live one.
 ls -1 "$ROOT/releases" | sort -r | tail -n +"$((KEEP + 1))" | { grep -vx "$RELEASE" || true; } |
   while read -r old; do rm -rf "${ROOT:?}/releases/$old"; done
