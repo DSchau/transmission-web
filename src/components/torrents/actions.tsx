@@ -5,6 +5,7 @@ import {
   ArrowUpToLine,
   Copy,
   FastForward,
+  FileXCorner,
   Folder,
   Link,
   ListOrdered,
@@ -121,6 +122,13 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
         shortcut: '⌫',
         onSelect: () => confirmRemove([torrent]),
       },
+      {
+        id: 'delete-data',
+        label: 'Delete Files & Remove…',
+        icon: FileXCorner,
+        destructive: true,
+        onSelect: () => confirmRemove([torrent], { deleteData: true }),
+      },
     ],
   ].filter((group) => group.length > 0)
 }
@@ -180,6 +188,13 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
         destructive: true,
         shortcut: '⌫',
         onSelect: () => confirmRemove(torrents),
+      },
+      {
+        id: 'delete-data',
+        label: `Delete Files & Remove ${torrentCountLabel(ids.length)}…`,
+        icon: FileXCorner,
+        destructive: true,
+        onSelect: () => confirmRemove(torrents, { deleteData: true }),
       },
     ],
   ]

@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { Folder } from 'lucide-react'
+import { Folder, TriangleAlert } from 'lucide-react'
 import { useId, useState } from 'react'
 import { HoldButton } from '@/components/hold-button'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
@@ -76,18 +76,21 @@ function RemoveDialog({
   const [deleteData, setDeleteData] = useState(false)
   const ids = request?.ids ?? []
   const many = ids.length > 1
-  const title = many ? `Remove ${torrentCountLabel(ids.length)}?` : `Remove “${request?.names[0] ?? ''}”?`
   const { data: targets = [] } = useTorrents((torrents) => torrents.filter((t) => ids.includes(t.id)))
   const onDisk = targets.reduce((sum, t) => sum + haveBytes(t), 0)
   const categories = new Map<TorrentCategory, number>()
   for (const t of targets) categories.set(categoryOf(t), (categories.get(categoryOf(t)) ?? 0) + 1)
 
-  // Always start unchecked so data is never trashed by a leftover choice.
+  // Start from what was asked for, so data is never trashed by a leftover choice.
   const [lastRequest, setLastRequest] = useState(request)
   if (request !== lastRequest) {
     setLastRequest(request)
-    setDeleteData(false)
+    setDeleteData(request?.deleteData ?? false)
   }
+  const subject = many ? torrentCountLabel(ids.length) : `“${request?.names[0] ?? ''}”`
+  const title = deleteData ? `Delete ${subject} and ${many ? 'their' : 'its'} files?` : `Remove ${subject}?`
+  // Deleting files can't be undone, so it always takes a press-and-hold, like removing many.
+  const hold = many || deleteData
 
   const confirm = () => {
     remove(ids, deleteData)
@@ -123,17 +126,36 @@ function RemoveDialog({
             checked={deleteData}
             onCheckedChange={(checked) => setDeleteData(checked === true)}
           />
-          Remove data
-          {deleteData && onDisk > 0 && (
-            <span className="text-destructive tabular-nums">· deletes {formatBytes(onDisk)} from disk</span>
-          )}
+          Also delete downloaded files
         </label>
+        {deleteData && (
+          <p
+            role="alert"
+            className="flex gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive text-sm"
+          >
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>
+              {onDisk > 0 ? (
+                <>
+                  Permanently deletes <strong className="tabular-nums">{formatBytes(onDisk)}</strong> from disk.
+                </>
+              ) : (
+                'Permanently deletes the downloaded files from disk.'
+              )}{' '}
+              They won’t go to the Trash, and this can’t be undone.
+            </span>
+          </p>
+        )}
         <AlertDialogFooter className="items-center">
-          {many && <p className="mr-auto text-muted-foreground text-xs max-sm:order-last">Press and hold to remove</p>}
+          {hold && (
+            <p className="mr-auto text-muted-foreground text-xs max-sm:order-last">
+              Press and hold to {deleteData ? 'delete' : 'remove'}
+            </p>
+          )}
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          {many ? (
+          {hold ? (
             <HoldButton variant={deleteData ? 'destructive' : 'default'} onConfirm={confirm}>
-              Remove
+              {deleteData ? 'Delete Files' : 'Remove'}
             </HoldButton>
           ) : (
             <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>

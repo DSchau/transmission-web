@@ -5,7 +5,7 @@ import type { Torrent } from './rpc/types'
 /** Something that needs extra input or confirmation before it runs. */
 export type DialogRequest =
   | { type: 'add'; link?: string; files?: File[] }
-  | { type: 'remove'; ids: number[]; names: string[] }
+  | { type: 'remove'; ids: number[]; names: string[]; deleteData?: boolean }
   | { type: 'rename'; torrent: Torrent }
   | { type: 'location'; torrents: Torrent[] }
   | { type: 'statistics' }
@@ -13,9 +13,10 @@ export type DialogRequest =
 export const dialogAtom = createAtom<DialogRequest | null>(null)
 export const openDialog = (request: DialogRequest) => dialogAtom.set(request)
 export const closeDialog = () => dialogAtom.set(null)
-/** Asks to confirm removing `torrents` (and, optionally, their data). */
-export const confirmRemove = (torrents: Pick<Torrent, 'id' | 'name'>[]) =>
-  openDialog({ type: 'remove', ids: torrents.map((t) => t.id), names: torrents.map((t) => t.name) })
+/** Asks to confirm removing `torrents` (and, optionally, their data). `deleteData` starts the
+ * dialog in its delete-files-from-disk mode. */
+export const confirmRemove = (torrents: Pick<Torrent, 'id' | 'name'>[], { deleteData = false } = {}) =>
+  openDialog({ type: 'remove', ids: torrents.map((t) => t.id), names: torrents.map((t) => t.name), deleteData })
 
 /** Multi-selection, keyed by torrent id (as strings, the way TanStack Table keys rows). */
 export const selectionAtom = createAtom<RowSelectionState>({})
