@@ -1,4 +1,5 @@
 import './index.css'
+import './lib/icon-motion'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
