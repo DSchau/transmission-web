@@ -59,7 +59,7 @@ function UndoButton({ onUndo, onExpire }: { onUndo: () => void; onExpire: () => 
   }, [left, onExpire])
 
   return (
-    <Button ref={ref} size="sm" className="relative ml-auto shrink-0 overflow-hidden tabular-nums" onClick={onUndo}>
+    <Button ref={ref} size="xs" className="relative ml-auto shrink-0 overflow-hidden tabular-nums" onClick={onUndo}>
       <span
         aria-hidden
         className="absolute inset-0 origin-left animate-drain bg-primary-foreground/25"

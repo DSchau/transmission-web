@@ -71,7 +71,7 @@ export function useTorrentMutation() {
 
     onError: (error, action) => {
       pending.discard(idsOf(action))
-      toast.error('Something went wrong', { description: error.message })
+      toast.error('Couldn’t update torrents', { description: error.message })
     },
 
     onSettled: (_data, _error, action) => {

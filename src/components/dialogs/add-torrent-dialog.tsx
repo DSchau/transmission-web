@@ -235,8 +235,8 @@ function AddTorrentForm({
             if (skipped.length > 0) {
               toast.error(
                 skipped.length === 1
-                  ? `“${skipped[0]?.name}” isn’t a .torrent file.`
-                  : `${skipped.length} of the chosen files aren’t .torrent files.`,
+                  ? `“${skipped[0]?.name}” isn’t a .torrent file`
+                  : `${skipped.length} of the chosen files aren’t .torrent files`,
               )
             }
             if (files.length) form.setFieldValue('files', files)
