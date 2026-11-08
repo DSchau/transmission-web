@@ -164,7 +164,7 @@ export function useTorrentActions() {
       ?.filter((t) => ids.includes(t.id))
       .map((t) => t.name)
     const subject = ids.length === 1 && names?.length === 1 ? `“${names[0]}”` : torrentCountLabel(ids.length)
-    queryClient.setQueryData<Torrent[]>(listKey, transmission.pending.remove(ids))
+    queryClient.setQueryData<Torrent[]>(listKey, transmission.pending.remove(ids, Number.POSITIVE_INFINITY))
     undoToast(deleteData ? `Deleted ${subject}` : `Removed ${subject}`, {
       onCommit: () => mutate({ type: 'remove', ids, deleteData }),
       onUndo: () => {
