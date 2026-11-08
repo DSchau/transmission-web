@@ -6,6 +6,7 @@
 #   scripts/deploy.sh --rollback   switch `current` back to the previous build
 #   scripts/deploy.sh --allow-dirty   deploy even with uncommitted changes
 #   HTPC_HOST=dschau@ssh.dschau.dev scripts/deploy.sh   # when away from home
+#   TRANSMISSION_AUTH=user:pass scripts/deploy.sh       # verify the build when RPC auth is on
 #
 # Run on the Studio itself, it installs locally (no SSH). Anywhere else it streams the build over SSH.
 # Switching is an atomic symlink swap, so Transmission never needs a restart.
@@ -82,13 +83,18 @@ switch_to "$RELEASE"
 ls -1 "$ROOT/releases" | sort -r | tail -n +"$((KEEP + 1))" | { grep -vx "$RELEASE" || true; } |
   while read -r old; do rm -rf "${ROOT:?}/releases/$old"; done
 
-# Check what Transmission actually serves (401 = RPC auth is on, so it can't be checked anonymously).
+# Check what Transmission actually serves. With RPC auth on, this needs AUTH (user:pass) or it gets a 401.
+# ${AUTH:+...} rather than an array: an empty array trips `set -u` in macOS's bash 3.2.
 page=$(mktemp)
-code=$(curl -s -m 5 -o "$page" -w '%{http_code}' http://127.0.0.1:9091/transmission/web/ || true)
+code=$(curl -s -m 5 ${AUTH:+-u "$AUTH"} -o "$page" -w '%{http_code}' http://127.0.0.1:9091/transmission/web/ || true)
 if [[ $code == 200 ]] && grep -q "$ENTRY" "$page"; then
   echo "✅ Transmission is serving the new build"
 elif [[ $code == 200 ]]; then
   echo "⚠️  Transmission is serving a different UI. Is TRANSMISSION_WEB_HOME set? (see TRANSMISSION-WEB.md)"
+elif [[ $code == 401 && -n "${AUTH:-}" ]]; then
+  echo "⚠️  Couldn't verify: Transmission rejected TRANSMISSION_AUTH (HTTP 401)"
+elif [[ $code == 401 ]]; then
+  echo "ℹ️  Couldn't verify: RPC auth is on. Set TRANSMISSION_AUTH=user:pass to check the served build."
 else
   echo "ℹ️  Couldn't verify (HTTP $code)"
 fi
@@ -97,4 +103,4 @@ EOF
 
 echo "Deploying $release to $HOST:$ROOT"
 COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata -C dist -czf - . |
-  on_target "$switch"$'\n'"$install" ROOT="$ROOT" RELEASE="$release" KEEP="$KEEP" ENTRY="$entry"
+  on_target "$switch"$'\n'"$install" ROOT="$ROOT" RELEASE="$release" KEEP="$KEEP" ENTRY="$entry" AUTH="${TRANSMISSION_AUTH:-}"
