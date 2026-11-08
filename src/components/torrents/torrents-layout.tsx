@@ -9,7 +9,7 @@ import { preferencesAtom, updatePreferences } from '@/lib/preferences'
 import { useSessionStats } from '@/lib/queries'
 import { FILTERS } from '@/lib/torrent'
 import { clearSelection, confirmRemove, openDialog, selectModeAtom } from '@/lib/ui'
-import { ConnectionBanner } from './connection-state'
+import { ConnectionToast } from './connection-state'
 import { cycleSidebar, DesktopToolbar } from './desktop-toolbar'
 import { ListHeader } from './list-header'
 import { MobileDetail } from './mobile-detail'
@@ -107,7 +107,7 @@ function Layout() {
             )}
           >
             <DesktopToolbar />
-            <ConnectionBanner />
+            <ConnectionToast />
             <StatusPanel chart={sidebarMode !== 'full'} chartCollapsed={listScrolled} />
           </GlassPane>
         </main>
@@ -157,7 +157,7 @@ function Layout() {
   )
 }
 
-/** The phone/tablet list with its header, banner and status strip on a frosted pane over the cards. */
+/** The phone/tablet list with its header and status strip on a frosted pane over the cards. */
 function GlassList({
   chrome,
   scrolled = false,
@@ -175,7 +175,7 @@ function GlassList({
       )}
     >
       <ListHeader />
-      <ConnectionBanner />
+      <ConnectionToast />
       {chrome}
     </GlassPane>
   )

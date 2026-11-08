@@ -281,3 +281,50 @@
     animation: fade-in 150ms ease-out;
   }
 }
+
+/*
+ * Compact toasts. Sonner injects its own stylesheet at runtime, so these selectors carry the
+ * `.toaster` class to outrank it.
+ */
+.toaster [data-sonner-toast][data-styled="true"] {
+  padding: 8px 10px 8px 12px;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 0.04),
+    0 4px 12px oklch(0 0 0 / 0.06);
+}
+
+.toaster [data-sonner-toast][data-styled="true"] [data-icon] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.toaster [data-sonner-toast][data-styled="true"] [data-content] {
+  gap: 1px;
+}
+
+.toaster [data-sonner-toast][data-styled="true"] [data-title] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.35;
+}
+
+.toaster [data-sonner-toast][data-styled="true"] [data-description] {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 11.5px;
+  color: var(--muted-foreground);
+}
+
+.toaster [data-sonner-toast][data-styled="true"] [data-button] {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: calc(var(--radius) * 0.6);
+  font-size: 11.5px;
+}

@@ -20,7 +20,7 @@ function Root() {
       <GlobalDialogs />
       <SignInDialog />
       <DropZone />
-      <Toaster position="bottom-center" />
+      <Toaster />
     </>
   )
 }

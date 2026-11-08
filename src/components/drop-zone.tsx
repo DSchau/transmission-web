@@ -50,7 +50,7 @@ export function DropZone() {
       if (files.length) openDialog({ type: 'add', files })
       else if (dropped.length) {
         toast.error(
-          dropped.length === 1 ? `“${dropped[0]?.name}” isn’t a .torrent file.` : 'Those aren’t .torrent files.',
+          dropped.length === 1 ? `“${dropped[0]?.name}” isn’t a .torrent file` : 'Those aren’t .torrent files',
         )
       }
     }

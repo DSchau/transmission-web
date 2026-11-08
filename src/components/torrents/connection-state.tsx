@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { KeyRound, Plus, SearchX, WifiOff } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
@@ -10,25 +12,43 @@ import { FILTER_INFO } from '@/lib/torrent'
 import { openDialog, signInDismissedAtom } from '@/lib/ui'
 import { useTorrentsView } from './torrents-view'
 
-/** Slim warning shown above the list when polls start failing after we had data. */
-export function ConnectionBanner() {
+const CONNECTION_TOAST = 'connection'
+
+/**
+ * Raises a lasting toast with a Retry action while polls are failing after we had data, and
+ * swaps it for a brief “Back online” once they recover. Renders nothing.
+ */
+export function ConnectionToast() {
   const state = useConnectionState()
-  const retry = useRetryConnection()
-  if (state.status !== 'offline') return null
-  return (
-    <div
-      role="status"
-      className="flex items-center gap-2 border-b bg-status-checking/10 px-4 py-1.5 text-xs text-foreground"
-    >
-      <WifiOff className="size-3.5 shrink-0 text-status-checking" />
-      <span className="min-w-0 flex-1 truncate">
-        <span className="font-medium">Offline.</span> {state.message}
-      </span>
-      <Button size="xs" variant="ghost" onClick={retry}>
-        Retry
-      </Button>
-    </div>
-  )
+  const retryConnection = useRetryConnection()
+  const retry = useRef(retryConnection)
+  retry.current = retryConnection
+  const message = state.status === 'offline' ? state.message : null
+  const wasOffline = useRef(false)
+
+  useEffect(() => {
+    if (message != null) {
+      wasOffline.current = true
+      toast.warning('Offline', {
+        id: CONNECTION_TOAST,
+        description: message,
+        duration: Number.POSITIVE_INFINITY,
+        action: { label: 'Retry', onClick: () => retry.current() },
+      })
+    } else if (wasOffline.current) {
+      wasOffline.current = false
+      toast.success('Back online', {
+        id: CONNECTION_TOAST,
+        description: undefined,
+        action: undefined,
+        duration: undefined,
+      })
+    }
+  }, [message])
+
+  useEffect(() => () => void toast.dismiss(CONNECTION_TOAST), [])
+
+  return null
 }
 
 /**
