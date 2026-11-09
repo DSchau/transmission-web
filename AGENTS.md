@@ -29,9 +29,10 @@ If Central has no icon for something, build it from parts of Central icons (as `
 comment, rather than drawing one from scratch.
 
 Every icon used in the main app has a hover animation in `src/lib/icon-gestures.ts`, keyed by the icon's Central name, so
-a new one needs a gesture too (the settings pages are exempt). Make it act out what the icon means. Slots point at the
-SVG's children by index, so if you swap the drawing behind an animated icon, update the gesture's indexes and pivots to
-match. `pnpm test` checks that every gesture starts and ends exactly on the resting drawing.
+a new one needs a gesture too. The settings pages are exempt, and so are the plain close and add icons (`cross-medium`,
+`plus-medium`), which are controls rather than things worth acting out. Make it act out what the icon means. Slots point
+at the SVG's children by index, so if you swap the drawing behind an animated icon, update the gesture's indexes and
+pivots to match. `pnpm test` checks that every gesture starts and ends exactly on the resting drawing.
 
 ## Changelog
 

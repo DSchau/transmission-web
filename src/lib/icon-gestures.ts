@@ -355,9 +355,6 @@ export const gestures: Gesture[] = [
     slots: [{ els: [0, 1], origin: [11, 11], trail: true }],
     pose: (t) => frame({ x: -1.6 * flick(t, 0.65, 2, 0.3), r: -12 * flick(t - 0.03, 0.65, 2, 0.3) }),
   },
-  // Close and add: the cross and the plus spin a quarter turn.
-  spin('cross-medium', 90, [], { els: [0], origin: [12, 12] }, -0.12),
-  spin('plus-medium', 90, [], { els: [0], origin: [12, 12] }, 0.12),
   wave(
     'dot-grid-1x3-horizontal',
     [],
