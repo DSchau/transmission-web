@@ -377,14 +377,16 @@ export const gestures: Gesture[] = [
 
   // Torrent actions: each previews what it does.
   {
-    // Resume: the triangle winds back, launches forward once, and glides home.
+    // Resume: the triangle rolls on out to the right and a fresh one rolls in behind it, only ever forward.
     icon: 'play',
     duration: 0.7,
-    slots: [{ els: [0], origin: [6, 12], trail: true }],
+    slots: [
+      { els: [0], origin: [12, 12], clip: [12, 12, 11.5], trail: true },
+      { els: [0], origin: [12, 12], clip: [12, 12, 11.5], copy: true, trail: true },
+    ],
     pose: (t) => {
-      const windUp = bell(span(t, 0, 0.2))
-      const launch = easeOut(span(t, 0.12, 0.32)) * (1 - easeInOut(span(t, 0.32, 0.7)))
-      return frame({ x: -0.8 * windUp + 2.6 * launch, sx: 1 - 0.1 * windUp })
+      const x = 23 * easeInOut(span(t, 0.04, 0.66))
+      return frame({ x }, { x: x - 23 })
     },
   },
   pauseBars('pause', [], [0, 1], [7, 17]),
