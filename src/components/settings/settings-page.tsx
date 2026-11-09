@@ -109,7 +109,7 @@ function SpeedSection({ session }: { session: SessionInfo }) {
         />
       </SettingsRow>
       {session['speed-limit-down-enabled'] && (
-        <SettingsRow label="Download Limit" className="pl-9">
+        <SettingsRow label="Download Limit">
           <NumberField
             value={session['speed-limit-down']}
             unit="kB/s"
@@ -126,7 +126,7 @@ function SpeedSection({ session }: { session: SessionInfo }) {
         />
       </SettingsRow>
       {session['speed-limit-up-enabled'] && (
-        <SettingsRow label="Upload Limit" className="pl-9">
+        <SettingsRow label="Upload Limit">
           <NumberField
             value={session['speed-limit-up']}
             unit="kB/s"
@@ -170,7 +170,7 @@ function DownloadsSection({ session }: { session: SessionInfo }) {
         />
       </SettingsRow>
       {session.seedRatioLimited && (
-        <SettingsRow label="Ratio" className="pl-9">
+        <SettingsRow label="Ratio">
           <NumberField
             value={session.seedRatioLimit}
             step={0.1}
