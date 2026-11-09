@@ -382,12 +382,13 @@ export const gestures: Gesture[] = [
     duration: 0.75,
     slots: [
       { els: [0], origin: [12, 12] },
-      { els: [0], origin: [12, 12], copy: true, width: 1.5 },
+      // Grows from right of centre and only to 1.15×, so the tip stays inside the icon's box.
+      { els: [0], origin: [13, 12], copy: true, width: 1.5 },
     ],
     pose: (t) => {
       const spread = easeOut(span(t, 0.1, 0.75))
       const o = 0.7 * easeOut(span(t, 0.1, 0.2)) * (1 - easeInOut(span(t, 0.2, 0.7)))
-      return frame({ s: 1 - 0.1 * bell(span(t, 0, 0.3)) }, { s: 1 + 0.25 * spread, o })
+      return frame({ s: 1 - 0.1 * bell(span(t, 0, 0.3)) }, { s: 1 + 0.15 * spread, o })
     },
   },
   pauseBars('pause', [], [0, 1], [7, 17]),
