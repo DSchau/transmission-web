@@ -8,7 +8,7 @@ project uses [Semantic Versioning](https://semver.org).
 
 ### Features
 
-* **icons:** every icon in the app now animates on hover, each acting out what it means, and Paused gets a circled icon to match the other filters
+* **icons:** every icon in the app now animates on hover, each acting out what it means, and Paused gets a circled icon to match the other filters ([242329f](https://github.com/DSchau/transmission-web/commit/242329f))
 * **icons:** a new icon set throughout the app, with the hover animations redrawn to match ([2eebd3a](https://github.com/DSchau/transmission-web/commit/2eebd3a))
 * **tab:** the browser tab's icon shows a progress ring with the download state (downloading, verifying, error, finished) and the title shows overall progress and speed, updating while you're in another tab ([f3f25f6](https://github.com/DSchau/transmission-web/commit/f3f25f6))
 * **updates:** an open tab notices when a new version has been deployed and offers to reload, instead of showing the cached old UI ([e2d252c](https://github.com/DSchau/transmission-web/commit/e2d252c))
