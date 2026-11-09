@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { tabStatus } from './favicon'
+import { needsAttention, tabStatus } from './favicon'
 import { type Torrent, TorrentStatus } from './rpc/types'
 
 const torrent = (overrides: Partial<Torrent>) =>
@@ -22,13 +22,19 @@ describe('tabStatus', () => {
         torrent({ status: TorrentStatus.Downloading, sizeWhenDone: 100, leftUntilDone: 50, rateDownload: 10 }),
         torrent({ status: TorrentStatus.Downloading, sizeWhenDone: 300, leftUntilDone: 250, rateDownload: 5 }),
       ],
-      false,
+      { finished: false, errors: 0 },
     )
     expect(status).toEqual({ kind: 'downloading', progress: 0.25, rate: 15 })
   })
 
   it('ignores tracker errors on seeding torrents but flags local errors', () => {
-    expect(tabStatus([torrent({ status: TorrentStatus.Seeding, error: 2 })], false).kind).toBe('idle')
-    expect(tabStatus([torrent({ error: 3 })], false)).toEqual({ kind: 'error', count: 1 })
+    expect(needsAttention(torrent({ status: TorrentStatus.Seeding, error: 2 }))).toBe(false)
+    expect(needsAttention(torrent({ status: TorrentStatus.Downloading, error: 2 }))).toBe(true)
+    expect(needsAttention(torrent({ error: 3 }))).toBe(true)
+  })
+
+  it('shows errors from while you were away ahead of downloads', () => {
+    const downloading = torrent({ status: TorrentStatus.Downloading })
+    expect(tabStatus([downloading], { finished: false, errors: 2 })).toEqual({ kind: 'error', count: 2 })
   })
 })

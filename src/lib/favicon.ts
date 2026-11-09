@@ -2,7 +2,7 @@ import { formatPercent, formatSpeed } from './format'
 import type { Torrent } from './rpc/types'
 import { haveBytes, isChecking, isComplete, isDownloading } from './torrent'
 
-/** What the browser tab shows, most urgent first: error, downloading, verifying, finished, idle. */
+/** What the browser tab shows, most urgent first: new error, downloading, verifying, finished, idle. */
 export type TabStatus =
   | { kind: 'idle' }
   | { kind: 'done' }
@@ -17,9 +17,11 @@ export type TabStatus =
  */
 export const needsAttention = (t: Torrent) => t.error === 3 || (t.error === 2 && isDownloading(t))
 
-export function tabStatus(torrents: Torrent[], finishedWhileAway: boolean): TabStatus {
-  const errors = torrents.filter(needsAttention).length
-  if (errors > 0) return { kind: 'error', count: errors }
+/** What happened while the tab was in the background, cleared when you come back to it. */
+export type WhileAway = { finished: boolean; errors: number }
+
+export function tabStatus(torrents: Torrent[], away: WhileAway): TabStatus {
+  if (away.errors > 0) return { kind: 'error', count: away.errors }
 
   const downloading = torrents.filter((t) => isDownloading(t) && !isComplete(t))
   if (downloading.length > 0) {
@@ -40,7 +42,7 @@ export function tabStatus(torrents: Torrent[], finishedWhileAway: boolean): TabS
     return { kind: 'checking', progress }
   }
 
-  return finishedWhileAway ? { kind: 'done' } : { kind: 'idle' }
+  return away.finished ? { kind: 'done' } : { kind: 'idle' }
 }
 
 // Floor so a nearly finished download doesn't read "100%".
