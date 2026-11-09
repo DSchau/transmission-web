@@ -1,8 +1,8 @@
 import { useForm } from '@tanstack/react-form'
 import { useSelector } from '@tanstack/react-store'
-import { ClipboardPaste, FileUp, Link2, X } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { ChainLink2, Clipboard, CrossMedium, FileArrowLeftIn } from '@/components/icons'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -153,7 +153,7 @@ function AddTorrentForm({
                       key={`${file.name}-${file.size}-${file.lastModified}`}
                       className="flex items-center gap-2 py-1.5 pr-1.5 pl-3 text-sm"
                     >
-                      <FileUp className="size-4 shrink-0 text-muted-foreground" />
+                      <FileArrowLeftIn className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1 truncate">{file.name}</span>
                       <Button
                         type="button"
@@ -162,7 +162,7 @@ function AddTorrentForm({
                         aria-label={`Remove ${file.name}`}
                         onClick={() => filesField.removeValue(index)}
                       >
-                        <X />
+                        <CrossMedium />
                       </Button>
                     </li>
                   ))}
@@ -173,7 +173,7 @@ function AddTorrentForm({
                 {(field) => (
                   <Field data-invalid={field.state.meta.errors.length > 0}>
                     <FieldLabel htmlFor={`${formId}-link`}>
-                      <Link2 className="size-4" /> Magnet Link or URL
+                      <ChainLink2 className="size-4" /> Magnet Link or URL
                     </FieldLabel>
                     <Textarea
                       id={`${formId}-link`}
@@ -201,11 +201,11 @@ function AddTorrentForm({
                             if (text) field.handleChange(text.trim())
                           }}
                         >
-                          <ClipboardPaste data-icon="inline-start" /> Paste
+                          <Clipboard data-icon="inline-start" /> Paste
                         </Button>
                       )}
                       <Button type="button" variant="outline" size="sm" onClick={() => fileInput.current?.click()}>
-                        <FileUp data-icon="inline-start" /> Choose .torrent Files…
+                        <FileArrowLeftIn data-icon="inline-start" /> Choose .torrent Files…
                       </Button>
                       {field.state.value && !isMagnetOrUrl(field.state.value) && (
                         <span className="self-center text-muted-foreground text-xs">

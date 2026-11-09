@@ -1,5 +1,5 @@
-import { Ellipsis, Pause, Play } from 'lucide-react'
 import { type RefObject, useLayoutEffect, useRef, useState } from 'react'
+import { DotGrid1x3Horizontal, Pause, Play } from '@/components/icons'
 import {
   type ActionGroup,
   type ActionItem,
@@ -176,7 +176,7 @@ function OverflowMenu({ groups }: { groups: ActionGroup[] }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="More actions">
-          <Ellipsis />
+          <DotGrid1x3Horizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-max min-w-60">

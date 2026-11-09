@@ -1,5 +1,5 @@
-import { ArrowDownWideNarrow, ArrowUpDown, ArrowUpNarrowWide, Columns3, ListFilter } from 'lucide-react'
 import { useMemo } from 'react'
+import { ArrowTopBottom, Columns3, Filter2, FilterAsc, FilterDesc } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -41,7 +41,7 @@ export function ViewOptionsMenu() {
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
             <Button variant={filtered ? 'secondary' : 'ghost'} size="icon" aria-label="View options">
-              <ListFilter className={cn(filtered && 'text-primary')} />
+              <Filter2 className={cn(filtered && 'text-primary')} />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -105,7 +105,7 @@ function SortMenuItems({ sorts }: { sorts: readonly TorrentSort[] }) {
         checked={desc !== SORT_INFO[search.sort].desc}
         onCheckedChange={() => setSearch({ dir: desc ? 'asc' : 'desc' })}
       >
-        {desc ? <ArrowDownWideNarrow /> : <ArrowUpNarrowWide />}
+        {desc ? <FilterDesc /> : <FilterAsc />}
         Reverse Order
       </DropdownMenuCheckboxItem>
     </>
@@ -121,7 +121,7 @@ export function SortMenu() {
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Sort">
-              <ArrowUpDown />
+              <ArrowTopBottom />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>

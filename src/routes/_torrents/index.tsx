@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ArrowDownCircle } from 'lucide-react'
+import { ArrowDownCircle } from '@/components/icons'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 
 export const Route = createFileRoute('/_torrents/')({

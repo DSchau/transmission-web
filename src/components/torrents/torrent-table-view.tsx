@@ -1,7 +1,7 @@
 import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ArrowDown, ArrowUp } from 'lucide-react'
 import { type KeyboardEvent, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { ArrowDown, ArrowUp } from '@/components/icons'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { clearSelection, selectedIds, selectionAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'

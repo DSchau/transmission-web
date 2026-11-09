@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { Settings } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useMemo } from 'react'
+import { SettingsGear2 } from '@/components/icons'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
@@ -91,7 +91,7 @@ export function Sidebar({ className }: { className?: string }) {
         </Link>
         <Button variant="ghost" size="icon-sm" asChild aria-label="Settings" aria-keyshortcuts="," title="Settings (,)">
           <Link to="/settings">
-            <Settings />
+            <SettingsGear2 />
           </Link>
         </Button>
       </div>
@@ -188,7 +188,7 @@ export function SidebarRail({ className }: { className?: string }) {
         <RailTip label="Settings" shortcut=",">
           <Button variant="ghost" size="icon" asChild aria-label="Settings">
             <Link to="/settings">
-              <Settings />
+              <SettingsGear2 />
             </Link>
           </Button>
         </RailTip>

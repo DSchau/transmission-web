@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useState } from 'react'
+import { ArrowDown, ArrowUp } from '@/components/icons'
 import { SpeedChart, useRateHistory } from '@/components/speed-chart'
 import { formatBytes, formatNumber, formatSpeed } from '@/lib/format'
 import { useConnectionState, useSession } from '@/lib/queries'

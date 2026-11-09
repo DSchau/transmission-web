@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { Folder, TriangleAlert } from 'lucide-react'
 import { useId, useState } from 'react'
+import { ExclamationTriangle, Folder1 } from '@/components/icons'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import {
   AlertDialog,
@@ -147,7 +147,7 @@ function RemoveDialog({
             role="alert"
             className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive text-sm"
           >
-            <TriangleAlert className="size-4 shrink-0" aria-hidden />
+            <ExclamationTriangle className="size-4 shrink-0" aria-hidden />
             <span className="tabular-nums">
               Permanently deletes {onDisk > 0 ? <strong>{formatBytes(onDisk)}</strong> : 'the downloaded data'}
               {fileCount != null && fileCount > 0 && (
@@ -348,7 +348,7 @@ function SetLocationForm({ torrents, onDone }: { torrents: Torrent[]; onDone: ()
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-xs hover:bg-muted"
                   >
-                    <Folder className="size-3.5 shrink-0 text-muted-foreground" />
+                    <Folder1 className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate">{dir}</span>
                     {hint && <span className="shrink-0 font-sans text-muted-foreground">{hint}</span>}
                   </button>

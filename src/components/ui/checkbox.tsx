@@ -1,7 +1,7 @@
 import { cn } from 'cn'
-import { CheckIcon, MinusIcon } from 'lucide-react'
 import { Checkbox as CheckboxPrimitive } from 'radix-ui'
 import type * as React from 'react'
+import { Checkmark1, MinusMedium } from '@/components/icons'
 
 function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
   return (
@@ -17,8 +17,8 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
         data-slot="checkbox-indicator"
         className="group/indicator grid place-content-center text-current transition-none [&>svg]:size-3.5"
       >
-        <CheckIcon className="group-data-[state=indeterminate]/indicator:hidden" />
-        <MinusIcon className="hidden group-data-[state=indeterminate]/indicator:block" />
+        <Checkmark1 className="group-data-[state=indeterminate]/indicator:hidden" />
+        <MinusMedium className="hidden group-data-[state=indeterminate]/indicator:block" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

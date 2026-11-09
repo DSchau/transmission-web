@@ -1,6 +1,6 @@
 import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
-import { ChevronLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { ChevronLeftMedium } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { cn } from '@/lib/utils'
@@ -18,7 +18,7 @@ export function PageShell({ title, children, actions }: { title: string; childre
       <header className="pt-safe sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
         <div className="grid h-12 grid-cols-[1fr_auto_1fr] items-center gap-2 px-2">
           <Button variant="ghost" onClick={goBack} className="-ml-1 justify-self-start text-base">
-            <ChevronLeft data-icon="inline-start" className="size-5" />
+            <ChevronLeftMedium data-icon="inline-start" className="size-5" />
             Back
           </Button>
           <h1 className="truncate text-center font-semibold">{title}</h1>

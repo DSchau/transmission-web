@@ -1,4 +1,4 @@
-import { Ellipsis, Pause, Play, Trash2, X } from 'lucide-react'
+import { CrossMedium, DotGrid1x3Horizontal, Pause, Play, TrashCan } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { CATEGORY_INFO, categoryOf, type TorrentCategory } from '@/lib/category'
@@ -41,7 +41,7 @@ export function SelectionSummary() {
         aria-label="Clear selection"
         onClick={clearSelection}
       >
-        <X />
+        <CrossMedium />
       </Button>
       <div className="relative h-28 w-64" aria-hidden>
         {cards.map((t, index) => {
@@ -101,12 +101,12 @@ export function SelectionSummary() {
           </Button>
         )}
         <Button variant="destructive" onClick={() => confirmRemove(selected)}>
-          <Trash2 data-icon="inline-start" /> Remove
+          <TrashCan data-icon="inline-start" /> Remove
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" aria-label="More">
-              <Ellipsis />
+              <DotGrid1x3Horizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-max min-w-60">

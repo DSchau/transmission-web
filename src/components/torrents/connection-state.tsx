@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { KeyRound, Plus, SearchX, WifiOff } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
+import { CloudOff, Key2, MagnifyingGlass, PlusMedium } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
@@ -79,7 +79,7 @@ export function ListEmptyState() {
       <Empty className="h-full">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <KeyRound />
+            <Key2 />
           </EmptyMedia>
           <EmptyTitle>Sign In Required</EmptyTitle>
           <EmptyDescription>{displayNameFor(config)} needs a username and password.</EmptyDescription>
@@ -96,7 +96,7 @@ export function ListEmptyState() {
       <Empty className="h-full">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <WifiOff />
+            <CloudOff />
           </EmptyMedia>
           <EmptyTitle>Can’t Connect</EmptyTitle>
           <EmptyDescription>{state.message}</EmptyDescription>
@@ -118,7 +118,7 @@ export function ListEmptyState() {
       <Empty className="h-full">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <SearchX />
+            <MagnifyingGlass />
           </EmptyMedia>
           <EmptyTitle>No Results for “{search.q}”</EmptyTitle>
           <EmptyDescription>Check the spelling or try a new search.</EmptyDescription>
@@ -137,7 +137,7 @@ export function ListEmptyState() {
       <Empty className="h-full">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <Plus />
+            <PlusMedium />
           </EmptyMedia>
           <EmptyTitle>No Torrents</EmptyTitle>
           <EmptyDescription>Add a magnet link or .torrent file to get started — or drop one anywhere.</EmptyDescription>

@@ -1,6 +1,6 @@
 import { useSelector } from '@tanstack/react-store'
-import { CircleAlert, CircleHelp, Search, X } from 'lucide-react'
 import { type ChangeEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { CircleQuestionmark, CrossMedium, ExclamationCircle, MagnifyingGlass } from '@/components/icons'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,7 +112,7 @@ function SearchTrailing({
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="text-status-checking" role="img" aria-label="Query warning">
-              <CircleAlert className="size-3.5" />
+              <ExclamationCircle className="size-3.5" />
             </span>
           </TooltipTrigger>
           <TooltipContent className="max-w-72">
@@ -124,7 +124,7 @@ function SearchTrailing({
       )}
       {text ? (
         <InputGroupButton size="icon-xs" aria-label="Clear search" onClick={onClear}>
-          <X />
+          <CrossMedium />
         </InputGroupButton>
       ) : compact ? (
         <Kbd>/</Kbd>
@@ -141,7 +141,7 @@ function SearchHelp() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <InputGroupButton size="icon-xs" aria-label="Search syntax help">
-          <CircleHelp />
+          <CircleQuestionmark />
         </InputGroupButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
@@ -172,7 +172,7 @@ export function SearchField({ className, autoFocus }: { className?: string; auto
   return (
     <InputGroup className={cn('h-8', className)}>
       <InputGroupAddon>
-        <Search />
+        <MagnifyingGlass />
       </InputGroupAddon>
       <InputGroupInput {...inputProps} autoFocus={autoFocus} />
       <SearchTrailing text={text} query={query} onClear={clear} />
@@ -220,7 +220,7 @@ export function ToolbarSearchField({ className }: { className?: string }) {
           )}
         >
           <InputGroupAddon>
-            <Search />
+            <MagnifyingGlass />
           </InputGroupAddon>
           <InputGroupInput
             {...inputProps}

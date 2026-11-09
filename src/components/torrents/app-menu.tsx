@@ -1,16 +1,16 @@
 import { Link } from '@tanstack/react-router'
 import {
-  ChartArea,
-  CheckSquare,
-  CircleEllipsis,
+  AppearanceLightMode,
+  CircleDotsCenter1,
+  ColorPalette2,
+  Limit,
+  LineChart1,
   Moon,
-  Palette,
-  Plug,
-  Settings,
+  Plugin1,
+  SettingsGear2,
+  SquareCheck,
   Sun,
-  SunMoon,
-  Turtle,
-} from 'lucide-react'
+} from '@/components/icons'
 import { ThemeSwatch } from '@/components/theme-swatch'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,7 +43,7 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="More">
-          <CircleEllipsis />
+          <CircleDotsCenter1 />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -55,7 +55,7 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
                 selectModeAtom.set(true)
               }}
             >
-              <CheckSquare />
+              <SquareCheck />
               Select
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -67,7 +67,7 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
               checked={session['alt-speed-enabled']}
               onCheckedChange={(enabled) => updateSession({ 'alt-speed-enabled': enabled })}
             >
-              <Turtle />
+              <Limit />
               Alternative Speeds
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
@@ -75,13 +75,13 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
         )}
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <SunMoon />
+            <AppearanceLightMode />
             Appearance
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as Theme)}>
               <DropdownMenuRadioItem value="system">
-                <SunMoon /> System
+                <AppearanceLightMode /> System
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="light">
                 <Sun /> Light
@@ -94,7 +94,7 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
         </DropdownMenuSub>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <Palette />
+            <ColorPalette2 />
             Theme
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="max-h-(--radix-dropdown-menu-content-available-height) max-w-(--radix-dropdown-menu-content-available-width) overflow-y-auto">
@@ -109,18 +109,18 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuItem onSelect={openStatistics}>
-          <ChartArea />
+          <LineChart1 />
           Statistics…
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/connect">
-            <Plug />
+            <Plugin1 />
             Connection…
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/settings">
-            <Settings />
+            <SettingsGear2 />
             Settings…
           </Link>
         </DropdownMenuItem>

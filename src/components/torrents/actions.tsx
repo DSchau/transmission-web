@@ -1,23 +1,23 @@
+import { Fragment } from 'react'
 import {
   ArrowDown,
-  ArrowDownToLine,
   ArrowUp,
-  ArrowUpToLine,
-  Copy,
+  ArrowWallDown,
+  ArrowWallUp,
+  ChainLink1,
   FastForward,
-  FileXCorner,
-  Folder,
-  Link,
-  ListOrdered,
-  type LucideIcon,
+  Folder1,
+  type IconComponent,
+  NumberedList,
+  PageCross,
   Pause,
   Pencil,
   Play,
-  RadioTower,
   ShieldCheck,
-  Trash2,
-} from 'lucide-react'
-import { Fragment } from 'react'
+  SignalTower,
+  SquareBehindSquare1,
+  TrashCan,
+} from '@/components/icons'
 import {
   ContextMenuItem,
   ContextMenuSeparator,
@@ -45,7 +45,7 @@ import { confirmRemove, openDialog } from '@/lib/ui'
 export interface ActionItem {
   id: string
   label: string
-  icon: LucideIcon
+  icon: IconComponent
   onSelect: () => void
   destructive?: boolean
   disabled?: boolean
@@ -55,7 +55,7 @@ export interface ActionItem {
 export interface ActionSubmenu {
   id: string
   label: string
-  icon: LucideIcon
+  icon: IconComponent
   items: ActionItem[]
 }
 
@@ -86,7 +86,7 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
       {
         id: 'location',
         label: 'Set Location…',
-        icon: Folder,
+        icon: Folder1,
         onSelect: () => openDialog({ type: 'location', torrents: [torrent] }),
       },
       queueSubmenu(actions, ids),
@@ -96,7 +96,7 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
       {
         id: 'reannounce',
         label: 'Ask Tracker for More Peers',
-        icon: RadioTower,
+        icon: SignalTower,
         onSelect: () => actions.reannounce(ids),
       },
     ],
@@ -104,20 +104,25 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
       {
         id: 'copy-magnet',
         label: 'Copy Magnet Link',
-        icon: Link,
+        icon: ChainLink1,
         // Magnet links aren't part of the list payload (they're long); fetch on demand.
         onSelect: async () => {
           const link = torrent.magnetLink ?? (await client.magnetLink(torrent.id).catch(() => undefined))
           if (link) copyText(link, 'Magnet link copied')
         },
       },
-      { id: 'copy-name', label: 'Copy Name', icon: Copy, onSelect: () => copyText(torrent.name, 'Name copied') },
+      {
+        id: 'copy-name',
+        label: 'Copy Name',
+        icon: SquareBehindSquare1,
+        onSelect: () => copyText(torrent.name, 'Name copied'),
+      },
     ],
     [
       {
         id: 'remove',
         label: 'Remove…',
-        icon: Trash2,
+        icon: TrashCan,
         destructive: true,
         shortcut: '⌫',
         onSelect: () => confirmRemove([torrent]),
@@ -125,7 +130,7 @@ export function useTorrentActionGroups(torrent: Torrent, { includePauseResume = 
       {
         id: 'delete-data',
         label: 'Remove and Delete Data…',
-        icon: FileXCorner,
+        icon: PageCross,
         destructive: true,
         shortcut: '⌘⌫',
         onSelect: () => confirmRemove([torrent], { deleteData: true }),
@@ -161,7 +166,7 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
       {
         id: 'location',
         label: 'Set Location…',
-        icon: Folder,
+        icon: Folder1,
         onSelect: () => openDialog({ type: 'location', torrents }),
       },
       queueSubmenu(actions, ids),
@@ -171,13 +176,13 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
       {
         id: 'reannounce',
         label: 'Ask Trackers for More Peers',
-        icon: RadioTower,
+        icon: SignalTower,
         onSelect: () => actions.reannounce(ids),
       },
       {
         id: 'copy-names',
         label: 'Copy Names',
-        icon: Copy,
+        icon: SquareBehindSquare1,
         onSelect: () => copyText(torrents.map((t) => t.name).join('\n'), 'Names copied'),
       },
     ],
@@ -185,7 +190,7 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
       {
         id: 'remove',
         label: `Remove ${torrentCountLabel(ids.length)}…`,
-        icon: Trash2,
+        icon: TrashCan,
         destructive: true,
         shortcut: '⌫',
         onSelect: () => confirmRemove(torrents),
@@ -193,7 +198,7 @@ export function useBulkActionGroups(torrents: Torrent[]): ActionGroup[] {
       {
         id: 'delete-data',
         label: `Remove ${torrentCountLabel(ids.length)} and Delete Data…`,
-        icon: FileXCorner,
+        icon: PageCross,
         destructive: true,
         shortcut: '⌘⌫',
         onSelect: () => confirmRemove(torrents, { deleteData: true }),
@@ -206,15 +211,15 @@ function queueSubmenu(actions: ReturnType<typeof useTorrentActions>, ids: number
   return {
     id: 'queue',
     label: 'Queue',
-    icon: ListOrdered,
+    icon: NumberedList,
     items: [
-      { id: 'top', label: 'Move to Top', icon: ArrowUpToLine, onSelect: () => actions.moveInQueue(ids, 'top') },
+      { id: 'top', label: 'Move to Top', icon: ArrowWallUp, onSelect: () => actions.moveInQueue(ids, 'top') },
       { id: 'up', label: 'Move Up', icon: ArrowUp, onSelect: () => actions.moveInQueue(ids, 'up') },
       { id: 'down', label: 'Move Down', icon: ArrowDown, onSelect: () => actions.moveInQueue(ids, 'down') },
       {
         id: 'bottom',
         label: 'Move to Bottom',
-        icon: ArrowDownToLine,
+        icon: ArrowWallDown,
         onSelect: () => actions.moveInQueue(ids, 'bottom'),
       },
     ],

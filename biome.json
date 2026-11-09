@@ -19,7 +19,20 @@
     "rules": {
       "preset": "recommended",
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "lucide-react": "Use Central icons from @/components/icons (see AGENTS.md).",
+              "react-icons": "Use Central icons from @/components/icons (see AGENTS.md).",
+              "@heroicons/react": "Use Central icons from @/components/icons (see AGENTS.md).",
+              "@tabler/icons-react": "Use Central icons from @/components/icons (see AGENTS.md).",
+              "@phosphor-icons/react": "Use Central icons from @/components/icons (see AGENTS.md).",
+              "@radix-ui/react-icons": "Use Central icons from @/components/icons (see AGENTS.md)."
+            }
+          }
+        }
       }
     }
   },

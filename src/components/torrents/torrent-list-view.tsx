@@ -1,9 +1,9 @@
 import { useRouter } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Check, Ellipsis } from 'lucide-react'
 import { memo, useCallback, useEffect, useRef } from 'react'
 import { CategoryIcon } from '@/components/category-badge'
+import { Checkmark1, DotGrid1x3Horizontal } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -139,7 +139,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
                 selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40',
               )}
             >
-              {selected && <Check className="size-3.5" />}
+              {selected && <Checkmark1 className="size-3.5" />}
             </span>
           )}
           <button
@@ -173,7 +173,7 @@ function CardActions({ torrent }: { torrent: Torrent }) {
         <DropdownMenuTrigger asChild>
           {/* Only the button sits above the card-wide tap overlay, so the space around it still opens the card. */}
           <Button variant="ghost" size="icon-sm" className="relative z-10" aria-label={`Actions for ${torrent.name}`}>
-            <Ellipsis />
+            <DotGrid1x3Horizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-max min-w-60">

@@ -1,4 +1,4 @@
-import { Copy } from 'lucide-react'
+import { SquareBehindSquare1 } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { copyText } from '@/lib/clipboard'
 import { formatBytes, formatDate, formatDateTime } from '@/lib/format'
@@ -37,7 +37,7 @@ export function OverviewTab({ torrent: t }: { torrent: Torrent }) {
               aria-label="Copy location"
               onClick={() => copyText(t.downloadDir, 'Location copied')}
             >
-              <Copy />
+              <SquareBehindSquare1 />
             </Button>
           </span>
         </Row>
@@ -56,14 +56,14 @@ export function OverviewTab({ torrent: t }: { torrent: Torrent }) {
               aria-label="Copy hash"
               onClick={() => copyText(t.hashString, 'Hash copied')}
             >
-              <Copy />
+              <SquareBehindSquare1 />
             </Button>
           </span>
         </Row>
         {t.magnetLink && (
           <Row label="Magnet">
             <Button variant="outline" size="xs" onClick={() => copyText(t.magnetLink ?? '', 'Magnet link copied')}>
-              <Copy data-icon="inline-start" /> Copy Link
+              <SquareBehindSquare1 data-icon="inline-start" /> Copy Link
             </Button>
           </Row>
         )}

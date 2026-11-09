@@ -1,5 +1,5 @@
 /*
- * The hover gestures some lucide icons act out (see icon-motion.ts, which plays them).
+ * The hover gestures some icons act out (see icon-motion.ts, which plays them).
  *
  * A gesture is a pure function of time. Each icon is split into slots: one or more of
  * its SVG children that move together. For every slot the gesture returns the same
@@ -28,7 +28,7 @@ export type SlotPose = [x: number, y: number, r: number, sx: number, sy: number,
 export const slotPose = (f: Frame, k: number) => f.slice(k * CHANNELS, (k + 1) * CHANNELS) as SlotPose
 
 export interface Slot {
-  /** Indexes of the lucide icon's SVG children that move together. */
+  /** Indexes of the icon's SVG children that move together. */
   els: number[]
   /** Pivot for rotation and scale, in viewBox units. */
   origin: [x: number, y: number]
@@ -47,7 +47,7 @@ export interface Slot {
 }
 
 export interface Gesture {
-  /** Lucide icon name, as in its `lucide-…` class. */
+  /** Icon name, as in its `icon-…` class. */
   icon: string
   /** Only plays when the hovered control matches this selector. */
   only?: string
@@ -148,7 +148,7 @@ const nudge = (icon: string, dx: number, dy: number): Gesture => ({
   },
 })
 
-/** The arrow of download/upload pushes into its line, which gives a little under the hit. */
+/** The arrow of move-to-top/bottom pushes into its wall, which gives a little under the hit. */
 const toLine = (icon: string, dir: 1 | -1, arrow: number[], line: number[], lineY: number): Gesture => ({
   icon,
   duration: 0.7,
@@ -163,19 +163,8 @@ const toLine = (icon: string, dir: 1 | -1, arrow: number[], line: number[], line
   },
 })
 
-/** The sidebar toggle's arrow points the way the panel is about to go, and the divider follows it. */
-const panel = (icon: string, dir: 1 | -1): Gesture => ({
-  icon,
-  duration: 0.65,
-  slots: [
-    { els: [1], origin: [9, 12] },
-    { els: [2], origin: [dir < 0 ? 14.5 : 15.5, 12], trail: true },
-  ],
-  pose: (t) => frame({ x: dir * 1.3 * flick(t - 0.05, 0.6, 2.2) }, { x: dir * 2.6 * flick(t, 0.6, 2.2) }),
-})
-
 /** Downloading/Seeding: the arrow slides out through the circle and a new one slides in behind it. */
-const pass = (icon: string, dir: 1 | -1): Gesture => {
+const pass = (icon: string, dir: 1 | -1, arrow: number[]): Gesture => {
   const clip: [number, number, number] = [12, 12, 9]
   const travel = 15
   return {
@@ -184,8 +173,8 @@ const pass = (icon: string, dir: 1 | -1): Gesture => {
     duration: 0.75,
     slots: [
       { els: [0], origin: [12, 12] },
-      { els: [1, 2], origin: [12, 12], clip },
-      { els: [1, 2], origin: [12, 12], clip, copy: true },
+      { els: arrow, origin: [12, 12], clip },
+      { els: arrow, origin: [12, 12], clip, copy: true },
     ],
     pose: (t) => {
       const y = dir * (travel * arrive(t - 0.08, 0.67, 1.7, 0.62) - 1.1 * bell(span(t, 0, 0.18)))
@@ -202,59 +191,66 @@ const breathe = (t: number, delay: number) => 1 - 0.55 * bell(span(t, delay, del
 
 export const gestures: Gesture[] = [
   {
-    // Settings: the gear clicks round two teeth (120°, so it lands on its resting look) and the hub tightens.
-    icon: 'settings',
+    // Settings: the gear clicks round two teeth (90°, so it lands on its resting look) and the hub tightens.
+    icon: 'settings-gear-2',
     duration: 0.8,
     slots: [
-      { els: [0], origin: [12, 12], period: 60 },
+      { els: [0], origin: [12, 12], period: 45 },
       { els: [1], origin: [12, 12] },
     ],
     pose: (t) =>
       frame(
-        { r: 120 * arrive(t - 0.06, 0.74, 1.9, 0.5) - 8 * bell(span(t, 0, 0.14)) },
+        { r: 90 * arrive(t - 0.06, 0.74, 1.9, 0.5) - 6 * bell(span(t, 0, 0.14)) },
         { s: 1 - 0.2 * bell(span(t, 0.06, 0.4)) },
       ),
   },
-  panel('panel-left-close', -1),
-  panel('panel-left-open', 1),
   {
-    // Rail: a glimmer runs down the dashes.
-    icon: 'panel-left-dashed',
-    duration: 0.6,
+    // Shrink to the rail: the arrow points the way the panel is about to go, and the divider follows it.
+    icon: 'sidebar-wide-left-arrow',
+    duration: 0.65,
     slots: [
-      { els: [3], origin: [9, 4] },
-      { els: [4], origin: [9, 9.5] },
-      { els: [1], origin: [9, 14.5] },
-      { els: [2], origin: [9, 20] },
+      { els: [2], origin: [8, 12] },
+      { els: [0], origin: [14, 12], trail: true },
     ],
-    pose: (t) =>
-      frame(
-        ...[0, 1, 2, 3].map((i) => {
-          const k = bell(span(t, i * 0.08, i * 0.08 + 0.32))
-          return { o: 1 - 0.75 * k, sy: 1 - 0.5 * k, x: 0.8 * k }
-        }),
-      ),
+    pose: (t) => frame({ x: -1.3 * flick(t - 0.05, 0.6, 2.2) }, { x: -2.6 * flick(t, 0.6, 2.2) }),
   },
-  nudge('chevron-right', 2.2, 0),
-  nudge('chevron-left', -2.2, 0),
-  nudge('chevron-down', 0, 2.2),
-  nudge('chevron-up', 0, -2.2),
-  toLine('arrow-down-to-line', 1, [0, 1], [2], 21),
-  toLine('arrow-up-to-line', -1, [1, 2], [0], 3),
   {
-    // Upload: the arrow springs up out of the page.
-    icon: 'file-up',
+    // Hide the rail: its handle tucks away to the left, thinning as it goes, and springs back.
+    icon: 'sidebar-hidden-left-wide',
+    duration: 0.65,
+    slots: [{ els: [1], origin: [7, 12], trail: true }],
+    pose: (t) => {
+      const k = flick(t, 0.6, 2.2)
+      return frame({ x: -2 * Math.max(0, k) + 0.6 * Math.max(0, -k), sy: 1 - 0.35 * bell(span(t, 0, 0.36)) })
+    },
+  },
+  {
+    // Bring the sidebar back: the divider sweeps open to the right.
+    icon: 'sidebar-simple-left-wide',
+    duration: 0.65,
+    slots: [{ els: [1], origin: [9, 12], trail: true }],
+    pose: (t) => frame({ x: 2.6 * flick(t, 0.6, 2.2) }),
+  },
+  nudge('chevron-right-medium', 2.2, 0),
+  nudge('chevron-left-medium', -2.2, 0),
+  nudge('chevron-down-medium', 0, 2.2),
+  nudge('chevron-top-medium', 0, -2.2),
+  toLine('arrow-wall-down', 1, [0, 1], [2], 21),
+  toLine('arrow-wall-up', -1, [0, 1], [2], 3),
+  {
+    // Add a file: the arrow springs into the page.
+    icon: 'file-arrow-left-in',
     duration: 0.6,
-    slots: [{ els: [2, 3], origin: [12, 15], trail: true }],
-    pose: (t) => frame({ y: -2.4 * flick(t - 0.06, 0.54, 2.4) + 0.7 * bell(span(t, 0, 0.14)) }),
+    slots: [{ els: [2, 3], origin: [8, 19], trail: true }],
+    pose: (t) => frame({ x: 2.4 * flick(t - 0.06, 0.54, 2.4) - 0.7 * bell(span(t, 0, 0.14)) }),
   },
   {
     // Remove: the lid lifts off the bin on its hinge and drops back on; the bin takes the landing.
-    icon: 'trash',
+    icon: 'trash-can',
     duration: 0.75,
     slots: [
-      { els: [3, 4], origin: [3, 6] },
-      { els: [0, 1, 2], origin: [12, 22] },
+      { els: [3, 4], origin: [3.5, 6] },
+      { els: [0, 1, 2], origin: [12, 21] },
     ],
     pose: (t) => {
       const k = flick(t, 0.7, 1.8, 0.4)
@@ -264,11 +260,11 @@ export const gestures: Gesture[] = [
   },
   {
     // Copy: a new sheet peels off the back one and lands on the front one, nudging it.
-    icon: 'copy',
+    icon: 'square-behind-square-1',
     duration: 0.75,
     slots: [
-      { els: [0], origin: [15, 15] },
-      { els: [0], origin: [15, 15], copy: true },
+      { els: [1], origin: [15, 15] },
+      { els: [1], origin: [15, 15], copy: true },
     ],
     pose: (t) => {
       const back = -6 * (1 - arrive(t, 0.5, 2.1, 0.6))
@@ -281,12 +277,12 @@ export const gestures: Gesture[] = [
   // Sidebar filters: each icon acts out the status it filters by.
   {
     // All: the tray hops and catches something as it lands.
-    icon: 'inbox',
+    icon: 'inbox-empty',
     only: '[data-sidebar-filters] button',
     duration: 0.75,
     slots: [
-      { els: [1], origin: [12, 20] },
-      { els: [0], origin: [12, 20] },
+      { els: [0], origin: [12, 19] },
+      { els: [1], origin: [12, 19] },
     ],
     pose: (t) => {
       const hop = -2 * bell(span(t, 0, 0.34) ** 0.8)
@@ -317,21 +313,22 @@ export const gestures: Gesture[] = [
       )
     },
   },
-  pass('circle-arrow-down', 1),
-  pass('circle-arrow-up', -1),
+  pass('arrow-down-circle', 1, [1]),
+  pass('arrow-up-circle', -1, [1, 2]),
   {
-    icon: 'circle-pause',
+    icon: 'pause',
     only: '[data-sidebar-filters] button',
     duration: 0.8,
     slots: [
-      { els: [1], origin: [10, 12] },
-      { els: [2], origin: [14, 12] },
+      { els: [0], origin: [7, 12] },
+      { els: [1], origin: [17, 12] },
     ],
     pose: (t) => frame({ sy: breathe(t, 0) }, { sy: breathe(t, 0.12) }),
   },
   {
     // Completed: the tick draws itself back in reverse, then forwards again, and the ring pops as it lands.
-    icon: 'circle-check',
+    // Its path starts at the long stroke's tip, so it's drawn by moving the start back to the short end.
+    icon: 'check-circle',
     only: '[data-sidebar-filters] button',
     duration: 0.8,
     slots: [
@@ -339,23 +336,23 @@ export const gestures: Gesture[] = [
       { els: [1], origin: [12, 12] },
     ],
     pose: (t) => {
-      const tick = { d1: t < 0.12 ? 1 - easeInOut(span(t, 0, 0.12)) : easeOut(span(t, 0.14, 0.46)) }
+      const tick = { d0: t < 0.12 ? easeInOut(span(t, 0, 0.12)) : 1 - easeOut(span(t, 0.14, 0.46)) }
       return frame({ s: 1 - 0.08 * bell(span(t, 0, 0.24)) + 0.07 * flick(t - 0.38, 0.4, 2.6) }, tick)
     },
   },
   {
     // Errors: the sign rocks on its base and the dot swells like a warning light.
-    icon: 'triangle-alert',
+    icon: 'exclamation-triangle',
     only: '[data-sidebar-filters] button',
     duration: 0.75,
     slots: [
-      { els: [0, 1], origin: [12, 21] },
-      { els: [2], origin: [12, 17] },
+      { els: [0, 1], origin: [12, 19] },
+      { els: [2, 3], origin: [12, 15] },
     ],
     pose: (t) => {
       const r = -10 * flick(t, 0.7, 2.2, 0.28)
       const a = (r * Math.PI) / 180
-      // The dot rides the rocking sign: (12, 17) turned about the base at (12, 21).
+      // The dot rides the rocking sign: (12, 15) turned about the base at (12, 19).
       return frame({ r }, { r, x: -4 * Math.sin(a), y: 4 - 4 * Math.cos(a), s: 1 + 0.8 * bell(span(t, 0.06, 0.42)) })
     },
   },

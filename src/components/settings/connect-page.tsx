@@ -1,8 +1,8 @@
 import { useForm } from '@tanstack/react-form'
 import { useNavigate } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { CheckCircle2, Globe, Info, Server, TriangleAlert, XCircle } from 'lucide-react'
 import { useId, useState } from 'react'
+import { CheckCircle, CircleInfo, CircleX, ExclamationTriangle, Globe, Server } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -155,13 +155,13 @@ export function ConnectPage() {
                         )}
                         {devProxy ? (
                           <p className="flex items-start gap-1.5 text-muted-foreground text-xs">
-                            <Info className="mt-px size-3.5 shrink-0" />
+                            <CircleInfo className="mt-px size-3.5 shrink-0" />
                             Development: requests go through the Vite dev server, so CORS isn’t needed.
                           </p>
                         ) : (
                           crossOrigin && (
                             <p className="flex items-start gap-1.5 text-status-checking text-xs">
-                              <TriangleAlert className="mt-px size-3.5 shrink-0" />
+                              <ExclamationTriangle className="mt-px size-3.5 shrink-0" />
                               Different origin — requires CORS on the server (see below).
                             </p>
                           )
@@ -298,11 +298,11 @@ function TestStatus({ test }: { test: TestState }) {
     case 'ok':
       return (
         <span className="inline-flex items-center gap-1 text-status-seeding text-xs">
-          <CheckCircle2 className="size-4" /> {test.version}
+          <CheckCircle className="size-4" /> {test.version}
         </span>
       )
     case 'failed':
-      return <XCircle className="size-4 text-status-error" />
+      return <CircleX className="size-4 text-status-error" />
     default:
       return null
   }

@@ -1,5 +1,5 @@
 import { useSelector } from '@tanstack/react-store'
-import { Plus } from 'lucide-react'
+import { PlusMedium } from '@/components/icons'
 import { TransmissionLogo } from '@/components/transmission-logo'
 import { Button } from '@/components/ui/button'
 import { formatBytes } from '@/lib/format'
@@ -41,7 +41,7 @@ function TitleBar() {
         </div>
         <div className="-mr-2 flex items-center">
           <Button size="sm" className="mr-1 rounded-full px-3" onClick={() => openDialog({ type: 'add' })}>
-            <Plus data-icon="inline-start" />
+            <PlusMedium data-icon="inline-start" />
             Add
           </Button>
           <ViewOptionsMenu />

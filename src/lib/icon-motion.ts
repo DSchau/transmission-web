@@ -6,7 +6,7 @@
  * While a gesture plays, each moving part of the icon is drawn by a clone in an overlay
  * group, the original is hidden, and one requestAnimationFrame loop writes every clone's
  * pose each frame. Clones can be clipped, have their stroke partly drawn, and leave a trail
- * of fading echoes, none of which a CSS animation of lucide's own elements could do. At the
+ * of fading echoes, none of which a CSS animation of the icon's own elements could do. At the
  * end the overlay is removed and the originals shown again; the last frame is the resting
  * drawing, so the hand-back can't be seen.
  *
@@ -161,9 +161,9 @@ function tick() {
 
 function play(control: Element) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  for (const svg of control.querySelectorAll<SVGSVGElement>('svg.lucide')) {
-    const name = [...svg.classList].find((c) => c.startsWith('lucide-') && byIcon.has(c.slice(7)))
-    const gesture = name && byIcon.get(name.slice(7))
+  for (const svg of control.querySelectorAll<SVGSVGElement>('svg.icon')) {
+    const name = [...svg.classList].find((c) => c.startsWith('icon-') && byIcon.has(c.slice(5)))
+    const gesture = name && byIcon.get(name.slice(5))
     if (!gesture || (gesture.only && !control.matches(gesture.only))) continue
     const now = performance.now()
     const running = runs.get(svg)

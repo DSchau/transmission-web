@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { ChevronRight, Turtle } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
+import { ChevronRightMedium, Limit } from '@/components/icons'
 import { ThemeSwatch } from '@/components/theme-swatch'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -75,7 +75,7 @@ function ServerSection() {
           <span className="truncate text-sm">{displayNameFor(config)}</span>
           <span className={cn('truncate text-xs', color)}>{label}</span>
         </div>
-        <ChevronRight className="size-4 text-muted-foreground" />
+        <ChevronRightMedium className="size-4 text-muted-foreground" />
       </Link>
     </SettingsSection>
   )
@@ -90,7 +90,7 @@ function SpeedSection({ session }: { session: SessionInfo }) {
         htmlFor={`${id}-alt`}
         label={
           <span className="inline-flex items-center gap-2">
-            <Turtle className="size-4 text-status-checking" /> Alternative Speeds
+            <Limit className="size-4 text-status-checking" /> Alternative Speeds
           </span>
         }
         description={`↓ ${formatKBps(session['alt-speed-down'])} · ↑ ${formatKBps(session['alt-speed-up'])}`}

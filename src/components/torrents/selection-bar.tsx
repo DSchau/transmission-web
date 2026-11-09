@@ -1,4 +1,4 @@
-import { Ellipsis, Pause, Play, Trash2 } from 'lucide-react'
+import { DotGrid1x3Horizontal, Pause, Play, TrashCan } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useTorrentActions } from '@/lib/mutations'
@@ -27,13 +27,13 @@ export function SelectionBar() {
           Pause
         </Button>
         <Button variant="ghost" className="text-destructive" disabled={none} onClick={() => confirmRemove(selected)}>
-          <Trash2 data-icon="inline-start" />
+          <TrashCan data-icon="inline-start" />
           Remove
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="More actions" disabled={none}>
-              <Ellipsis />
+              <DotGrid1x3Horizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" side="top" className="w-max min-w-60">

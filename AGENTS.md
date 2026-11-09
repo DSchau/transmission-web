@@ -7,6 +7,27 @@
 - Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, …).
 - `pnpm run dev:mock` starts the app against a built-in fake daemon.
 
+## Icons
+
+Every icon comes from the Central Icon System in Figma
+([central-icon-system-v1.35](https://www.figma.com/design/ZLZdIuD9mXZkMwG4GIeqsM/central-icon-system-v1.35)) and lives in
+`src/components/icons/index.ts`. Don't add an icon library. `pnpm run lint` rejects lucide-react and similar packages.
+
+To add an icon:
+
+1. Find it on the Icons page of the Figma file. Each icon is a component set named after the icon, with aliases after
+   the first comma (e.g. `trash-can, delete, remove`).
+2. Export the `filled=off, stroke=2, radius=2, join=round` variant as SVG. With the Figma MCP, `use_figma` can call
+   `exportAsync({ format: 'SVG_STRING' })` on that variant.
+3. Add it to `index.ts` as `export const PascalName = createIcon('central-name', [...])`. Keep the order of children
+   and each child's geometry and caps/joins, camelCase the attributes, drop `stroke="black"` and `stroke-width="2"`
+   (the root sets them), and turn `fill="black"` into `currentColor`.
+4. Import it from `@/components/icons`. Code from `shadcn add` imports lucide, so swap those for the matching
+   Central icon (`XIcon` → `CrossMedium`, `CheckIcon` → `Checkmark1`, `ChevronRightIcon` → `ChevronRightMedium`).
+
+Hover animations are in `src/lib/icon-gestures.ts`, keyed by the icon's Central name. Slots point at the SVG's children
+by index, so if you swap the drawing behind an animated icon, update the gesture's indexes and pivots to match.
+
 ## Changelog
 
 When you ship a major capability (something a user would notice and care about), add it to

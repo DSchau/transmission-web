@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react'
+import { Lock } from '@/components/icons'
 import { Rate } from '@/components/rate'
 import { formatPercent } from '@/lib/format'
 import type { Torrent } from '@/lib/rpc/types'

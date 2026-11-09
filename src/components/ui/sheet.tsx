@@ -1,9 +1,9 @@
 'use client'
 
 import { cn } from 'cn'
-import { XIcon } from 'lucide-react'
 import { Dialog as SheetPrimitive } from 'radix-ui'
 import type * as React from 'react'
+import { CrossMedium } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -61,7 +61,7 @@ function SheetContent({
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button variant="ghost" className="absolute top-3 right-3" size="icon-sm">
-              <XIcon />
+              <CrossMedium />
               <span className="sr-only">Close</span>
             </Button>
           </SheetPrimitive.Close>

@@ -1,5 +1,5 @@
 import { useSelector } from '@tanstack/react-store'
-import { PanelLeftClose, PanelLeftDashed, PanelLeftOpen, Plus } from 'lucide-react'
+import { PlusMedium, SidebarHiddenLeftWide, SidebarSimpleLeftWide, SidebarWideLeftArrow } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -12,7 +12,7 @@ import { ColumnsMenu, SortMenu } from './view-options-menu'
 
 const NEXT_MODE = { full: 'rail', rail: 'hidden', hidden: 'full' } as const
 // Each icon shows what pressing will do: shrink to the rail, hide it, bring it back.
-const TOGGLE_ICON = { full: PanelLeftClose, rail: PanelLeftDashed, hidden: PanelLeftOpen } as const
+const TOGGLE_ICON = { full: SidebarWideLeftArrow, rail: SidebarHiddenLeftWide, hidden: SidebarSimpleLeftWide } as const
 
 export const cycleSidebar = () => updatePreferences({ sidebar: NEXT_MODE[preferencesAtom.get().sidebar] })
 const TOGGLE_LABEL = { full: 'Collapse sidebar', rail: 'Hide sidebar', hidden: 'Show sidebar' } as const
@@ -64,7 +64,7 @@ export function DesktopToolbar() {
       <div className="flex-1" />
       <ToolbarSearchField />
       <Button className="shrink-0" onClick={() => openDialog({ type: 'add' })}>
-        <Plus data-icon="inline-start" />
+        <PlusMedium data-icon="inline-start" />
         Add
       </Button>
       <div className="flex shrink-0 items-center">

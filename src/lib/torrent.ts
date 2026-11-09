@@ -1,13 +1,13 @@
 import {
   ArrowDownCircle,
   ArrowUpCircle,
-  CheckCircle2,
-  Inbox,
-  type LucideIcon,
-  PauseCircle,
-  TriangleAlert,
+  CheckCircle,
+  ExclamationTriangle,
+  type IconComponent,
+  InboxEmpty,
+  Pause,
   Zap,
-} from 'lucide-react'
+} from '@/components/icons'
 import { CATEGORIES, categoryOf } from './category'
 import { formatBytes, formatEta, formatPercent, formatRatio } from './format'
 import { PieceBitfield } from './pieces'
@@ -179,17 +179,19 @@ export function statusSummary(t: Torrent): string {
 export const FILTERS = ['all', 'active', 'downloading', 'seeding', 'paused', 'completed', 'error'] as const
 export type TorrentFilter = (typeof FILTERS)[number]
 
-export const FILTER_INFO: Record<TorrentFilter, { title: string; icon: LucideIcon; matches: (t: Torrent) => boolean }> =
-  {
-    all: { title: 'All', icon: Inbox, matches: () => true },
-    active: { title: 'Active', icon: Zap, matches: isActive },
-    downloading: { title: 'Downloading', icon: ArrowDownCircle, matches: isDownloading },
-    seeding: { title: 'Seeding', icon: ArrowUpCircle, matches: isSeeding },
-    paused: { title: 'Paused', icon: PauseCircle, matches: isPaused },
-    // Fully downloaded, whatever it's doing now (seeding, paused, or stopped at its ratio).
-    completed: { title: 'Completed', icon: CheckCircle2, matches: isComplete },
-    error: { title: 'Errors', icon: TriangleAlert, matches: hasError },
-  }
+export const FILTER_INFO: Record<
+  TorrentFilter,
+  { title: string; icon: IconComponent; matches: (t: Torrent) => boolean }
+> = {
+  all: { title: 'All', icon: InboxEmpty, matches: () => true },
+  active: { title: 'Active', icon: Zap, matches: isActive },
+  downloading: { title: 'Downloading', icon: ArrowDownCircle, matches: isDownloading },
+  seeding: { title: 'Seeding', icon: ArrowUpCircle, matches: isSeeding },
+  paused: { title: 'Paused', icon: Pause, matches: isPaused },
+  // Fully downloaded, whatever it's doing now (seeding, paused, or stopped at its ratio).
+  completed: { title: 'Completed', icon: CheckCircle, matches: isComplete },
+  error: { title: 'Errors', icon: ExclamationTriangle, matches: hasError },
+}
 
 /** The list's title for a filter: "Torrents" for all, else the filter's name. */
 export const filterTitle = (filter: TorrentFilter) => (filter === 'all' ? 'Torrents' : FILTER_INFO[filter].title)

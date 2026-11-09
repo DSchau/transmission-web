@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp } from '@/components/icons'
 import { formatSpeed } from '@/lib/format'
 import { cn } from '@/lib/utils'
 

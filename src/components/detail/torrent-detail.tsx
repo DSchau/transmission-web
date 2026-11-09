@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { ChevronLeft, TriangleAlert, X } from 'lucide-react'
+import { ChevronLeftMedium, CrossMedium, ExclamationTriangle } from '@/components/icons'
 import { useDetailBack } from '@/components/torrents/mobile-detail'
 import { useTorrentsView } from '@/components/torrents/torrents-view'
 import { Button } from '@/components/ui/button'
@@ -57,7 +57,7 @@ export function TorrentDetail({ torrentId }: { torrentId: number }) {
         <Empty className="flex-1">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <TriangleAlert />
+              <ExclamationTriangle />
             </EmptyMedia>
             <EmptyTitle>Torrent Unavailable</EmptyTitle>
             <EmptyDescription>
@@ -80,7 +80,7 @@ function DetailToolbar({ torrent }: { torrent: Torrent | null }) {
     <div className="pt-safe flex h-12 shrink-0 items-center gap-1 border-b px-2">
       {!isSplit && (
         <Button variant="ghost" onClick={back} className="-ml-1 text-base">
-          <ChevronLeft data-icon="inline-start" className="size-5" />
+          <ChevronLeftMedium data-icon="inline-start" className="size-5" />
           Torrents
         </Button>
       )}
@@ -97,7 +97,7 @@ function DetailToolbar({ torrent }: { torrent: Torrent | null }) {
                 closeDetail()
               }}
             >
-              <X />
+              <CrossMedium />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -175,7 +175,7 @@ function Header({ torrent: t }: { torrent: Torrent }) {
       </div>
       {hasError(t) && t.errorString && (
         <p className="flex items-start gap-2 text-sm text-status-error">
-          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <ExclamationTriangle className="mt-0.5 size-4 shrink-0" />
           {t.errorString}
         </p>
       )}

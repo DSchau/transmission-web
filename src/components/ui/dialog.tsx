@@ -1,7 +1,7 @@
 import { cn } from 'cn'
-import { XIcon } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type * as React from 'react'
+import { CrossMedium } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -56,7 +56,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button variant="ghost" className="absolute top-2 right-2" size="icon-sm">
-              <XIcon />
+              <CrossMedium />
               <span className="sr-only">Close</span>
             </Button>
           </DialogPrimitive.Close>

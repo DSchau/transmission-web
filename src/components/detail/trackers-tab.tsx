@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle, CircleX } from '@/components/icons'
 import { formatDateTime, formatRelative } from '@/lib/format'
 import type { Torrent } from '@/lib/rpc/types'
 import { EmptyRow, LoadingRow } from './detail-rows'
@@ -21,9 +21,9 @@ export function TrackersTab({ torrent, loading }: { torrent: Torrent; loading: b
           </p>
           <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
             {tracker.lastAnnounceSucceeded ? (
-              <CheckCircle2 className="size-3.5 shrink-0 text-status-seeding" />
+              <CheckCircle className="size-3.5 shrink-0 text-status-seeding" />
             ) : (
-              <XCircle className="size-3.5 shrink-0 text-status-error" />
+              <CircleX className="size-3.5 shrink-0 text-status-error" />
             )}
             <span
               className="min-w-0 flex-1 truncate"

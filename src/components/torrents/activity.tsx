@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { ArrowDown, ArrowUp, ChevronRightMedium } from '@/components/icons'
 import { SpeedChart, type SpeedLimits, useRateHistory } from '@/components/speed-chart'
 import { formatClockTime, formatShortTime, formatSpeed } from '@/lib/format'
 import { useSession, useSessionStats } from '@/lib/queries'
@@ -109,7 +109,7 @@ export function SidebarActivity() {
           className="-mr-1 inline-flex shrink-0 items-center rounded px-1 transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           Statistics
-          <ChevronRight className="size-3" aria-hidden />
+          <ChevronRightMedium className="size-3" aria-hidden />
         </button>
       </div>
     </section>

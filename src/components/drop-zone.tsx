@@ -1,7 +1,7 @@
 import { useSelector } from '@tanstack/react-store'
-import { FileUp } from 'lucide-react'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
+import { FileArrowLeftIn } from '@/components/icons'
 import { fileDragAtom, openDialog } from '@/lib/ui'
 import { cn, isMagnetOrUrl, isTorrentFile } from '@/lib/utils'
 
@@ -95,7 +95,7 @@ export function DropOverlay({ className }: { className?: string }) {
       )}
     >
       <div className="flex size-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-status-downloading/50 border-dashed bg-status-downloading/5 p-6 text-center">
-        <FileUp className="size-10 text-status-downloading" />
+        <FileArrowLeftIn className="size-10 text-status-downloading" />
         <div>
           <p className="font-semibold text-lg">Drop to Add</p>
           <p className="text-muted-foreground text-sm">.torrent files are added to Transmission</p>

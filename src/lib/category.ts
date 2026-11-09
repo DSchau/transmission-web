@@ -1,4 +1,4 @@
-import { BookOpen, Clapperboard, Disc3, File, type LucideIcon, Music, Tv } from 'lucide-react'
+import { Audio, Book, Cd, Clapboard, FileBend, type IconComponent, Television } from '@/components/icons'
 import type { Torrent } from './rpc/types'
 
 /**
@@ -9,14 +9,15 @@ import type { Torrent } from './rpc/types'
 export const CATEGORIES = ['movies', 'tv', 'books', 'music', 'software', 'other'] as const
 export type TorrentCategory = (typeof CATEGORIES)[number]
 
-export const CATEGORY_INFO: Record<TorrentCategory, { title: string; one: string; icon: LucideIcon; text: string }> = {
-  movies: { title: 'Movies', one: 'Movie', icon: Clapperboard, text: 'text-rose-500' },
-  tv: { title: 'TV Shows', one: 'TV Show', icon: Tv, text: 'text-violet-500' },
-  books: { title: 'Books', one: 'Book', icon: BookOpen, text: 'text-amber-600 dark:text-amber-500' },
-  music: { title: 'Music', one: 'Music', icon: Music, text: 'text-emerald-600 dark:text-emerald-500' },
-  software: { title: 'Software', one: 'Software', icon: Disc3, text: 'text-sky-600 dark:text-sky-500' },
-  other: { title: 'Other', one: 'Other', icon: File, text: 'text-muted-foreground' },
-}
+export const CATEGORY_INFO: Record<TorrentCategory, { title: string; one: string; icon: IconComponent; text: string }> =
+  {
+    movies: { title: 'Movies', one: 'Movie', icon: Clapboard, text: 'text-rose-500' },
+    tv: { title: 'TV Shows', one: 'TV Show', icon: Television, text: 'text-violet-500' },
+    books: { title: 'Books', one: 'Book', icon: Book, text: 'text-amber-600 dark:text-amber-500' },
+    music: { title: 'Music', one: 'Music', icon: Audio, text: 'text-emerald-600 dark:text-emerald-500' },
+    software: { title: 'Software', one: 'Software', icon: Cd, text: 'text-sky-600 dark:text-sky-500' },
+    other: { title: 'Other', one: 'Other', icon: FileBend, text: 'text-muted-foreground' },
+  }
 
 /** Folder names (lowercased, letters and digits only) that identify a category. */
 const FOLDER_CATEGORIES: Record<string, TorrentCategory> = {
