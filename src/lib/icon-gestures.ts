@@ -377,16 +377,17 @@ export const gestures: Gesture[] = [
 
   // Torrent actions: each previews what it does.
   {
-    // Resume: the triangle rolls on out to the right and a fresh one rolls in behind it, only ever forward.
+    // Resume: the triangle is pressed like a button and a ripple of its outline spreads out and fades.
     icon: 'play',
-    duration: 0.7,
+    duration: 0.75,
     slots: [
-      { els: [0], origin: [12, 12], clip: [12, 12, 11.5], trail: true },
-      { els: [0], origin: [12, 12], clip: [12, 12, 11.5], copy: true, trail: true },
+      { els: [0], origin: [12, 12] },
+      { els: [0], origin: [12, 12], copy: true, width: 1.5 },
     ],
     pose: (t) => {
-      const x = 23 * easeInOut(span(t, 0.04, 0.66))
-      return frame({ x }, { x: x - 23 })
+      const spread = easeOut(span(t, 0.1, 0.75))
+      const o = 0.7 * easeOut(span(t, 0.1, 0.2)) * (1 - easeInOut(span(t, 0.2, 0.7)))
+      return frame({ s: 1 - 0.1 * bell(span(t, 0, 0.3)) }, { s: 1 + 0.25 * spread, o })
     },
   },
   pauseBars('pause', [], [0, 1], [7, 17]),
