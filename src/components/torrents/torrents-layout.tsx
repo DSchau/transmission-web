@@ -2,6 +2,7 @@ import { Outlet, useNavigate } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { DropOverlay } from '@/components/drop-zone'
+import { LiveFavicon } from '@/components/live-favicon'
 import { ResizablePanel } from '@/components/resizable-panel'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { useIsDesktop, useIsSplit } from '@/hooks/use-media-query'
@@ -31,6 +32,7 @@ import { TorrentsViewProvider, useTorrentsView } from './torrents-view'
 export function TorrentsLayout() {
   return (
     <TorrentsViewProvider>
+      <LiveFavicon />
       <Shortcuts />
       <Layout />
     </TorrentsViewProvider>

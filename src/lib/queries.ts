@@ -34,8 +34,9 @@ export const torrentsQuery = (t: Transmission, intervalSeconds: number) =>
     queryKey: torrentKeys.list(t),
     // Every poll goes through `reconcile`, so unconfirmed optimistic changes aren't undone by stale data.
     queryFn: async ({ signal }) => t.pending.reconcile(await t.client.torrents(LIST_FIELDS, undefined, signal)),
-    // React Query pauses this while the tab is hidden and refetches on focus — no background polling.
     refetchInterval: intervalSeconds * 1000,
+    // Keep polling in a hidden tab so the tab's icon and title show live progress.
+    refetchIntervalInBackground: true,
     ...retryPolicy,
   })
 
