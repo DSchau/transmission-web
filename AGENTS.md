@@ -25,8 +25,13 @@ To add an icon:
 4. Import it from `@/components/icons`. Code from `shadcn add` imports lucide, so swap those for the matching
    Central icon (`XIcon` → `CrossMedium`, `CheckIcon` → `Checkmark1`, `ChevronRightIcon` → `ChevronRightMedium`).
 
-Hover animations are in `src/lib/icon-gestures.ts`, keyed by the icon's Central name. Slots point at the SVG's children
-by index, so if you swap the drawing behind an animated icon, update the gesture's indexes and pivots to match.
+If Central has no icon for something, build it from parts of Central icons (as `PauseCircle` does) and say so in a
+comment, rather than drawing one from scratch.
+
+Every icon used in the main app has a hover animation in `src/lib/icon-gestures.ts`, keyed by the icon's Central name, so
+a new one needs a gesture too (the settings pages are exempt). Make it act out what the icon means. Slots point at the
+SVG's children by index, so if you swap the drawing behind an animated icon, update the gesture's indexes and pivots to
+match. `pnpm test` checks that every gesture starts and ends exactly on the resting drawing.
 
 ## Changelog
 

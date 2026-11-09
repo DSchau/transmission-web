@@ -613,6 +613,13 @@ export const PageCross = createIcon('page-cross', [
     },
   ],
 ])
+// Central has no circled pause, so this one is put together from its parts: the ring of
+// play-circle and stop-circle, with bars stroked like the marks inside circle-x.
+export const PauseCircle = createIcon('pause-circle', [
+  ['circle', { cx: '12', cy: '12', r: '9' }],
+  ['path', { d: 'M10 9V15', strokeLinecap: 'round' }],
+  ['path', { d: 'M14 9V15', strokeLinecap: 'round' }],
+])
 export const Pause = createIcon('pause', [
   [
     'path',

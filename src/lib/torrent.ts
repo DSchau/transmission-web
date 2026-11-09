@@ -5,7 +5,7 @@ import {
   ExclamationTriangle,
   type IconComponent,
   InboxEmpty,
-  Pause,
+  PauseCircle,
   Zap,
 } from '@/components/icons'
 import { CATEGORIES, categoryOf } from './category'
@@ -187,7 +187,7 @@ export const FILTER_INFO: Record<
   active: { title: 'Active', icon: Zap, matches: isActive },
   downloading: { title: 'Downloading', icon: ArrowDownCircle, matches: isDownloading },
   seeding: { title: 'Seeding', icon: ArrowUpCircle, matches: isSeeding },
-  paused: { title: 'Paused', icon: Pause, matches: isPaused },
+  paused: { title: 'Paused', icon: PauseCircle, matches: isPaused },
   // Fully downloaded, whatever it's doing now (seeding, paused, or stopped at its ratio).
   completed: { title: 'Completed', icon: CheckCircle, matches: isComplete },
   error: { title: 'Errors', icon: ExclamationTriangle, matches: hasError },
