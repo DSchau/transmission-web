@@ -8,6 +8,7 @@ project uses [Semantic Versioning](https://semver.org).
 
 ### Features
 
+* **tab:** the browser tab's icon shows a progress ring with the download state (downloading, verifying, error, finished) and the title shows overall progress and speed, updating while you're in another tab ([f3f25f6](https://github.com/DSchau/transmission-web/commit/f3f25f6))
 * **updates:** an open tab notices when a new version has been deployed and offers to reload, instead of showing the cached old UI ([e2d252c](https://github.com/DSchau/transmission-web/commit/e2d252c))
 * **remove:** "Remove and Delete Data…" (⌘⌫) next to Remove in the torrent menu, and removing shows an Undo toast for 5 seconds instead of asking you to press and hold ([51b2c1d](https://github.com/DSchau/transmission-web/commit/51b2c1d))
 * **mobile:** the detail page slides back out and can be swiped away from the left edge, the app can be added to the home screen, and buttons respond to the press ([bf004d5](https://github.com/DSchau/transmission-web/commit/bf004d5))
