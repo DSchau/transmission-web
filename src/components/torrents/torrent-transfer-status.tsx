@@ -1,3 +1,4 @@
+import { CategoryIcon } from '@/components/category-badge'
 import { ProgressBar } from '@/components/progress-bar'
 import { Rate } from '@/components/rate'
 import { formatEta, formatPercent, formatRatio } from '@/lib/format'
@@ -26,22 +27,18 @@ export function TorrentTransferStatus({ torrent: t }: { torrent: Torrent }) {
   const progress = displayProgress(t)
   const error = hasError(t) && t.errorString
   const eta = t.status === TorrentStatus.Downloading && !isMagnetPending(t) && !error ? formatEta(t.eta) : null
+  const done = !isMagnetPending(t) && !isChecking(t) && isComplete(t)
   const detail = error
     ? t.errorString
-    : !isMagnetPending(t) && !isChecking(t) && isComplete(t)
+    : done
       ? `Ratio ${formatRatio(t.uploadRatio)}`
       : [formatPercent(progress), eta].filter(Boolean).join(' · ')
   const transferring = t.rateDownload > 0 || t.rateUpload > 0
 
   return (
     <>
-      <ProgressBar
-        progress={progress}
-        tone={tone}
-        active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
-        className="mt-1.5"
-      />
-      <span className="mt-1.5 flex h-5 items-center gap-2 text-xs leading-none tabular-nums">
+      <span className="mt-0.5 flex h-4 items-center gap-2 text-xs leading-none tabular-nums">
+        <CategoryIcon torrent={t} className="-mr-0.5 size-3" />
         <span className={cn('min-w-0 flex-1 truncate', error ? 'text-status-error' : 'text-muted-foreground')}>
           <span className={cn('font-semibold', toneText[tone])}>{stateLabel(t)}</span> · {detail}
         </span>
@@ -52,6 +49,17 @@ export function TorrentTransferStatus({ torrent: t }: { torrent: Torrent }) {
           </span>
         )}
       </span>
+      {/* Doubles as the row divider. Finished torrents get a plain hairline, so color marks only work in progress. */}
+      {done && !error ? (
+        <span aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-border" />
+      ) : (
+        <ProgressBar
+          progress={progress}
+          tone={tone}
+          active={t.status === TorrentStatus.Downloading && t.rateDownload > 0}
+          className="absolute inset-x-0 bottom-0 h-0.5 rounded-none"
+        />
+      )}
     </>
   )
 }

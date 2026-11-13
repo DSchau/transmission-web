@@ -2,11 +2,11 @@ import { useRouter } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { memo, useCallback, useEffect, useRef } from 'react'
-import { CategoryIcon } from '@/components/category-badge'
 import { Checkmark1, DotGrid1x3Horizontal } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { CATEGORY_INFO, categoryOf } from '@/lib/category'
 import type { Torrent } from '@/lib/rpc/types'
 import { selectionAtom, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
@@ -47,7 +47,7 @@ export function TorrentListView({
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 92,
+    estimateSize: () => 54,
     overscan: 8,
     paddingStart: topInset,
     scrollPaddingStart: topInset,
@@ -127,7 +127,9 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            'relative flex items-stretch gap-3 border-b px-4 py-3 transition-colors',
+            // The left edge carries the category color; the progress bar along the bottom is the divider.
+            'relative flex items-stretch gap-3 border-l-[3px] py-2 pr-4 pl-[0.8125rem] transition-colors',
+            CATEGORY_INFO[categoryOf(t)].edge,
             selected ? 'bg-status-downloading/10' : cn('active:bg-muted/60', index % 2 === 1 && 'bg-muted/20'),
           )}
         >
@@ -149,10 +151,7 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
             // The ::after stretches the hit area over the whole card, padding included.
             className="flex min-w-0 flex-1 flex-col text-left outline-none after:absolute after:inset-0 focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
           >
-            <span className="line-clamp-2 font-semibold text-[0.9375rem] leading-snug [overflow-wrap:anywhere]">
-              <CategoryIcon torrent={t} className="mr-1.5 inline size-4 align-[-0.1875rem]" />
-              {t.name}
-            </span>
+            <span className="truncate font-semibold text-sm leading-5">{t.name}</span>
             <TorrentTransferStatus torrent={t} />
           </button>
           {!selectMode && <CardActions torrent={t} />}
