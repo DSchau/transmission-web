@@ -4,16 +4,48 @@ import { cn } from 'cn'
 import { ContextMenu as ContextMenuPrimitive } from 'radix-ui'
 import type * as React from 'react'
 import { Checkmark1, ChevronRightMedium } from '@/components/icons'
+import { isMouse, swallowNextClick } from '@/lib/touch'
 
-function ContextMenu({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
-  return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
+/**
+ * Non-modal by default, for iOS Safari: a modal menu blocks the page and locks scrolling while
+ * open, and Safari then swallowed the first tap on an item. See dropdown-menu.tsx.
+ */
+function ContextMenu({
+  modal = false,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
+  return (
+    <ContextMenuPrimitive.Root
+      data-slot="context-menu"
+      modal={modal}
+      onOpenChange={(open) => {
+        // Lifting the finger after a long-press is a tap on whatever was pressed (a row, which
+        // would open it). A modal menu blocked that tap; without one, eat it here.
+        if (open && lastTriggerPointer !== 'mouse') swallowNextClick()
+        onOpenChange?.(open)
+      }}
+      {...props}
+    />
+  )
 }
 
-function ContextMenuTrigger({ className, ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
+/** How the last context menu was asked for: a long-press or a right-click. */
+let lastTriggerPointer = 'mouse'
+
+function ContextMenuTrigger({
+  className,
+  onPointerDown,
+  ...props
+}: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
   return (
     <ContextMenuPrimitive.Trigger
       data-slot="context-menu-trigger"
       className={cn('select-none', className)}
+      onPointerDown={(event) => {
+        lastTriggerPointer = event.pointerType
+        onPointerDown?.(event)
+      }}
       {...props}
     />
   )
@@ -37,6 +69,8 @@ function ContextMenuRadioGroup({ ...props }: React.ComponentProps<typeof Context
 
 function ContextMenuContent({
   className,
+  onPointerDownOutside,
+  onFocusOutside,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Content> & {
   side?: 'top' | 'right' | 'bottom' | 'left'
@@ -45,6 +79,17 @@ function ContextMenuContent({
     <ContextMenuPrimitive.Portal>
       <ContextMenuPrimitive.Content
         data-slot="context-menu-content"
+        onPointerDownOutside={(event) => {
+          onPointerDownOutside?.(event)
+          // A touch outside only closes the menu, rather than also tapping what's underneath.
+          if (!event.defaultPrevented && !isMouse(event.detail.originalEvent)) swallowNextClick()
+        }}
+        onFocusOutside={(event) => {
+          onFocusOutside?.(event)
+          // Lifting the finger after a long-press focuses the pressed row, which would close the
+          // menu the moment it opened. Touches outside still close it (above).
+          if (lastTriggerPointer !== 'mouse') event.preventDefault()
+        }}
         className={cn(
           'z-50 max-h-(--radix-context-menu-content-available-height) min-w-36 origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1.5 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
           className,

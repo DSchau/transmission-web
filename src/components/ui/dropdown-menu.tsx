@@ -4,6 +4,7 @@ import { cn } from 'cn'
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui'
 import * as React from 'react'
 import { Checkmark1, ChevronRightMedium } from '@/components/icons'
+import { isMouse, swallowNextClick } from '@/lib/touch'
 
 /*
  * Touch fixes for iOS Safari, applied to every menu here:
@@ -51,8 +52,6 @@ function DropdownMenuPortal({ ...props }: React.ComponentProps<typeof DropdownMe
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
 }
 
-const isMouse = (event: React.PointerEvent | PointerEvent) => event.pointerType === 'mouse'
-
 function DropdownMenuTrigger({
   onPointerDown,
   onClick,
@@ -77,21 +76,6 @@ function DropdownMenuTrigger({
       {...props}
     />
   )
-}
-
-/** After a touch outside an open menu, eats the tap it turns into. */
-function swallowNextClick() {
-  const swallow = (event: MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    done()
-  }
-  const done = () => {
-    document.removeEventListener('click', swallow, true)
-    clearTimeout(timer)
-  }
-  const timer = setTimeout(done, 800)
-  document.addEventListener('click', swallow, true)
 }
 
 function DropdownMenuContent({
