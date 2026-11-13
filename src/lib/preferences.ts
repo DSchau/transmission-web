@@ -32,6 +32,8 @@ export interface Preferences {
   /** Desktop panel widths in px; null = the responsive default. */
   sidebarWidth: number | null
   inspectorWidth: number | null
+  /** Tablet split view: the torrent list's width in px; null = the responsive default. */
+  listWidth: number | null
 }
 
 export const REFRESH_INTERVALS = [1, 2, 3, 5, 10] as const
@@ -58,6 +60,7 @@ export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
   sidebar: 'full',
   sidebarWidth: null,
   inspectorWidth: null,
+  listWidth: null,
 })
 
 export const updatePreferences = (patch: Partial<Preferences>) => preferencesAtom.set((prev) => ({ ...prev, ...patch }))

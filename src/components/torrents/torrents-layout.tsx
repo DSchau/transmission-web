@@ -75,6 +75,7 @@ function Layout() {
   const sidebarMode = useSelector(preferencesAtom, (p) => p.sidebar)
   const sidebarWidth = useSelector(preferencesAtom, (p) => p.sidebarWidth)
   const inspectorWidth = useSelector(preferencesAtom, (p) => p.inspectorWidth)
+  const listWidth = useSelector(preferencesAtom, (p) => p.listWidth)
   const multiple = selected.length > 1
   const [listScrolled, setListScrolled] = useState(false)
   // Keeps the session's transfer history (the speed charts) up to date.
@@ -134,10 +135,21 @@ function Layout() {
   if (isSplit) {
     return (
       <div className="flex h-full">
-        <section className="flex w-[22rem] shrink-0 flex-col border-r lg:w-[24rem]">
-          <GlassList chrome={<StatusPanel chart />} />
-          {selectMode && <SelectionBar />}
-        </section>
+        <ResizablePanel
+          edge="right"
+          label="Resize torrent list"
+          width={listWidth}
+          onWidthChange={(width) => updatePreferences({ listWidth: width })}
+          min={280}
+          max={720}
+          maxViewportFraction={0.7}
+          className="w-[22rem] border-r lg:w-[24rem]"
+        >
+          <section className="flex min-h-0 flex-1 flex-col">
+            <GlassList chrome={<StatusPanel chart />} />
+            {selectMode && <SelectionBar />}
+          </section>
+        </ResizablePanel>
         <main className="flex min-w-0 flex-1 flex-col">{multiple ? <SelectionSummary /> : <Outlet />}</main>
       </div>
     )

@@ -37,7 +37,7 @@ export function TorrentTransferStatus({ torrent: t }: { torrent: Torrent }) {
 
   return (
     <>
-      <span className="mt-0.5 flex h-4 items-center gap-2 text-xs leading-none tabular-nums">
+      <span className="mt-0.5 flex h-4 items-center gap-2 text-xs leading-4 tabular-nums">
         <CategoryIcon torrent={t} className="-mr-0.5 size-3" />
         <span className={cn('min-w-0 flex-1 truncate', error ? 'text-status-error' : 'text-muted-foreground')}>
           <span className={cn('font-semibold', toneText[tone])}>{stateLabel(t)}</span> · {detail}

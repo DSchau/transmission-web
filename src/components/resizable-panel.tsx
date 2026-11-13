@@ -123,8 +123,9 @@ export function ResizablePanel({
         onKeyDown={onKeyDown}
         title="Drag to resize, double-click to reset"
         className={cn(
-          'absolute inset-y-0 z-20 w-2 cursor-col-resize touch-none outline-none',
-          edge === 'right' ? '-right-1' : '-left-1',
+          // Wider for fingers: 8px is fine for a mouse but hard to land on with touch.
+          'absolute inset-y-0 z-20 w-2 cursor-col-resize touch-none outline-none pointer-coarse:w-6',
+          edge === 'right' ? '-right-1 pointer-coarse:-right-3' : '-left-1 pointer-coarse:-left-3',
           // A hairline that brightens on hover / drag / focus, centred over the panel border.
           'before:absolute before:inset-y-0 before:left-1/2 before:w-0.5 before:-translate-x-1/2 before:transition-colors',
           'hover:before:bg-ring/60 focus-visible:before:bg-ring data-dragging:before:bg-ring',
