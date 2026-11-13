@@ -146,7 +146,11 @@ function Layout() {
           className="w-[22rem] border-r lg:w-[24rem]"
         >
           <section className="flex min-h-0 flex-1 flex-col">
-            <GlassList chrome={<StatusPanel chart />} />
+            <GlassList
+              chrome={<StatusPanel chart chartCollapsed={listScrolled} />}
+              scrolled={listScrolled}
+              onScrolledChange={setListScrolled}
+            />
             {selectMode && <SelectionBar />}
           </section>
         </ResizablePanel>
