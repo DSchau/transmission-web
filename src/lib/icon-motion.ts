@@ -180,13 +180,7 @@ function play(control: Element) {
 }
 
 if (typeof document !== 'undefined') {
-  // Touch never plays a gesture. iOS Safari turns a tap into a hover first, and if the hover
-  // changes the page (as a gesture does, swapping the icon for its animated clones) it stops
-  // there and waits for a second tap to click. That made every menu item need two taps.
-  let lastPointer = 'mouse'
-  document.addEventListener('pointerdown', (e) => (lastPointer = e.pointerType), { capture: true, passive: true })
   document.addEventListener('pointerover', (e) => {
-    if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return
     const control = (e.target as Element).closest?.(TRIGGER)
     // Moving between the control's own children isn't a new hover.
     if (control && !(e.relatedTarget instanceof Node && control.contains(e.relatedTarget))) play(control)
@@ -194,13 +188,8 @@ if (typeof document !== 'undefined') {
   document.addEventListener('focusin', (e) => {
     const target = e.target as Element
     const control = target.closest?.(TRIGGER)
-    if (!control) return
-    // Keyboard focus always counts. Menus also move focus as the highlight moves, which counts
-    // for a mouse but not for a finger, for the same reason as above.
-    if (
-      target.matches(':focus-visible') ||
-      (lastPointer !== 'touch' && control.matches('[role^="menuitem"], [role="option"]'))
-    )
+    // Menus move focus as the highlight moves; anywhere else only keyboard focus counts.
+    if (control && (target.matches(':focus-visible') || control.matches('[role^="menuitem"], [role="option"]')))
       play(control)
   })
 }

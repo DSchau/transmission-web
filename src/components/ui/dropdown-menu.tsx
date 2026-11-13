@@ -2,25 +2,103 @@
 
 import { cn } from 'cn'
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui'
-import type * as React from 'react'
+import * as React from 'react'
 import { Checkmark1, ChevronRightMedium } from '@/components/icons'
 
-function DropdownMenu({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+/*
+ * Touch fixes for iOS Safari, applied to every menu here:
+ * - Non-modal. A modal menu sets `pointer-events: none` on the page and locks scrolling while open;
+ *   Safari then swallowed the first tap on an item, so every item took two taps.
+ * - Touch opens on tap (click), not on touch-down like Radix does for every pointer. Opening on
+ *   touch-down meant lifting the same finger could count as a tap outside and shut the menu at
+ *   once, and a scroll that started on a menu button opened its menu.
+ * - A touch outside only closes the menu: the tap that follows is swallowed, so it can't also open
+ *   whatever was underneath. Scrolling isn't a tap, so it still works and closes the menu.
+ */
+const MenuOpenContext = React.createContext<{ open: boolean; setOpen: (open: boolean) => void } | null>(null)
+
+function DropdownMenu({
+  modal = false,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
+  const [uncontrolled, setUncontrolled] = React.useState(defaultOpen)
+  const open = openProp ?? uncontrolled
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      if (openProp === undefined) setUncontrolled(next)
+      onOpenChange?.(next)
+    },
+    [openProp, onOpenChange],
+  )
+  const value = React.useMemo(() => ({ open, setOpen }), [open, setOpen])
+  return (
+    <MenuOpenContext.Provider value={value}>
+      <DropdownMenuPrimitive.Root
+        data-slot="dropdown-menu"
+        modal={modal}
+        open={open}
+        onOpenChange={setOpen}
+        {...props}
+      />
+    </MenuOpenContext.Provider>
+  )
 }
 
 function DropdownMenuPortal({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
 }
 
-function DropdownMenuTrigger({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
-  return <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
+const isMouse = (event: React.PointerEvent | PointerEvent) => event.pointerType === 'mouse'
+
+function DropdownMenuTrigger({
+  onPointerDown,
+  onClick,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+  const menu = React.useContext(MenuOpenContext)
+  const lastPointer = React.useRef('mouse')
+  return (
+    <DropdownMenuPrimitive.Trigger
+      data-slot="dropdown-menu-trigger"
+      onPointerDown={(event) => {
+        onPointerDown?.(event)
+        lastPointer.current = event.pointerType
+        // Stops Radix opening on touch-down; the click below opens it instead.
+        if (!isMouse(event)) event.preventDefault()
+      }}
+      onClick={(event) => {
+        onClick?.(event)
+        if (!event.defaultPrevented && lastPointer.current !== 'mouse' && menu) menu.setOpen(!menu.open)
+        lastPointer.current = 'mouse'
+      }}
+      {...props}
+    />
+  )
+}
+
+/** After a touch outside an open menu, eats the tap it turns into. */
+function swallowNextClick() {
+  const swallow = (event: MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    done()
+  }
+  const done = () => {
+    document.removeEventListener('click', swallow, true)
+    clearTimeout(timer)
+  }
+  const timer = setTimeout(done, 800)
+  document.addEventListener('click', swallow, true)
 }
 
 function DropdownMenuContent({
   className,
   align = 'start',
   sideOffset = 4,
+  onPointerDownOutside,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
@@ -29,6 +107,10 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         align={align}
+        onPointerDownOutside={(event) => {
+          onPointerDownOutside?.(event)
+          if (!event.defaultPrevented && !isMouse(event.detail.originalEvent)) swallowNextClick()
+        }}
         className={cn(
           'z-50 max-h-(--radix-dropdown-menu-content-available-height) w-(--radix-dropdown-menu-trigger-width) min-w-32 origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1.5 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:overflow-hidden data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
           className,
