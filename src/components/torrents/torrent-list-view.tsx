@@ -8,6 +8,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/component
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { CATEGORY_INFO, categoryOf } from '@/lib/category'
 import type { Torrent } from '@/lib/rpc/types'
+import { isUserPaused } from '@/lib/torrent'
 import { selectionAtom, selectModeAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ListEmptyState, useShowsEmptyState } from './connection-state'
@@ -130,6 +131,8 @@ const TorrentCard = memo(function TorrentCard({ torrent: t, index, selectMode, s
             // The left edge carries the category color; the progress bar along the bottom is the divider.
             'relative flex items-stretch gap-3 border-l-[3px] py-2 pr-4 pl-[0.8125rem] transition-colors',
             CATEGORY_INFO[categoryOf(t)].edge,
+            // Paused rows fade back so the active ones stand out; a selected one stays readable.
+            isUserPaused(t) && !selected && 'opacity-45',
             selected ? 'bg-status-downloading/10' : cn('active:bg-muted/60', index % 2 === 1 && 'bg-muted/20'),
           )}
         >

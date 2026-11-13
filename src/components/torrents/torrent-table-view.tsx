@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { type KeyboardEvent, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp } from '@/components/icons'
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { isUserPaused } from '@/lib/torrent'
 import { clearSelection, selectedIds, selectionAtom } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { ListEmptyState, useShowsEmptyState } from './connection-state'
@@ -282,6 +283,8 @@ export function TorrentTableView({
                             key={cell.id}
                             className={cn(
                               'flex min-w-0 items-center px-3',
+                              // Paused rows fade back (the cells, so hover and selection stay full strength).
+                              isUserPaused(row.original) && !row.getIsSelected() && 'opacity-45',
                               NUMERIC_COLUMNS.has(cell.column.id) && 'justify-end',
                             )}
                           >

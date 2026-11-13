@@ -17,6 +17,9 @@ import { type Torrent, TorrentStatus } from './rpc/types'
 // MARK: Derived state
 
 export const isPaused = (t: Torrent) => t.status === TorrentStatus.Stopped
+/** Paused by hand: rows labelled "Paused", which the lists fade. A torrent stopped by its seed
+ * limit ("Seeding complete") or with an error stays at full strength. */
+export const isUserPaused = (t: Torrent) => isPaused(t) && !t.isFinished && !hasError(t)
 export const isActive = (t: Torrent) => t.rateDownload > 0 || t.rateUpload > 0 || t.status === TorrentStatus.Checking
 export const isDownloading = (t: Torrent) =>
   t.status === TorrentStatus.Downloading || t.status === TorrentStatus.DownloadWait
