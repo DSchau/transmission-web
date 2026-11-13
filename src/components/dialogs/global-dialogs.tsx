@@ -29,7 +29,6 @@ import { useTransmission } from '@/lib/transmission'
 import { closeDialog, type DialogRequest, dialogAtom, exitSelectMode } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 import { AddTorrentDialog } from './add-torrent-dialog'
-import { StatisticsDialog } from './statistics-dialog'
 
 /** Presents whatever `dialogAtom` asks for. Mounted once, at the root. */
 export function GlobalDialogs() {
@@ -54,7 +53,6 @@ export function GlobalDialogs() {
       <RemoveDialog {...props('remove')} request={shownAs('remove')} />
       <RenameDialog {...props('rename')} torrent={shownAs('rename')?.torrent ?? null} />
       <SetLocationDialog {...props('location')} torrents={shownAs('location')?.torrents ?? []} />
-      <StatisticsDialog {...props('statistics')} />
     </>
   )
 }

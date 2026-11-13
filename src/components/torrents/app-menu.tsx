@@ -31,7 +31,6 @@ import type { ColorTheme, Theme } from '@/lib/preferences'
 import { useSession } from '@/lib/queries'
 import { COLOR_THEMES, useTheme } from '@/lib/theme'
 import { clearSelection, selectModeAtom } from '@/lib/ui'
-import { openStatistics } from './activity'
 
 /** The list's secondary actions (the iOS app's overflow menu). */
 export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
@@ -108,9 +107,11 @@ export function AppMenu({ showSelect = true }: { showSelect?: boolean }) {
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        <DropdownMenuItem onSelect={openStatistics}>
-          <LineChart1 />
-          Statistics…
+        <DropdownMenuItem asChild>
+          <Link to="/statistics">
+            <LineChart1 />
+            Statistics…
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/connect">

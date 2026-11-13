@@ -1,16 +1,20 @@
-import { useMemo, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, ChevronRightMedium } from '@/components/icons'
 import { SpeedChart, type SpeedLimits, useRateHistory } from '@/components/speed-chart'
 import { formatClockTime, formatShortTime, formatSpeed } from '@/lib/format'
 import { useSession, useSessionStats } from '@/lib/queries'
 import { type RateSample, visibleSpan } from '@/lib/rate-history'
-import { openDialog } from '@/lib/ui'
 import { cn } from '@/lib/utils'
 
 /** The inline charts show the last few minutes; the Statistics view can show the whole history. */
 export const INLINE_RANGE = 5 * 60_000
 
-export const openStatistics = () => openDialog({ type: 'statistics' })
+/** Opens the Statistics page. */
+export function useOpenStatistics() {
+  const navigate = useNavigate()
+  return useCallback(() => navigate({ to: '/statistics' }), [navigate])
+}
 
 /** When a chart point is from: "2:41:07 PM", or "1:05 PM – 2:40 PM avg" for a stretch no tab was polling. */
 export function formatSampleTime(sample: RateSample): string {
@@ -79,6 +83,7 @@ export function RateFigure({
  */
 export function SidebarActivity() {
   const samples = useRateHistory()
+  const openStatistics = useOpenStatistics()
   const limits = useAltSpeedLimits()
   const [scrub, setScrub] = useState<RateSample | null>(null)
   const live = useLiveRates()

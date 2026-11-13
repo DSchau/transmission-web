@@ -1,6 +1,6 @@
 import { useSelector } from '@tanstack/react-store'
 import { useState } from 'react'
-import { ResponsiveDialog } from '@/components/responsive-dialog'
+import { PageShell } from '@/components/settings/page-shell'
 import { SpeedChart, useRateHistory } from '@/components/speed-chart'
 import { formatSampleTime, RateFigure, useAltSpeedLimits, useLiveRates } from '@/components/torrents/activity'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,20 +22,15 @@ const SESSION = RANGES[RANGES.length - 1]!
 /**
  * Like the native clients' Statistics window: session and lifetime totals (`session-stats`, the
  * same numbers `transmission-remote -st` prints) under a larger, scrubbable speed history.
+ * A page with a back button, like Settings and Connection.
  */
-export function StatisticsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function StatisticsPage() {
   const config = useSelector(connectionAtom)
   return (
-    <ResponsiveDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Statistics"
-      description={displayNameFor(config)}
-      className="sm:max-w-2xl"
-    >
-      {/* Mounted only while open, so `session-stats` is only polled then. */}
+    <PageShell title="Statistics">
+      <p className="-mt-4 -mb-2 truncate px-1 text-muted-foreground text-sm">{displayNameFor(config)}</p>
       <StatisticsContent />
-    </ResponsiveDialog>
+    </PageShell>
   )
 }
 
@@ -50,7 +45,7 @@ function StatisticsContent() {
   const span = visibleSpan(samples, range.ms)
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 pb-4 sm:pb-0">
+    <div className="flex min-w-0 flex-col gap-6">
       <section aria-label="Speed history" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
           <RateFigure direction="down" rate={shown?.down} size="lg" />

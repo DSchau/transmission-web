@@ -7,7 +7,7 @@ import type { RateSample } from '@/lib/rate-history'
 import type { Torrent } from '@/lib/rpc/types'
 import { totalSize } from '@/lib/torrent'
 import { cn } from '@/lib/utils'
-import { INLINE_RANGE, openStatistics, useAltSpeedLimits } from './activity'
+import { INLINE_RANGE, useAltSpeedLimits, useOpenStatistics } from './activity'
 import { useTorrentsView } from './torrents-view'
 
 /**
@@ -32,6 +32,7 @@ export function StatusPanel({
   const state = useConnectionState()
   const { data: session } = useSession()
   const samples = useRateHistory()
+  const openStatistics = useOpenStatistics()
   const limits = useAltSpeedLimits()
   const [scrub, setScrub] = useState<RateSample | null>(null)
 

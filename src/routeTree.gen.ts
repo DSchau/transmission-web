@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TorrentsRouteImport } from './routes/_torrents'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as TorrentsIndexRouteImport } from './routes/_torrents/index'
 import { Route as TorrentsTorrentsTorrentIdRouteImport } from './routes/_torrents/torrents.$torrentId'
 
@@ -27,6 +28,11 @@ const ConnectRoute = ConnectRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatisticsRoute = StatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TorrentsIndexRoute = TorrentsIndexRouteImport.update({
@@ -45,11 +51,13 @@ export interface FileRoutesByFullPath {
   '/': typeof TorrentsIndexRoute
   '/connect': typeof ConnectRoute
   '/settings': typeof SettingsRoute
+  '/statistics': typeof StatisticsRoute
   '/torrents/$torrentId': typeof TorrentsTorrentsTorrentIdRoute
 }
 export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/settings': typeof SettingsRoute
+  '/statistics': typeof StatisticsRoute
   '/': typeof TorrentsIndexRoute
   '/torrents/$torrentId': typeof TorrentsTorrentsTorrentIdRoute
 }
@@ -58,19 +66,22 @@ export interface FileRoutesById {
   '/_torrents': typeof TorrentsRouteWithChildren
   '/connect': typeof ConnectRoute
   '/settings': typeof SettingsRoute
+  '/statistics': typeof StatisticsRoute
   '/_torrents/': typeof TorrentsIndexRoute
   '/_torrents/torrents/$torrentId': typeof TorrentsTorrentsTorrentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/connect' | '/settings' | '/torrents/$torrentId'
+  fullPaths:
+    '/' | '/connect' | '/settings' | '/statistics' | '/torrents/$torrentId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/connect' | '/settings' | '/' | '/torrents/$torrentId'
+  to: '/connect' | '/settings' | '/statistics' | '/' | '/torrents/$torrentId'
   id:
     | '__root__'
     | '/_torrents'
     | '/connect'
     | '/settings'
+    | '/statistics'
     | '/_torrents/'
     | '/_torrents/torrents/$torrentId'
   fileRoutesById: FileRoutesById
@@ -79,6 +90,7 @@ export interface RootRouteChildren {
   TorrentsRoute: typeof TorrentsRouteWithChildren
   ConnectRoute: typeof ConnectRoute
   SettingsRoute: typeof SettingsRoute
+  StatisticsRoute: typeof StatisticsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -102,6 +114,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistics': {
+      id: '/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof StatisticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_torrents/': {
@@ -139,6 +158,7 @@ const rootRouteChildren: RootRouteChildren = {
   TorrentsRoute: TorrentsRouteWithChildren,
   ConnectRoute: ConnectRoute,
   SettingsRoute: SettingsRoute,
+  StatisticsRoute: StatisticsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
