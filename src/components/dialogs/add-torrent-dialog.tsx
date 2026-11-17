@@ -276,13 +276,14 @@ function AddTorrentForm({
           <FieldDescription className="whitespace-pre-line text-destructive">{submitError}</FieldDescription>
         )}
 
-        <form.Subscribe selector={(state) => state.isSubmitting}>
-          {(isSubmitting) => (
+        <form.Subscribe selector={(state) => [state.isSubmitting, state.values.files.length > 0] as const}>
+          {([isSubmitting, hasFiles]) => (
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" onClick={onDone}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              {/* With files there's nothing to type, so start on Add rather than the first file's remove button. */}
+              <Button type="submit" disabled={isSubmitting} autoFocus={hasFiles && hasFinePointer}>
                 {isSubmitting && <Spinner data-icon="inline-start" />}
                 Add
               </Button>

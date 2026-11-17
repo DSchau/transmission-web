@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useSelector } from '@tanstack/react-store'
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { ExclamationTriangle, Folder1 } from '@/components/icons'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
 import {
@@ -73,6 +73,7 @@ function RemoveDialog({
   const navigate = useNavigate()
   const { torrentId } = useParams({ strict: false })
   const checkboxId = useId()
+  const confirmButton = useRef<HTMLButtonElement>(null)
   const [deleteData, setDeleteData] = useState(false)
   const ids = request?.ids ?? []
   const many = ids.length > 1
@@ -111,7 +112,15 @@ function RemoveDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent aria-describedby={undefined}>
+      <AlertDialogContent
+        aria-describedby={undefined}
+        // Radix starts on Cancel; start on the action instead, so Enter confirms and Tab reaches the
+        // rest. Removing can be undone from the toast, so this isn't a trap.
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+          confirmButton.current?.focus({ preventScroll: true })
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle className="wrap-anywhere">{title}</AlertDialogTitle>
         </AlertDialogHeader>
@@ -160,7 +169,7 @@ function RemoveDialog({
         )}
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
+          <Button ref={confirmButton} variant={deleteData ? 'destructive' : 'default'} onClick={confirm}>
             {deleteData ? 'Delete' : 'Remove'}
           </Button>
         </AlertDialogFooter>
