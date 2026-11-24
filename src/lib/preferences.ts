@@ -42,7 +42,7 @@ export const PREFERENCES_KEY = 'transmission-web.preferences.v2'
 
 export const preferencesAtom = persistedAtom<Preferences>(PREFERENCES_KEY, {
   theme: 'system',
-  colorTheme: 'default',
+  colorTheme: 'dracula-pro',
   refreshInterval: 2,
   // Like Transmission's own list: the name column carries the status line (including size
   // and rates), so the table needs nothing else. The rest live in the Columns menu if wanted.

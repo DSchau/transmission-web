@@ -9,8 +9,8 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Transmission" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#22212c" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <title>Transmission</title>
     <script>
@@ -27,7 +27,7 @@
         if (theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark')
         }
-        if (typeof prefs.colorTheme === 'string') document.documentElement.dataset.theme = prefs.colorTheme
+        document.documentElement.dataset.theme = typeof prefs.colorTheme === 'string' ? prefs.colorTheme : 'dracula-pro'
       } catch (_e) {}
     </script>
   </head>
