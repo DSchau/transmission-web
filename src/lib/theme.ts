@@ -86,7 +86,7 @@ export function useTheme() {
   const theme = useSelector(preferencesAtom, (p) => p.theme)
   const stored = useSelector(preferencesAtom, (p) => p.colorTheme)
   // Stored state may name a theme that no longer exists.
-  const colorTheme = COLOR_THEMES.some((t) => t.id === stored) ? stored : 'default'
+  const colorTheme = COLOR_THEMES.some((t) => t.id === stored) ? stored : 'dracula-pro'
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)')
   const resolvedTheme: 'light' | 'dark' = theme === 'system' ? (prefersDark ? 'dark' : 'light') : theme
   return {
